@@ -16,11 +16,11 @@ class GeonamesServiceProvider extends ServiceProvider {
     public function boot() {
         // There are a number of tables that need to be created for our Geonames package.
         // Feel free to modify those migrations to create indexes that are appropriate for your application.
-        $this->loadMigrationsFrom(__DIR__ . '/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/Migrations');
 
 
         // The defaults are fine, but if you want to optimize this is a good place to start.
-        $this->publishes([__DIR__ . '/config/geonames.php' => config_path('geonames.php'),]);
+        $this->publishes([__DIR__ . '/Config/geonames.php' => config_path('geonames.php'),]);
 
         // Let's register our commands. These are needed to keep our geonames data up-to-date.
         if ($this->app->runningInConsole()) {
