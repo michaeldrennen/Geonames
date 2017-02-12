@@ -1,0 +1,23 @@
+{
+  "name": "michaeldrennen/geonames",
+  "description": "A Laravel (php) package that interfaces with the geolocation services on geonames.org.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Michael Drennen",
+      "email": "michaeldrennen74@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "illuminate/support": "^5.4",
+    "illuminate/database": "^5.4",
+    "mockery/mockery": "^0.9.8",
+    "curl/curl": "^1.6"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6.0",
+    "laravel/laravel": "^5.4"
+  }
+}
