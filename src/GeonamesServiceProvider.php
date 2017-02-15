@@ -1,9 +1,6 @@
 <?php
 
 namespace MichaelDrennen\Geonames;
-
-//use App\Console\Commands\Download;
-//use App\Console\Commands\Initialize;
 use Illuminate\Support\ServiceProvider;
 
 
