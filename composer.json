@@ -9,7 +9,6 @@
       "email": "michaeldrennen74@gmail.com"
     }
   ],
-  "minimum-stability": "dev",
   "require": {
     "illuminate/support": "^5.4",
     "illuminate/database": "^5.4",
