@@ -19,5 +19,11 @@
     "phpunit/phpunit": "^6.0",
     "laravel/laravel": "^5.4",
     "mockery/mockery": "^0.9.8"
-  }
+  },
+  "autoload": {
+    "psr-4": {
+      "MichaelDrennen\\Geonames\\": "src"
+    }
+  },
+  "minimum-stability": "dev"
 }
