@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace MichaelDrennen\Geonames\Console;
 
 use Curl\Curl;
 use Illuminate\Console\Command;

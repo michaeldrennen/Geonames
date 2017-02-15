@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Providers;
+namespace MichaelDrennen\Geonames;
 
-use App\Console\Commands\Download;
-use App\Console\Commands\Initialize;
+//use App\Console\Commands\Download;
+//use App\Console\Commands\Initialize;
 use Illuminate\Support\ServiceProvider;
 
 
 class GeonamesServiceProvider extends ServiceProvider {
+
+
     /**
      * Bootstrap the application services.
      *
@@ -24,7 +26,7 @@ class GeonamesServiceProvider extends ServiceProvider {
 
         // Let's register our commands. These are needed to keep our geonames data up-to-date.
         if ($this->app->runningInConsole()) {
-            $this->commands([Initialize::class, Download::class,]);
+            $this->commands([Console\Initialize::class, Console\Download::class,]);
         }
     }
 
