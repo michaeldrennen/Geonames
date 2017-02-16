@@ -27,7 +27,7 @@ class CreateGeonamesTable extends Migration {
             $table->string('admin3_code', 20);          // admin3 code       : code for third level administrative division, varchar(20)
             $table->string('admin4_code', 20);          // admin4 code       : code for fourth level administrative division, varchar(20)
             $table->bigInteger('population');           // population        : bigint (8 byte int)
-            $table->integer('elevation', 200);          // elevation         : in meters, integer
+            $table->integer('elevation');          // elevation         : in meters, integer
             $table->integer('dem');                     // dem               : digital elevation model, srtm3 or gtopo30, average elevation of 3''x3'' (ca 90mx90m) or 30''x30'' (ca 900mx900m) area in meters, integer. srtm processed by cgiar/ciat.
             $table->string('timezone', 40);             // timezone          : the iana timezone id (see file timeZone.txt) varchar(40)
             $table->date('modification_date');          // modification date : date of last modification in yyyy-MM-dd format
