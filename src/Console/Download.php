@@ -4,6 +4,7 @@ namespace MichaelDrennen\Geonames\Console;
 
 use Curl\Curl;
 use Illuminate\Console\Command;
+use MichaelDrennen\Geonames\Log;
 
 class Download extends Command {
     /**
@@ -49,8 +50,10 @@ class Download extends Command {
             $this->curl->get($remoteFilePath);
 
             if ($this->curl->error) {
-                echo $this->curl->error_code;
+                $this->error($this->curl->error_code . ':' . $this->curl->error_message);
+                Log::error($this->curl->error_message, $this->curl->error_code);
             } else {
+                $this->info("Downloaded " . $remoteFilePath);
                 $downloadedData[] = $this->curl->response;
             }
         }
