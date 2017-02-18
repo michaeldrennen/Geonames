@@ -6,6 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Log extends Model {
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'geo_logs';
+
     const ERROR = 'error';
 
     /**
