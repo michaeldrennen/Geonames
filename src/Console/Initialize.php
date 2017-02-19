@@ -2,9 +2,9 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
-use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 
-class Initialize extends Command {
+class Initialize extends Base {
     /**
      * The name and signature of the console command.
      *
@@ -20,9 +20,7 @@ class Initialize extends Command {
     protected $description = 'Download and insert fresh data from geonames.org';
 
     /**
-     * Create a new command instance.
-     *
-     * @return void
+     * Initialize constructor.
      */
     public function __construct() {
         parent::__construct();
@@ -40,11 +38,16 @@ class Initialize extends Command {
         $this->line("Finished " . $this->signature);
     }
 
+
+    /**
+     *
+     */
     protected function getLocalFiles() {
+        $storagePath = $this->getStorage();
+        $files = Storage::files($storagePath);
+
 
     }
-
-
 
 
 }

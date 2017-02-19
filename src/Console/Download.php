@@ -3,7 +3,6 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Curl\Curl;
-use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\Log;
 
 class Download extends Base {
@@ -26,10 +25,7 @@ class Download extends Base {
      */
     protected $curl;
 
-    /**
-     * @var string Absolute local path to where we store the downloaded geonames files.
-     */
-    protected $storageDir;
+
 
     /**
      * @var array List of absolute local file paths to downloaded geonames files.
@@ -38,8 +34,7 @@ class Download extends Base {
 
     /**
      * Create a new command instance.
-     *
-     * @return void
+     * @param Curl $curl
      */
     public function __construct(Curl $curl) {
         parent::__construct();
@@ -121,7 +116,7 @@ class Download extends Base {
 
     /**
      * Attempt to download
-     * @param $remoteFilePath The URL of the remote file we want to download.
+     * @param $remoteFilePath stringThe URL of the remote file we want to download.
      * @throws \Exception
      */
     protected function downloadAndSaveFile($remoteFilePath) {
@@ -134,7 +129,7 @@ class Download extends Base {
         if ($this->curl->error) {
             $this->error($this->curl->error_code . ':' . $this->curl->error_message);
             Log::error($remoteFilePath, $this->curl->error_message, $this->curl->error_code);
-            throw new Exception("Unable to download the file at '" . $remoteFilePath . "', " . $this->curl->error_message);
+            throw new \Exception("Unable to download the file at '" . $remoteFilePath . "', " . $this->curl->error_message);
         }
 
         $this->info("Downloaded " . $remoteFilePath);
