@@ -86,7 +86,7 @@ class Download extends Command {
         //        }
 
         // If the config setting for countries has the wildcard symbol "*", then the user wants data for all countries.
-        if (array_search('*', $countries)) {
+        if (array_search("*", $countries) !== false) {
             return [$download_base_url . 'allCountries.zip'];
         }
 
