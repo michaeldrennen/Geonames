@@ -20,9 +20,10 @@ class CreateGeoLogsTable extends Migration {
     public function up() {
         Schema::create('geo_logs', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('url', 255);      // The url we were trying to retrieve.
             $table->string('type', 255);
-            $table->string('tag', 255);
-            $table->text('message');
+            $table->string('tag', 255);     // A short string that lets us query/filter for specific types of log messages.
+            $table->text('message');        // Verbose explanation as to what happened.
             $table->timestamps();
         });
     }

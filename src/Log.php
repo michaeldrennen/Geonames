@@ -20,8 +20,9 @@ class Log extends Model {
      * @param string $tag A short string that we can use to query/filter types of messages.
      * @return bool
      */
-    public static function error($message = '', $tag = '') {
+    public static function error($url = '', $message = '', $tag = '') {
         $log = new Log();
+        $log->url = $url;
         $log->message = $message;
         $log->tag = $tag;
         $log->type = self::ERROR;

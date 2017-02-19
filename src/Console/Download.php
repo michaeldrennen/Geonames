@@ -51,7 +51,7 @@ class Download extends Command {
 
             if ($this->curl->error) {
                 $this->error($this->curl->error_code . ':' . $this->curl->error_message);
-                Log::error($this->curl->error_message, $this->curl->error_code);
+                Log::error($remoteFilePath, $this->curl->error_message, $this->curl->error_code);
             } else {
                 $this->info("Downloaded " . $remoteFilePath);
                 $downloadedData[] = $this->curl->response;
@@ -64,10 +64,19 @@ class Download extends Command {
 
     /**
      * @return array
+     * @throws \Exception
      */
     protected function getRemoteFilePathsToDownloadForGeonamesTable() {
         $download_base_url = config('geonames.download_base_url');
         $countries = config('geonames.countries');
+
+        if (empty($download_base_url)) {
+            throw new \Exception("Did you forget to run php artisan vendor:publish? We were unable to load the download base url from the geonames config file.");
+        }
+
+        if (empty($countries)) {
+            throw new \Exception("Did you forget to run php artisan vendor:publish? We were unable to load countries from the geonames config file.");
+        }
 
         // Comment this code out. Only necessary if I start letting users add to the config list in an exclusionary
         // manner. For example, "Pull all country files, BUT these." So in the countries array, you would find a * and
