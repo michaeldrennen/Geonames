@@ -34,6 +34,17 @@ class Initialize extends Command {
      * @return mixed
      */
     public function handle() {
-        //
+        $this->line("Starting " . $this->signature);
+
+
+        $this->line("Finished " . $this->signature);
     }
+
+    protected function getLocalFiles() {
+
+    }
+
+
+
+
 }

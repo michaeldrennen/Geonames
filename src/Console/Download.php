@@ -6,7 +6,7 @@ use Curl\Curl;
 use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\Log;
 
-class Download extends Command {
+class Download extends Base {
     /**
      * The name and signature of the console command.
      *
@@ -21,7 +21,20 @@ class Download extends Command {
      */
     protected $description = "This command downloads the files you want from geonames.org and saves them locally.";
 
+    /**
+     * @var Curl Instance of a Curl object that we use to download the files.
+     */
     protected $curl;
+
+    /**
+     * @var string Absolute local path to where we store the downloaded geonames files.
+     */
+    protected $storageDir;
+
+    /**
+     * @var array List of absolute local file paths to downloaded geonames files.
+     */
+    protected $localFiles = [];
 
     /**
      * Create a new command instance.
@@ -31,6 +44,7 @@ class Download extends Command {
     public function __construct(Curl $curl) {
         parent::__construct();
         $this->curl = $curl;
+        $this->storageDir = $this->setStorage();
     }
 
     /**
@@ -42,22 +56,28 @@ class Download extends Command {
         //
         $this->line("Starting " . $this->signature);
 
-        $remoteFilePaths = $this->getRemoteFilePathsToDownloadForGeonamesTable();
+        $this->line("We will be saving the downloaded files to: " . $this->storageDir);
 
-        $downloadedData = [];
-
-        foreach ($remoteFilePaths as $remoteFilePath) {
-            $this->curl->get($remoteFilePath);
-
-            if ($this->curl->error) {
-                $this->error($this->curl->error_code . ':' . $this->curl->error_message);
-                Log::error($remoteFilePath, $this->curl->error_message, $this->curl->error_code);
-            } else {
-                $this->info("Downloaded " . $remoteFilePath);
-                $downloadedData[] = $this->curl->response;
-            }
+        try {
+            $remoteFilePaths = $this->getRemoteFilePathsToDownloadForGeonamesTable();
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+            Log::error('', $e->getMessage(), 'local');
+            return false;
         }
 
+        $this->info("Attempting to download the following files:");
+        foreach ($remoteFilePaths as $remoteFilePath) {
+            $this->info("  " . $remoteFilePath);
+        }
+
+        foreach ($remoteFilePaths as $remoteFilePath) {
+            try {
+                $this->downloadAndSaveFile($remoteFilePath);
+            } catch (\Exception $e) {
+                $this->error($e->getMessage() . " The error was logged. Check the geo_logs table for details.");
+            }
+        }
 
         $this->line("Finished " . $this->signature);
     }
@@ -97,4 +117,35 @@ class Download extends Command {
         }
         return $files;
     }
+
+
+    /**
+     * Attempt to download
+     * @param $remoteFilePath The URL of the remote file we want to download.
+     * @throws \Exception
+     */
+    protected function downloadAndSaveFile($remoteFilePath) {
+        $this->line("Starting download of " . $remoteFilePath);
+        $basename = basename($remoteFilePath);
+        $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $basename;
+
+        $this->curl->get($remoteFilePath);
+
+        if ($this->curl->error) {
+            $this->error($this->curl->error_code . ':' . $this->curl->error_message);
+            Log::error($remoteFilePath, $this->curl->error_message, $this->curl->error_code);
+            throw new Exception("Unable to download the file at '" . $remoteFilePath . "', " . $this->curl->error_message);
+        }
+
+        $this->info("Downloaded " . $remoteFilePath);
+        $data = $this->curl->response;
+        $bytesWritten = file_put_contents($localFilePath, $data);
+        if ($bytesWritten === false) {
+            Log::error($remoteFilePath, "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?", 'local');
+            throw new \Exception("Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?");
+        }
+        $this->localFiles[] = $localFilePath;
+        $this->info("Data saved to " . $localFilePath);
+    }
+
 }
