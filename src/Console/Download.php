@@ -11,7 +11,7 @@ class Download extends Base {
      *
      * @var string
      */
-    protected $signature = 'geonames:download';
+    protected $signature = 'geonames:download {--country=* : Add the 2 digit code for each country. One per option.}';
 
     /**
      * The console command description.
@@ -51,17 +51,21 @@ class Download extends Base {
         //
         $this->line("Starting " . $this->signature);
 
+        $countries = $this->option('country');
+
+        $this->comment(print_r($countries, true));
+
         $this->line("We will be saving the downloaded files to: " . $this->storageDir);
 
         try {
-            $remoteFilePaths = $this->getRemoteFilePathsToDownloadForGeonamesTable();
+            $remoteFilePaths = $this->getRemoteFilePathsToDownloadForGeonamesTable($countries);
         } catch (\Exception $e) {
             $this->error($e->getMessage());
             Log::error('', $e->getMessage(), 'local');
             return false;
         }
 
-        $this->info("Attempting to download the following files:");
+        $this->line("Attempting to download the following files:");
         foreach ($remoteFilePaths as $remoteFilePath) {
             $this->info("  " . $remoteFilePath);
         }
@@ -81,9 +85,15 @@ class Download extends Base {
      * @return array
      * @throws \Exception
      */
-    protected function getRemoteFilePathsToDownloadForGeonamesTable() {
+    protected function getRemoteFilePathsToDownloadForGeonamesTable($countriesFromCommandLine = []) {
         $download_base_url = config('geonames.download_base_url');
         $countries = config('geonames.countries');
+
+        // Users have the ability to override the config file by passing
+        // countries through options in the console (command line).
+        if ($countriesFromCommandLine) {
+            $countries = $countriesFromCommandLine;
+        }
 
         if (empty($download_base_url)) {
             throw new \Exception("Did you forget to run php artisan vendor:publish? We were unable to load the download base url from the geonames config file.");
