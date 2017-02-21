@@ -39,7 +39,6 @@ class Download extends Base {
     public function __construct(Curl $curl) {
         parent::__construct();
         $this->curl = $curl;
-        $this->storageDir = $this->setStorage();
     }
 
     /**
@@ -52,8 +51,6 @@ class Download extends Base {
         $this->line("Starting " . $this->signature);
 
         $countries = $this->option('country');
-
-        $this->comment(print_r($countries, true));
 
         $this->line("We will be saving the downloaded files to: " . $this->storageDir);
 
