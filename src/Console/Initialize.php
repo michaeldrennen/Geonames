@@ -46,8 +46,6 @@ class Initialize extends Base {
             $this->unzip($absolutePathToFile);
         }
 
-        //$txtFiles = $this->getLocalTxtFiles();
-
         $masterTxtFile = $this->combineTxtFiles();
 
         $this->insert($masterTxtFile);
@@ -165,6 +163,33 @@ class Initialize extends Base {
     protected function insert($localFilePath) {
 
         DB::statement('CREATE TABLE geonames_working LIKE geonames; ');
+
+        $file = base_path('data/file.txt');
+        $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
+    INTO TABLE geonames_working
+        (geonameid, 
+             name, 
+             asciiname, 
+             alternatenames, 
+             latitude, 
+             longitude, 
+             feature_class, 
+             feature_code, 
+             country_code, 
+             cc2, 
+             admin1_code, 
+             admin2_code, 
+             admin3_code, 
+             admin4_code, 
+             population, 
+             elevation, 
+             dem, 
+             timezone, 
+             modification_date, 
+             @created_at, 
+             @updated_at)
+SET created_at=NOW(),updated_at=null";
+        DB::connection()->getpdo()->exec($query);
 
         //        $oldOptions = config('database.options', [PDO::MYSQL_ATTR_LOCAL_INFILE => true]);
         //        config('database.options', [PDO::MYSQL_ATTR_LOCAL_INFILE => true]);
