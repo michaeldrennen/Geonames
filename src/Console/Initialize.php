@@ -4,8 +4,8 @@ namespace MichaelDrennen\Geonames\Console;
 
 use ZipArchive;
 use SplFileInfo;
-use PDO;
 use Illuminate\Support\Facades\DB;
+use Schema;
 
 class Initialize extends Base {
     /**
@@ -22,13 +22,30 @@ class Initialize extends Base {
      */
     protected $description = 'Download and insert fresh data from geonames.org';
 
+    /**
+     * @var string
+     */
     protected $masterTxtFileName = 'master.txt';
+
+    /**
+     * @var array
+     */
+    protected $txtFilesToIgnore = ['readme.txt'];
+
+    /**
+     * @var int A counter that tracks the number of lines written to the master txt file.
+     */
+    protected $numLinesInMasterFile = 0;
 
     /**
      * Initialize constructor.
      */
     public function __construct() {
         parent::__construct();
+
+        // Add the master txt file to the list of files to ignore.
+        // *this can't be done above where we assign properties.
+        $this->txtFilesToIgnore[] = $this->masterTxtFileName;
     }
 
     /**
@@ -46,9 +63,14 @@ class Initialize extends Base {
             $this->unzip($absolutePathToFile);
         }
 
-        $masterTxtFile = $this->combineTxtFiles();
+        $this->combineTxtFiles();
+        try {
+            $absolutePathToMasterTxtFile = $this->getAbsolutePathToFile($this->masterTxtFileName);
+            $this->insert($absolutePathToMasterTxtFile);
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+        }
 
-        $this->insert($masterTxtFile);
 
         $this->line("Finished " . $this->signature);
     }
@@ -112,7 +134,25 @@ class Initialize extends Base {
      */
     protected function isTxtFile($fileName) {
         $info = new SplFileInfo($fileName);
+
+        if ($this->ignoreThisTxtFile($fileName)) {
+            return false;
+        }
+
         if ('txt' == $info->getExtension()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * When combining the unzipped text files, make sure we don't zip up the
+     * readme.txt or master.txt file.
+     * @param $fileName string A file from our geonames storage directory.
+     * @return bool
+     */
+    protected function ignoreThisTxtFile($fileName) {
+        if (in_array($fileName, $this->txtFilesToIgnore)) {
             return true;
         }
         return false;
@@ -126,23 +166,53 @@ class Initialize extends Base {
         return $this->getStorage() . DIRECTORY_SEPARATOR . $fileName;
     }
 
+    /**
+     * Takes all of the unzipped text files in the storage dir, and combines them into one file.
+     * @throws \Exception
+     */
     protected function combineTxtFiles() {
         $absolutePathToMasterTxtFile = $this->getAbsolutePathToFile($this->masterTxtFileName);
 
         // Truncate the master txt file before we start putting data in it.
-        $fp = fopen($absolutePathToMasterTxtFile, "w");
-        fclose($fp);
+        $masterResource = fopen($absolutePathToMasterTxtFile, "w");
+        fclose($masterResource);
 
         $textFiles = $this->getLocalTxtFiles();
 
-        $fpMaster = fopen($absolutePathToMasterTxtFile, 'a+');
+        $this->line("We found " . count($textFiles) . " text files that we are going to combine.");
+
+        $masterResource = fopen($absolutePathToMasterTxtFile, 'a+');
 
         foreach ($textFiles as $textFile) {
             $absolutePathToTextFile = $this->getAbsolutePathToFile($textFile);
-            $fileContents = file_get_contents($absolutePathToTextFile);
-            fwrite($fpMaster, $fileContents);
+            $this->line("\nStarting to process " . $absolutePathToTextFile);
+            $inputFileSize = filesize($absolutePathToTextFile);
+
+            $inputResource = @fopen($absolutePathToTextFile, 'r');
+
+            if ($inputResource) {
+                $this->line("Opened...");
+                $bar = $this->output->createProgressBar($inputFileSize);
+                while (($buffer = fgets($inputResource)) !== false) {
+                    $bytesWritten = fwrite($masterResource, $buffer);
+                    if ($bytesWritten === false) {
+                        throw new \Exception("Unable to write " . strlen($buffer) . " characters from " . $absolutePathToTextFile . " to the master file.");
+                    }
+                    $this->numLinesInMasterFile++;
+                    $bar->advance($bytesWritten);
+                }
+                if (!feof($inputResource)) {
+                    throw new \Exception("Error: unexpected fgets() fail on " . $absolutePathToTextFile);
+                }
+                fclose($inputResource);
+            } else {
+                throw new \Exception("Unable to open this file in read mode " . $absolutePathToTextFile);
+            }
         }
-        fclose($fpMaster);
+        $closeResult = fclose($masterResource);
+        if ($closeResult === false) {
+            throw new \Exception("Unable to close the master file at " . $absolutePathToMasterTxtFile);
+        }
     }
 
     /**
@@ -153,18 +223,29 @@ class Initialize extends Base {
         $storage = $this->getStorage();
         $zip = new ZipArchive;
         if ($zip->open($localFilePath) === true) {
-            $zip->extractTo($storage);
-            $zip->close();
+            $extractResult = $zip->extractTo($storage);
+            if ($extractResult === false) {
+                throw new \Exception("Unable to unzip the file at " . $localFilePath);
+            }
+            $closeResult = $zip->close();
+            if ($closeResult === false) {
+                throw new \Exception("After unzipping unable to close the file at " . $localFilePath);
+            }
             return;
         }
         throw new \Exception("Unable to unzip the archive at " . $localFilePath);
     }
 
+
     protected function insert($localFilePath) {
+        $this->line("\nStarting to insert the records found in " . $localFilePath);
+        $this->line("We are going to try to insert " . $this->numLinesInMasterFile . " geoname records.");
+
+        Schema::dropIfExists('geonames_working');
+
 
         DB::statement('CREATE TABLE geonames_working LIKE geonames; ');
 
-        $file = base_path('data/file.txt');
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
     INTO TABLE geonames_working
         (geonameid, 
@@ -189,14 +270,22 @@ class Initialize extends Base {
              @created_at, 
              @updated_at)
 SET created_at=NOW(),updated_at=null";
-        DB::connection()->getpdo()->exec($query);
 
-        //        $oldOptions = config('database.options', [PDO::MYSQL_ATTR_LOCAL_INFILE => true]);
-        //        config('database.options', [PDO::MYSQL_ATTR_LOCAL_INFILE => true]);
-        //        $query = "SELECT * FROM geonames";
-        //        $results = DB::connection()->getpdo()->exec($query);
-        //        var_dump($results);
-        //        config('database.options', $oldOptions);
+        $this->comment($query);
+
+        $rowsInserted = DB::connection()->getpdo()->exec($query);
+        if ($rowsInserted === false) {
+            throw new \Exception("Unable to execute the load data infile query.");
+        }
+
+        $this->info("Inserted text file into geonames_working.");
+
+        Schema::dropIfExists('geonames');
+        $this->line("Dropped the geonames table.");
+
+        Schema::rename('geonames_working', 'geonames');
+        $this->info("Renamed geonames_working to geonames.");
+
     }
 
 }
