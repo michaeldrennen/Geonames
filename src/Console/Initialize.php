@@ -56,6 +56,9 @@ class Initialize extends Base {
     public function handle() {
         $this->line("Starting " . $this->signature);
 
+        $this->info("Turning off the memory limit for php. Some of these files are pretty big.");
+        ini_set('memory_limit', -1);
+
         $zipFiles = $this->getLocalZipFiles();
         foreach ($zipFiles as $zipFile) {
             $absolutePathToFile = $this->getAbsolutePathToFile($zipFile);

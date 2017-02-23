@@ -50,6 +50,10 @@ class Download extends Base {
         //
         $this->line("Starting " . $this->signature);
 
+        $this->info("Turning off the memory limit for php. Some of these files are pretty big.");
+        ini_set('memory_limit', -1);
+
+
         $countries = $this->option('country');
 
         $this->line("We will be saving the downloaded files to: " . $this->storageDir);
@@ -123,7 +127,7 @@ class Download extends Base {
 
     /**
      * Attempt to download
-     * @param $remoteFilePath stringThe URL of the remote file we want to download.
+     * @param $remoteFilePath string The URL of the remote file we want to download.
      * @throws \Exception
      */
     protected function downloadAndSaveFile($remoteFilePath) {
@@ -131,6 +135,16 @@ class Download extends Base {
         $basename = basename($remoteFilePath);
         $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $basename;
 
+        // This function isn't working.
+        //        try{
+        //            $this->line("Attempting to get the remote file size.");
+        //            $fileSize = $this->getRemoteFileSize($remoteFilePath);
+        //            $this->line("The files is " . $this->getHumanFileSize($fileSize));
+        //        } catch( \Exception $e ){
+        //            $this->line($e->getMessage());
+        //        }
+
+        $this->line("Downloading the full file...");
         $this->curl->get($remoteFilePath);
 
         if ($this->curl->error) {
@@ -148,6 +162,40 @@ class Download extends Base {
         }
         $this->localFiles[] = $localFilePath;
         $this->info("Data saved to " . $localFilePath);
+    }
+
+
+    /**
+     * @param $url string The remote file we want to get the file size of.
+     * @return int The size of the remote file in bytes.
+     * @throws \Exception
+     */
+    protected function getRemoteFileSize($url) {
+        $curl = new Curl();
+        $curl->setOpt(CURLOPT_NOBODY, true);
+        $curl->setOpt(CURLOPT_RETURNTRANSFER, true);
+        $curl->setOpt(CURLOPT_HEADER, true);
+        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
+        $curl->get($url);
+
+        if ($this->curl->error) {
+            throw new \Exception("Unable to get the remote file size of " . $url . " The error is: " . $this->curl->error_message);
+        }
+
+        $data = $this->curl->response;
+
+        if (preg_match('/Content-Length: (\d+)/', $data, $matches)) {
+            $contentLength = (int)$matches[1];
+            return $contentLength;
+        }
+        throw new \Exception("Unable to find the 'Content-Length' header of the remote file at " . $url);
+    }
+
+
+    protected function getHumanFileSize($bytes, $decimals = 2) {
+        $size = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        $factor = floor((strlen($bytes) - 1) / 3);
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[$factor];
     }
 
 }
