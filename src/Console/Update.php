@@ -2,6 +2,7 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
+use League\Flysystem\Exception;
 use MichaelDrennen\Geonames\Geoname;
 use MichaelDrennen\Geonames\Log;
 use Symfony\Component\DomCrawler\Crawler;
@@ -96,6 +97,12 @@ class Update extends Base {
             $geoname->dem = $array[16];
             $geoname->timezone = $array[17];
             $geoname->modification_date = $array[18];
+
+            try {
+
+            } catch (\Exception $e) {
+                Log::error('', $e->getMessage() . " [Unable to save the geoname record with id: " . $array[0] . "]", 'database');
+            }
             $saveResult = $geoname->save();
             if ($saveResult === false) {
                 Log::error('', "Unable to update the geoname record with id: " . $array[0], 'database');
