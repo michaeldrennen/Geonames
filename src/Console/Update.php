@@ -2,13 +2,10 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
+use MichaelDrennen\Geonames\Geoname;
+use MichaelDrennen\Geonames\Log;
 use Symfony\Component\DomCrawler\Crawler;
-use ZipArchive;
-use SplFileInfo;
-use Illuminate\Support\Facades\DB;
-
 use Curl\Curl;
-
 use Goutte\Client;
 
 
@@ -45,6 +42,8 @@ class Update extends Base {
 
     protected $urlForDownloadList = 'http://download.geonames.org/export/dump/';
 
+    protected $linksOnDownloadPage = [];
+
 
     /**
      * Initialize constructor.
@@ -71,234 +70,102 @@ class Update extends Base {
     public function handle() {
         $this->line("Starting " . $this->signature);
 
+        $localFilePath = $this->saveRemoteModificationsFile();
 
-        $crawler = $this->client->request('GET', $this->urlForDownloadList);
+        $modificationRows = file($localFilePath);
 
-        $crawler = $crawler->filter('a')->each(function (Crawler $node, $i) {
-            $href = $node->attr('href');
-            $string = 'modifications-';
-            if (substr($href, 0, strlen($string)) != $string) {
-                return false;
+        foreach ($modificationRows as $row) {
+            $array = explode("\t", $row);
+
+            $geoname = Geoname::find($array[0]);
+            $geoname->name = $array[1];
+            $geoname->asciiname = $array[2];
+            $geoname->alternatenames = $array[3];
+            $geoname->latitude = $array[4];
+            $geoname->longitude = $array[5];
+            $geoname->feature_class = $array[6];
+            $geoname->feature_code = $array[7];
+            $geoname->country_code = $array[8];
+            $geoname->cc2 = $array[9];
+            $geoname->admin1_code = $array[10];
+            $geoname->admin2_code = $array[11];
+            $geoname->admin3_code = $array[12];
+            $geoname->admin4_code = $array[13];
+            $geoname->population = $array[14];
+            $geoname->elevation = $array[15];
+            $geoname->dem = $array[16];
+            $geoname->timezone = $array[17];
+            $geoname->modification_date = $array[18];
+            $saveResult = $geoname->save();
+            if ($saveResult === false) {
+                Log::error('', "Unable to update the geoname record with id: " . $array[0], 'database');
+                $this->error("Unable to update the geoname record with id: " . $array[0]);
+            } else {
+                $this->info("Geoname record " . $array[0] . " was updated.");
             }
-        });
 
-        print_r($crawler);
-
+        }
 
         $this->line("Finished " . $this->signature);
     }
 
 
-    /**
-     * @return array The file names we saved from geonames.org
-     */
-    protected function getLocalFiles() {
-        $storagePath = $this->getStorage();
-        $files = scandir($storagePath);
-        array_shift($files); // Remove .
-        array_shift($files); // Remove ..
-        return $files;
+    protected function saveRemoteModificationsFile() {
+
+        // Grab the remote file.
+        $this->linksOnDownloadPage = $this->getAllLinksOnDownloadPage();
+        $modificationFileName = $this->filterModificationsLink($this->linksOnDownloadPage);
+        $absoluteUrlToModificationsFile = $this->urlForDownloadList . '/' . $modificationFileName;
+        $this->curl->get($absoluteUrlToModificationsFile);
+
+
+        if ($this->curl->error) {
+            $this->error($this->curl->error_code . ':' . $this->curl->error_message);
+            Log::error($absoluteUrlToModificationsFile, $this->curl->error_message, $this->curl->error_code);
+            throw new \Exception("Unable to download the file at '" . $absoluteUrlToModificationsFile . "', " . $this->curl->error_message);
+        }
+
+        $this->info("Downloaded " . $absoluteUrlToModificationsFile);
+
+
+        $data = $this->curl->response;
+
+        // Save it locally
+        $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $modificationFileName;
+
+
+        $bytesWritten = file_put_contents($localFilePath, $data);
+        if ($bytesWritten === false) {
+            Log::error($absoluteUrlToModificationsFile, "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?", 'local');
+            throw new \Exception("Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?");
+        }
+
+        return $localFilePath;
     }
+
 
     /**
      * @return array
      */
-    protected function getLocalZipFiles() {
-        $files = $this->getLocalFiles();
-        $zipFiles = [];
-        foreach ($files as $file) {
-            if ($this->isZipFile($file)) {
-                $zipFiles[] = $file;
+    protected function getAllLinksOnDownloadPage() {
+        $crawler = $this->client->request('GET', $this->urlForDownloadList);
+        return $crawler->filter('a')->each(function (Crawler $node, $i) {
+            return $node->attr('href');
+        });
+    }
+
+
+    /**
+     * @param array $links The list of links on the geonames export page.
+     * @return string The file name of the current modifications file on the geonames website.
+     * @throws \Exception If we can't find the modifications file name in the list of links.
+     */
+    protected function filterModificationsLink(array $links) {
+        foreach ($links as $link) {
+            if (preg_match('/^modifications-/', $link) === 1) {
+                return $link;
             }
         }
-        return $zipFiles;
+        throw new \Exception("We were unable to find the modifications file on the geonames site. This is very unusual.");
     }
-
-    /**
-     * @return array
-     */
-    protected function getLocalTxtFiles() {
-        $files = $this->getLocalFiles();
-        $txtFiles = [];
-        foreach ($files as $file) {
-            if ($this->isTxtFile($file)) {
-                $txtFiles[] = $file;
-            }
-        }
-        return $txtFiles;
-    }
-
-
-    /**
-     * @param $fileName string The file name you want to check.
-     * @return bool
-     */
-    protected function isZipFile($fileName) {
-        $info = new SplFileInfo($fileName);
-        if ('zip' == $info->getExtension()) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param $fileName string The file name you want to check.
-     * @return bool
-     */
-    protected function isTxtFile($fileName) {
-        $info = new SplFileInfo($fileName);
-
-        if ($this->ignoreThisTxtFile($fileName)) {
-            return false;
-        }
-
-        if ('txt' == $info->getExtension()) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * When combining the unzipped text files, make sure we don't zip up the
-     * readme.txt or master.txt file.
-     * @param $fileName string A file from our geonames storage directory.
-     * @return bool
-     */
-    protected function ignoreThisTxtFile($fileName) {
-        if (in_array($fileName, $this->txtFilesToIgnore)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param $fileName
-     * @return string
-     */
-    protected function getAbsolutePathToFile($fileName) {
-        return $this->getStorage() . DIRECTORY_SEPARATOR . $fileName;
-    }
-
-    /**
-     * Takes all of the unzipped text files in the storage dir, and combines them into one file.
-     * @throws \Exception
-     */
-    protected function combineTxtFiles() {
-        $absolutePathToMasterTxtFile = $this->getAbsolutePathToFile($this->masterTxtFileName);
-
-        // Truncate the master txt file before we start putting data in it.
-        $masterResource = fopen($absolutePathToMasterTxtFile, "w");
-        fclose($masterResource);
-
-        $textFiles = $this->getLocalTxtFiles();
-
-        $this->line("We found " . count($textFiles) . " text files that we are going to combine.");
-
-        $masterResource = fopen($absolutePathToMasterTxtFile, 'a+');
-
-        foreach ($textFiles as $textFile) {
-            $absolutePathToTextFile = $this->getAbsolutePathToFile($textFile);
-            $this->line("\nStarting to process " . $absolutePathToTextFile);
-            $inputFileSize = filesize($absolutePathToTextFile);
-
-            $inputResource = @fopen($absolutePathToTextFile, 'r');
-
-            if ($inputResource) {
-                $this->line("Opened...");
-                $bar = $this->output->createProgressBar($inputFileSize);
-                while (($buffer = fgets($inputResource)) !== false) {
-                    $bytesWritten = fwrite($masterResource, $buffer);
-                    if ($bytesWritten === false) {
-                        throw new \Exception("Unable to write " . strlen($buffer) . " characters from " . $absolutePathToTextFile . " to the master file.");
-                    }
-                    $this->numLinesInMasterFile++;
-                    $bar->advance($bytesWritten);
-                }
-                if (!feof($inputResource)) {
-                    throw new \Exception("Error: unexpected fgets() fail on " . $absolutePathToTextFile);
-                }
-                fclose($inputResource);
-            } else {
-                throw new \Exception("Unable to open this file in read mode " . $absolutePathToTextFile);
-            }
-        }
-        $closeResult = fclose($masterResource);
-        if ($closeResult === false) {
-            throw new \Exception("Unable to close the master file at " . $absolutePathToMasterTxtFile);
-        }
-    }
-
-    /**
-     * @param string $localFilePath Absolute local path to the zip archive.
-     * @throws \Exception
-     */
-    protected function unzip($localFilePath) {
-        $storage = $this->getStorage();
-        $zip = new ZipArchive;
-        if ($zip->open($localFilePath) === true) {
-            $extractResult = $zip->extractTo($storage);
-            if ($extractResult === false) {
-                throw new \Exception("Unable to unzip the file at " . $localFilePath);
-            }
-            $closeResult = $zip->close();
-            if ($closeResult === false) {
-                throw new \Exception("After unzipping unable to close the file at " . $localFilePath);
-            }
-            return;
-        }
-        throw new \Exception("Unable to unzip the archive at " . $localFilePath);
-    }
-
-
-    protected function insert($localFilePath) {
-        $this->line("\nStarting to insert the records found in " . $localFilePath);
-        $this->line("We are going to try to insert " . $this->numLinesInMasterFile . " geoname records.");
-
-        Schema::dropIfExists('geonames_working');
-
-
-        DB::statement('CREATE TABLE geonames_working LIKE geonames; ');
-
-        $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
-    INTO TABLE geonames_working
-        (geonameid, 
-             name, 
-             asciiname, 
-             alternatenames, 
-             latitude, 
-             longitude, 
-             feature_class, 
-             feature_code, 
-             country_code, 
-             cc2, 
-             admin1_code, 
-             admin2_code, 
-             admin3_code, 
-             admin4_code, 
-             population, 
-             elevation, 
-             dem, 
-             timezone, 
-             modification_date, 
-             @created_at, 
-             @updated_at)
-SET created_at=NOW(),updated_at=null";
-
-        $this->comment($query);
-
-        $rowsInserted = DB::connection()->getpdo()->exec($query);
-        if ($rowsInserted === false) {
-            throw new \Exception("Unable to execute the load data infile query.");
-        }
-
-        $this->info("Inserted text file into geonames_working.");
-
-        Schema::dropIfExists('geonames');
-        $this->line("Dropped the geonames table.");
-
-        Schema::rename('geonames_working', 'geonames');
-        $this->info("Renamed geonames_working to geonames.");
-
-    }
-
 }
