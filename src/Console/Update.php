@@ -2,57 +2,65 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
+use Symfony\Component\DomCrawler\Crawler;
 use ZipArchive;
 use SplFileInfo;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
-class Initialize extends Base {
+use Curl\Curl;
+
+use Goutte\Client;
+
+
+class Update extends Base {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'geonames:initialize';
+    protected $signature = 'geonames:update';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Download and insert fresh data from geonames.org';
+    protected $description = "Download the modifications txt file from geonames.org, then update our database.";
 
     /**
-     * The name of the txt file that contains data from all of the countries.
+     * The actual file name looks like 'modifications-2017-02-22.txt' which we will set in the constructor.
      *
      * @var string
      */
-    protected $allCountriesTxtFileName = 'allCountries.txt';
+    protected $modificationsTxtFileNamePrefix = 'modifications-';
 
     /**
+     * Set in the constructor.
      * @var string
      */
-    protected $masterTxtFileName = 'master.txt';
+    protected $modificationsTxtFileName;
 
-    /**
-     * @var array
-     */
-    protected $txtFilesToIgnore = ['readme.txt'];
+    protected $curl;
+    protected $client;
 
-    /**
-     * @var int A counter that tracks the number of lines written to the master txt file.
-     */
-    protected $numLinesInMasterFile = 0;
+    protected $urlForDownloadList = 'http://download.geonames.org/export/dump/';
+
 
     /**
      * Initialize constructor.
      */
-    public function __construct() {
+    public function __construct(Curl $curl, Client $client) {
         parent::__construct();
+        $this->setModificationFileNameForToday();
+        $this->curl = $curl;
+        $this->client = $client;
+    }
 
-        // Add the master txt file to the list of files to ignore.
-        // *this can't be done above where we assign properties.
-        $this->txtFilesToIgnore[] = $this->masterTxtFileName;
+    /**
+     * @todo Check when the file on geonames.org gets updated. Take their timezone into account.
+     */
+    protected function setModificationFileNameForToday() {
+        $this->modificationsTxtFileName = $this->modificationsTxtFileNamePrefix . date('Y-m-d') . '.txt';
     }
 
     /**
@@ -63,23 +71,18 @@ class Initialize extends Base {
     public function handle() {
         $this->line("Starting " . $this->signature);
 
-        $this->info("Turning off the memory limit for php. Some of these files are pretty big.");
-        ini_set('memory_limit', -1);
 
-        $zipFiles = $this->getLocalZipFiles();
-        foreach ($zipFiles as $zipFile) {
-            $absolutePathToFile = $this->getAbsolutePathToFile($zipFile);
-            $this->line($absolutePathToFile);
-            $this->unzip($absolutePathToFile);
-        }
+        $crawler = $this->client->request('GET', $this->urlForDownloadList);
 
-        $this->combineTxtFiles();
-        try {
-            $absolutePathToMasterTxtFile = $this->getAbsolutePathToFile($this->masterTxtFileName);
-            $this->insert($absolutePathToMasterTxtFile);
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
-        }
+        $crawler = $crawler->filter('a')->each(function (Crawler $node, $i) {
+            $href = $node->attr('href');
+            $string = 'modifications-';
+            if (substr($href, 0, strlen($string)) != $string) {
+                return false;
+            }
+        });
+
+        print_r($crawler);
 
 
         $this->line("Finished " . $this->signature);
@@ -189,20 +192,6 @@ class Initialize extends Base {
 
         $textFiles = $this->getLocalTxtFiles();
 
-
-        if ($this->allCountriesInLocalTxtFiles($textFiles)) {
-            $this->info("The allCountries text file was found, so no need to combine files. Just rename it to master.");
-
-            $absolutePathToAllCountriesTxtFile = $this->getAbsolutePathToFile($this->allCountriesTxtFileName);
-            $renameResult = rename($absolutePathToAllCountriesTxtFile, $absolutePathToMasterTxtFile);
-            if ($renameResult === false) {
-                throw new \Exception("We were unable to rename the allCountries to the master file.");
-            }
-            $this->info("The allCountries file has been renamed. Ready to insert.");
-            return;
-        }
-
-
         $this->line("We found " . count($textFiles) . " text files that we are going to combine.");
 
         $masterResource = fopen($absolutePathToMasterTxtFile, 'a+');
@@ -310,20 +299,6 @@ SET created_at=NOW(),updated_at=null";
         Schema::rename('geonames_working', 'geonames');
         $this->info("Renamed geonames_working to geonames.");
 
-    }
-
-
-    /**
-     * If the allCountries file is found in the geonames storage dir on this box, then we can just use that and
-     * ignore any other text files.
-     * @param array $txtFiles An array of text file names that we found in the geonames storage dir on this box.
-     * @return bool
-     */
-    protected function allCountriesInLocalTxtFiles(array $txtFiles) {
-        if (in_array($this->allCountriesTxtFileName, $txtFiles)) {
-            return true;
-        }
-        return false;
     }
 
 }
