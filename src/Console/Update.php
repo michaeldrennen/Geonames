@@ -2,7 +2,7 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
-use League\Flysystem\Exception;
+
 use MichaelDrennen\Geonames\Geoname;
 use MichaelDrennen\Geonames\Log;
 use Symfony\Component\DomCrawler\Crawler;
@@ -78,42 +78,53 @@ class Update extends Base {
         foreach ($modificationRows as $row) {
             $array = explode("\t", $row);
 
-            $geoname = Geoname::find($array[0]);
-            $geoname->name = $array[1];
-            $geoname->asciiname = $array[2];
-            $geoname->alternatenames = $array[3];
-            $geoname->latitude = $array[4];
-            $geoname->longitude = $array[5];
-            $geoname->feature_class = $array[6];
-            $geoname->feature_code = $array[7];
-            $geoname->country_code = $array[8];
-            $geoname->cc2 = $array[9];
-            $geoname->admin1_code = $array[10];
-            $geoname->admin2_code = $array[11];
-            $geoname->admin3_code = $array[12];
-            $geoname->admin4_code = $array[13];
-            $geoname->population = $array[14];
-            $geoname->elevation = $array[15];
-            $geoname->dem = $array[16];
-            $geoname->timezone = $array[17];
-            $geoname->modification_date = $array[18];
+            array_map('trim', $array);
 
             try {
+                $geoname = Geoname::firstOrNew(['geonameid' => $array[0]]);
 
+                $geoname->name = $array[1];
+                $geoname->asciiname = $array[2];
+                $geoname->alternatenames = $array[3];
+                $geoname->latitude = empty($array[4]) ? NULL : $array[4];
+                $geoname->longitude = empty($array[5]) ? NULL : $array[5];
+                $geoname->feature_class = $array[6];
+                $geoname->feature_code = $array[7];
+                $geoname->country_code = $array[8];
+                $geoname->cc2 = $array[9];
+                $geoname->admin1_code = $array[10];
+                $geoname->admin2_code = $array[11];
+                $geoname->admin3_code = $array[12];
+                $geoname->admin4_code = $array[13];
+                $geoname->population = $array[14];
+                $geoname->elevation = empty($array[15]) ? NULL : $array[15];
+                $geoname->dem = empty($array[16]) ? NULL : $array[16];
+                $geoname->timezone = $array[17];
+                $geoname->modification_date = $array[18];
+                $saveResult = $geoname->save();
+
+                if ($saveResult) {
+                    $this->info("Geoname record " . $array[0] . " was updated.");
+                } else {
+                    Log::error('', "Unable to updateOrCreate geoname record: [" . $array[0] . "]");
+                    $this->error("Unable to updateOrCreate the geoname record: " . $array[0] . "]");
+                    continue;
+                }
             } catch (\Exception $e) {
-                Log::error('', $e->getMessage() . " [Unable to save the geoname record with id: " . $array[0] . "]", 'database');
-            }
-            $saveResult = $geoname->save();
-            if ($saveResult === false) {
-                Log::error('', "Unable to update the geoname record with id: " . $array[0], 'database');
-                $this->error("Unable to update the geoname record with id: " . $array[0]);
-            } else {
-                $this->info("Geoname record " . $array[0] . " was updated.");
-            }
+                Log::error('', $e->getMessage() . " Unable to save the geoname record with id: [" . $array[0] . "]", 'database');
+                $this->error("[" . $e->getMessage() . "] Unable to save the geoname record with id: [" . $array[0] . "]");
 
+
+                $this->info("Message: " . $e->getMessage());
+                $this->line($e->getFile() . ':' . $e->getLine());
+                $this->error($e->getCode());
+                $this->comment($e->getTraceAsString());
+
+            }
         }
 
         $this->line("Finished " . $this->signature);
+        return;
     }
 
 
