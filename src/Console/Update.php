@@ -5,6 +5,8 @@ namespace MichaelDrennen\Geonames\Console;
 
 use MichaelDrennen\Geonames\Geoname;
 use MichaelDrennen\Geonames\Log;
+use MichaelDrennen\MungString;
+
 use Symfony\Component\DomCrawler\Crawler;
 use Curl\Curl;
 use Goutte\Client;
@@ -86,8 +88,8 @@ class Update extends Base {
                 $geoname->name = $array[1];
                 $geoname->asciiname = $array[2];
                 $geoname->alternatenames = $array[3];
-                $geoname->latitude = empty($array[4]) ? NULL : $array[4];
-                $geoname->longitude = empty($array[5]) ? NULL : $array[5];
+                $geoname->latitude = empty($array[4]) ? NULL : MungString::zeroFill((float)$array[4], 8);
+                $geoname->longitude = empty($array[5]) ? NULL : MungString::zeroFill((float)$array[5], 8);
                 $geoname->feature_class = $array[6];
                 $geoname->feature_code = $array[7];
                 $geoname->country_code = $array[8];
@@ -101,10 +103,28 @@ class Update extends Base {
                 $geoname->dem = empty($array[16]) ? NULL : $array[16];
                 $geoname->timezone = $array[17];
                 $geoname->modification_date = $array[18];
+
+                if (!$geoname->isDirty()) {
+                    $this->info("Geoname record " . $array[0] . " does not need to be updated.");
+                    continue;
+                } else {
+
+                    $dirtyFields = $geoname->getDirty();
+                    print_r($dirtyFields);
+                }
+
                 $saveResult = $geoname->save();
 
                 if ($saveResult) {
-                    $this->info("Geoname record " . $array[0] . " was updated.");
+
+                    if ($geoname->wasRecentlyCreated) {
+                        $this->info("Geoname record " . $array[0] . " was inserted.");
+                        Log::insert('', "Geoname record " . $array[0] . " was inserted.", "create");
+                    } else {
+                        $this->info("Geoname record " . $array[0] . " was updated.");
+                        Log::modification('', "Geoname record " . $array[0] . " was updated.", "update");
+                    }
+
                 } else {
                     Log::error('', "Unable to updateOrCreate geoname record: [" . $array[0] . "]");
                     $this->error("Unable to updateOrCreate the geoname record: " . $array[0] . "]");
@@ -113,13 +133,6 @@ class Update extends Base {
             } catch (\Exception $e) {
                 Log::error('', $e->getMessage() . " Unable to save the geoname record with id: [" . $array[0] . "]", 'database');
                 $this->error("[" . $e->getMessage() . "] Unable to save the geoname record with id: [" . $array[0] . "]");
-
-
-                $this->info("Message: " . $e->getMessage());
-                $this->line($e->getFile() . ':' . $e->getLine());
-                $this->error($e->getCode());
-                $this->comment($e->getTraceAsString());
-
             }
         }
 
@@ -129,7 +142,7 @@ class Update extends Base {
 
 
     protected function saveRemoteModificationsFile() {
-
+        $this->line("Downloading the modifications file from geonames.org");
         // Grab the remote file.
         $this->linksOnDownloadPage = $this->getAllLinksOnDownloadPage();
         $modificationFileName = $this->filterModificationsLink($this->linksOnDownloadPage);
@@ -145,7 +158,6 @@ class Update extends Base {
 
         $this->info("Downloaded " . $absoluteUrlToModificationsFile);
 
-
         $data = $this->curl->response;
 
         // Save it locally
@@ -157,7 +169,7 @@ class Update extends Base {
             Log::error($absoluteUrlToModificationsFile, "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?", 'local');
             throw new \Exception("Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?");
         }
-
+        $this->info("Saved modification file to: " . $localFilePath);
         return $localFilePath;
     }
 
