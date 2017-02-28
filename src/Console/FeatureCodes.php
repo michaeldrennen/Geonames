@@ -134,7 +134,7 @@ class FeatureCodes extends Command {
         //        try{
         //            $this->line("Attempting to get the remote file size.");
         //            $fileSize = $this->getRemoteFileSize($remoteFilePath);
-        //            $this->line("The files is " . $this->getHumanFileSize($fileSize));
+        //            $this->line("The files is " . BaseTrait::getHumanFileSize($fileSize));
         //        } catch( \Exception $e ){
         //            $this->line($e->getMessage());
         //        }
@@ -160,47 +160,6 @@ class FeatureCodes extends Command {
     }
 
 
-    /**
-     * @param $url string The remote file we want to get the file size of.
-     * @return int The size of the remote file in bytes.
-     * @throws \Exception
-     */
-    protected function getRemoteFileSize($url) {
-        $curl = new Curl();
-        $curl->setOpt(CURLOPT_NOBODY, true);
-        $curl->setOpt(CURLOPT_RETURNTRANSFER, true);
-        $curl->setOpt(CURLOPT_HEADER, true);
-        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
-        $curl->get($url);
 
-        if ($this->curl->error) {
-            throw new \Exception("Unable to get the remote file size of " . $url . " The error is: " . $this->curl->error_message);
-        }
-
-        $data = $this->curl->response;
-
-        if (preg_match('/Content-Length: (\d+)/', $data, $matches)) {
-            $contentLength = (int)$matches[1];
-
-            return $contentLength;
-        }
-        throw new \Exception("Unable to find the 'Content-Length' header of the remote file at " . $url);
-    }
-
-
-    protected function getHumanFileSize($bytes, $decimals = 2) {
-        $size = ['B',
-                 'kB',
-                 'MB',
-                 'GB',
-                 'TB',
-                 'PB',
-                 'EB',
-                 'ZB',
-                 'YB'];
-        $factor = floor((strlen($bytes) - 1) / 3);
-
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[ $factor ];
-    }
 
 }

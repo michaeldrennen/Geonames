@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\BaseTrait;
-class Initialize extends Base {
+
+class Initialize extends Command {
     use BaseTrait;
     /**
      * The name and signature of the console command.
