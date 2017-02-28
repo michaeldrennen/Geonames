@@ -6,8 +6,10 @@ use ZipArchive;
 use SplFileInfo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Console\Command;
+use MichaelDrennen\Geonames\BaseTrait;
 class Initialize extends Base {
+    use BaseTrait;
     /**
      * The name and signature of the console command.
      *
@@ -49,7 +51,7 @@ class Initialize extends Base {
      */
     public function __construct() {
         parent::__construct();
-
+        $this->setStorage();
         // Add the master txt file to the list of files to ignore.
         // *this can't be done above where we assign properties.
         $this->txtFilesToIgnore[] = $this->masterTxtFileName;

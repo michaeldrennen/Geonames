@@ -1,40 +1,10 @@
 <?php
-
-namespace MichaelDrennen\Geonames\Console;
-
-use Illuminate\Console\Command;
-
-class Base extends Command {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'geonames:parent';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = "This is a parent class for shared functions. This should not be called directly.";
-
-
+namespace MichaelDrennen\Geonames;
+trait BaseTrait {
     /**
      * @var string Absolute local path to where we store the downloaded geonames files.
      */
     protected $storageDir;
-
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct() {
-        parent::__construct();
-        $this->setStorage();
-    }
 
 
     /**
@@ -47,6 +17,7 @@ class Base extends Command {
         $path = storage_path() . DIRECTORY_SEPARATOR . $geonamesStorageDirectory;
         if (file_exists($path) && is_writable($path)) {
             $this->storageDir = $path;
+
             return $path;
         }
 
@@ -56,6 +27,7 @@ class Base extends Command {
 
         if (mkdir($path, 0700)) {
             $this->storageDir = $path;
+
             return $path;
         }
 
@@ -72,6 +44,5 @@ class Base extends Command {
         }
         throw new \Exception("The local storage directory has not been set yet. You need to do that first.");
     }
-
 
 }

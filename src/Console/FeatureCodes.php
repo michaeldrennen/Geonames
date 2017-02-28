@@ -4,40 +4,30 @@ namespace MichaelDrennen\Geonames\Console;
 
 use Curl\Curl;
 use MichaelDrennen\Geonames\Log;
+use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\BaseTrait;
 
-use Illuminate\Console\Command;
-
-
-class Download extends Command {
-
+class FeatureCodes extends Command {
     use BaseTrait;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'geonames:download {--country=* : Add the 2 digit code for each country. One per option.}';
+    protected $signature = 'geonames:feature-codes';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "This command downloads the files you want from geonames.org and saves them locally.";
+    protected $description = "Download and insert the feature code list from geonames.";
 
     /**
      * @var Curl Instance of a Curl object that we use to download the files.
      */
     protected $curl;
 
-
-
-    /**
-     * @var array List of absolute local file paths to downloaded geonames files.
-     */
-    protected $localFiles = [];
 
     /**
      * Create a new command instance.
@@ -58,11 +48,6 @@ class Download extends Command {
         //
         $this->line("Starting " . $this->signature);
 
-        $this->info("Turning off the memory limit for php. Some of these files are pretty big.");
-        ini_set('memory_limit', -1);
-
-
-        $countries = $this->option('country');
 
         $this->line("We will be saving the downloaded files to: " . $this->storageDir);
 
@@ -71,6 +56,7 @@ class Download extends Command {
         } catch (\Exception $e) {
             $this->error($e->getMessage());
             Log::error('', $e->getMessage(), 'local');
+
             return false;
         }
 
@@ -129,6 +115,7 @@ class Download extends Command {
         foreach ($countries as $country) {
             $files[] = $download_base_url . $country . '.zip';
         }
+
         return $files;
     }
 
@@ -194,6 +181,7 @@ class Download extends Command {
 
         if (preg_match('/Content-Length: (\d+)/', $data, $matches)) {
             $contentLength = (int)$matches[1];
+
             return $contentLength;
         }
         throw new \Exception("Unable to find the 'Content-Length' header of the remote file at " . $url);
@@ -201,9 +189,18 @@ class Download extends Command {
 
 
     protected function getHumanFileSize($bytes, $decimals = 2) {
-        $size = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        $size = ['B',
+                 'kB',
+                 'MB',
+                 'GB',
+                 'TB',
+                 'PB',
+                 'EB',
+                 'ZB',
+                 'YB'];
         $factor = floor((strlen($bytes) - 1) / 3);
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[$factor];
+
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[ $factor ];
     }
 
 }

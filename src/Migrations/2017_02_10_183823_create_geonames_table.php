@@ -33,6 +33,8 @@ class CreateGeonamesTable extends Migration {
             $table->date('modification_date')->nullable();          // modification date : date of last modification in yyyy-MM-dd format
             $table->timestamps();                       // Laravel's created_at and updated_at timestamp fields.
             $table->primary('geonameid');
+
+            $table->index('asciiname');
         });
     }
 

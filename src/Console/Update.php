@@ -3,6 +3,7 @@
 namespace MichaelDrennen\Geonames\Console;
 
 
+use Doctrine\Instantiator\Exception\InvalidArgumentException;
 use MichaelDrennen\Geonames\Geoname;
 use MichaelDrennen\Geonames\Log;
 use MichaelDrennen\MungString;
@@ -10,9 +11,11 @@ use MichaelDrennen\MungString;
 use Symfony\Component\DomCrawler\Crawler;
 use Curl\Curl;
 use Goutte\Client;
+use Illuminate\Console\Command;
+use MichaelDrennen\Geonames\BaseTrait;
 
-
-class Update extends Base {
+class Update extends Command {
+    use BaseTrait;
     /**
      * The name and signature of the console command.
      *
@@ -47,12 +50,17 @@ class Update extends Base {
 
     protected $linksOnDownloadPage = [];
 
+    protected $startTime;
+    protected $endTime;
+    protected $runTime;
+
 
     /**
      * Initialize constructor.
      */
     public function __construct(Curl $curl, Client $client) {
         parent::__construct();
+        $this->setStorage();
         $this->setModificationFileNameForToday();
         $this->curl = $curl;
         $this->client = $client;
@@ -71,7 +79,9 @@ class Update extends Base {
      * @return mixed
      */
     public function handle() {
+        $this->startTime = microtime(true);
         $this->line("Starting " . $this->signature);
+
 
         $localFilePath = $this->saveRemoteModificationsFile();
 
@@ -80,7 +90,7 @@ class Update extends Base {
         foreach ($modificationRows as $row) {
             $array = explode("\t", $row);
 
-            array_map('trim', $array);
+            $array = array_map('trim', $array);
 
             try {
                 $geoname = Geoname::firstOrNew(['geonameid' => $array[0]]);
@@ -88,8 +98,8 @@ class Update extends Base {
                 $geoname->name = $array[1];
                 $geoname->asciiname = $array[2];
                 $geoname->alternatenames = $array[3];
-                $geoname->latitude = empty($array[4]) ? NULL : MungString::zeroFill((float)$array[4], 8);
-                $geoname->longitude = empty($array[5]) ? NULL : MungString::zeroFill((float)$array[5], 8);
+                $geoname->latitude = empty($array[4]) ? null : number_format((float)$array[4], 8);
+                $geoname->longitude = empty($array[5]) ? null : number_format((float)$array[5], 8);
                 $geoname->feature_class = $array[6];
                 $geoname->feature_code = $array[7];
                 $geoname->country_code = $array[8];
@@ -107,10 +117,6 @@ class Update extends Base {
                 if (!$geoname->isDirty()) {
                     $this->info("Geoname record " . $array[0] . " does not need to be updated.");
                     continue;
-                } else {
-
-                    $dirtyFields = $geoname->getDirty();
-                    print_r($dirtyFields);
                 }
 
                 $saveResult = $geoname->save();
@@ -131,12 +137,17 @@ class Update extends Base {
                     continue;
                 }
             } catch (\Exception $e) {
+                $this->error(get_class($e));
                 Log::error('', $e->getMessage() . " Unable to save the geoname record with id: [" . $array[0] . "]", 'database');
                 $this->error("[" . $e->getMessage() . "] Unable to save the geoname record with id: [" . $array[0] . "]");
             }
         }
 
+        $this->endTime = microtime(true);
+        $this->runTime = $this->endTime - $this->startTime;
+        Log::info('', "Finished updates in " . $localFilePath . " in " . $this->runTime . " seconds.", 'update');
         $this->line("Finished " . $this->signature);
+
         return;
     }
 
@@ -170,6 +181,7 @@ class Update extends Base {
             throw new \Exception("Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?");
         }
         $this->info("Saved modification file to: " . $localFilePath);
+
         return $localFilePath;
     }
 
@@ -179,6 +191,7 @@ class Update extends Base {
      */
     protected function getAllLinksOnDownloadPage() {
         $crawler = $this->client->request('GET', $this->urlForDownloadList);
+
         return $crawler->filter('a')->each(function (Crawler $node, $i) {
             return $node->attr('href');
         });

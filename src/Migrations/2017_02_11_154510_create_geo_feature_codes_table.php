@@ -13,6 +13,7 @@ class CreateGeoFeatureCodesTable extends Migration {
     public function up() {
         Schema::create('geo_feature_codes', function (Blueprint $table) {
             $table->string('id', 7);
+            $table->char('feature_class', 1);
             $table->string('name', 50);
             $table->string('description', 255);
             $table->timestamps();
