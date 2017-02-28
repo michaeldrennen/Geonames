@@ -22,11 +22,10 @@ class FeatureCodeSeeder extends Seeder {
         $this->setStorage();
         $this->downloadFeatureCodeFile($curl);
 
-        $data = file_get_contents($this->featureCodeLocalFilePath);
+        $this->insert($this->featureCodeLocalFilePath);
 
 
-        DB::table('geo_feature_classes')->insert(['id'          => 'A',
-                                                  'description' => 'country, state, region,...',]);
+
     }
 
     protected function setFeatureCodeRemoteFileName() {
@@ -59,53 +58,33 @@ class FeatureCodeSeeder extends Seeder {
         }
     }
 
+    /**
+     * @param $localFilePath
+     * @return array
+     */
+    protected function fileToArray($localFilePath) {
+        $rows = [];
+        if (($handle = fopen($localFilePath, "r")) !== false) {
+            while (($data = fgetcsv($handle, 0, "\t")) !== false) {
+                $rows[] = $data;
+            }
+            fclose($handle);
+        }
+
+        return $rows;
+    }
+
 
     protected function insert($localFilePath) {
 
-        Schema::dropIfExists('geonames_working');
+        $rows = $this->fileToArray($localFilePath);
 
-
-        DB::statement('CREATE TABLE geonames_working LIKE geonames; ');
-
-        $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
-    INTO TABLE geonames_working
-        (geonameid, 
-             name, 
-             asciiname, 
-             alternatenames, 
-             latitude, 
-             longitude, 
-             feature_class, 
-             feature_code, 
-             country_code, 
-             cc2, 
-             admin1_code, 
-             admin2_code, 
-             admin3_code, 
-             admin4_code, 
-             population, 
-             elevation, 
-             dem, 
-             timezone, 
-             modification_date, 
-             @created_at, 
-             @updated_at)
-SET created_at=NOW(),updated_at=null";
-
-        $this->comment($query);
-
-        $rowsInserted = DB::connection()->getpdo()->exec($query);
-        if ($rowsInserted === false) {
-            throw new \Exception("Unable to execute the load data infile query.");
+        foreach ($rows as $row) {
+            DB::table('geo_feature_codes')->insert(['id'          => 'A',
+                                                    'description' => 'country, state, region,...',]);
         }
 
-        $this->info("Inserted text file into geonames_working.");
 
-        Schema::dropIfExists('geonames');
-        $this->line("Dropped the geonames table.");
-
-        Schema::rename('geonames_working', 'geonames');
-        $this->info("Renamed geonames_working to geonames.");
 
     }
 }
