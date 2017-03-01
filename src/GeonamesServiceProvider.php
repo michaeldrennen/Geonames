@@ -1,6 +1,7 @@
 <?php
 
 namespace MichaelDrennen\Geonames;
+
 use Illuminate\Support\ServiceProvider;
 
 
@@ -23,7 +24,11 @@ class GeonamesServiceProvider extends ServiceProvider {
 
         // Let's register our commands. These are needed to keep our geonames data up-to-date.
         if ($this->app->runningInConsole()) {
-            $this->commands([Console\Initialize::class, Console\Download::class, Console\Update::class]);
+            $this->commands([Console\FeatureClass::class,
+                             Console\Install::class,
+                             Console\Initialize::class,
+                             Console\Download::class,
+                             Console\Update::class]);
         }
     }
 

@@ -1,24 +1,65 @@
 <?php
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use MichaelDrennen\Geonames\BaseTrait;
+
+namespace MichaelDrennen\Geonames\Console;
+
 use Curl\Curl;
 use MichaelDrennen\Geonames\Log;
+use Illuminate\Console\Command;
+use MichaelDrennen\Geonames\BaseTrait;
 
-class FeatureCodeSeeder extends Seeder {
+class FeatureCode extends Command {
     use BaseTrait;
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'geonames:feature-code';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = "Download and insert the feature code list from geonames.";
+
+    /**
+     * @var Curl Instance of a Curl object that we use to download the files.
+     */
+    protected $curl;
+
     protected $featureCodeRemoteFileName = '';
     protected $featureCodeRemoteFilePath = '';
     protected $featureCodeLocalFilePath = '';
 
 
-    public function run() {
+    /**
+     * Create a new command instance.
+     * @param Curl $curl
+     */
+    public function __construct() {
+        parent::__construct();
+
+    }
+
+    /**
+     * Execute the console command.
+     *
+     * @return mixed
+     */
+    public function handle() {
+        //
+        $this->line("Starting " . $this->signature);
+
         $this->setFeatureCodeRemoteFileName();
         $this->setFeatureCodeRemoteFilePath();
         $this->setStorage();
         $this->downloadFeatureCodeFile();
         $this->insert($this->featureCodeLocalFilePath);
+
+        $this->line("Finished " . $this->signature);
     }
+
 
     protected function setFeatureCodeRemoteFileName() {
         $this->featureCodeRemoteFileName = config('geonames.feature_code_file_name_prefix') . config('geonames.language') . '.txt';
@@ -85,4 +126,7 @@ class FeatureCodeSeeder extends Seeder {
 
 
     }
+
+
+
 }
