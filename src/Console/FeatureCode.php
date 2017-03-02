@@ -52,9 +52,8 @@ class FeatureCode extends Command {
      */
     public function handle() {
         //
-        $this->line("Starting " . $this->signature);
+        $this->line("Starting " . $this->signature . "\n");
 
-        $this->comment(print_r(config('geonames'), true));
 
         $countries = $this->option('country');
         $this->countries = $countries ?? config('geonames.countries');
@@ -68,7 +67,7 @@ class FeatureCode extends Command {
         $this->downloadFeatureCodeFile();
         $this->insert($this->featureCodeLocalFilePath);
 
-        $this->line("Finished " . $this->signature);
+        $this->line("\nFinished " . $this->signature);
     }
 
 
@@ -120,24 +119,84 @@ class FeatureCode extends Command {
     }
 
 
-    protected function insert($localFilePath) {
+    /**
+     * After the featureCodes file is saved locally, we truncate our database table, and insert the data.
+     * @param string $localFilePath
+     */
+    protected function insert(string $localFilePath) {
+
+        DB::table('geo_feature_codes')->truncate();
 
         $rows = $this->fileToArray($localFilePath);
 
-        foreach ($rows as $row) {
-            list($id, $name, $description) = $row;
-            list($feature_class, $feature_code) = $id;
+        //
+        $numRowsInserted = 0;
 
-            DB::table('geo_feature_codes')->insert(['id'            => $id,
+        //
+        $numRowsNotInserted = 0;
+
+        //
+        $numRowsInTheFile = count($rows);
+
+
+        // Progress bar for console display.
+        $bar = $this->output->createProgressBar($numRowsInTheFile);
+
+        foreach ($rows as $i => $row) {
+            $rowNumber = $i + 1;
+
+            if (!$this->isValidRow($row)) {
+                $this->line("\nRow " . $rowNumber . " of " . $numRowsInTheFile . " is not valid, and won't be inserted.\n");
+                continue;
+            }
+
+            list($id, $name, $description) = $row;
+            list($feature_class, $feature_code) = explode('.', $id);
+
+
+            $insertResult = DB::table('geo_feature_codes')->insert(['id' => $id,
                                                     'feature_class' => $feature_class,
                                                     'feature_code'  => $feature_code,
                                                     'name'          => $name,
                                                     'description'   => $description,]);
+
+            if ($insertResult === true) {
+                $numRowsInserted++;
+                //$this->info("Row " .  $rowNumber. " of " . $numRowsInTheFile .  " was inserted.");
+            } else {
+                $numRowsNotInserted++;
+                $this->error("\nRow " . $rowNumber . " of " . $numRowsInTheFile . " was NOT inserted.");
+            }
+            $bar->advance();
+        }
+
+        $bar->finish();
+
+        if ($numRowsNotInserted > 0) {
+            Log::error($localFilePath, "There was at least one row from the featureCodes file that was not inserted.", 'database');
         }
 
 
     }
 
+    /**
+     * The geonames.org featureCodes file has an ending row:
+     * "null	not available"
+     * I'm not sure if it will always be there. (If it is, then I could just pop it off the end.)
+     * Since I can't necessarily count on that, then let's do a more robust check to make sure the row is valid.
+     * Basically make sure that whatever data is in that row can be inserted into the database.
+     */
+    protected function isValidRow(array $row) {
+        $classAndCode = explode('.', $row[0]);
+        if (count($classAndCode) != 2) {
+            return false;
+        }
+        if (empty($classAndCode[0]) || empty($classAndCode[1])) {
+            return false;
+        }
+
+        return true;
+    }
 
 
 }
