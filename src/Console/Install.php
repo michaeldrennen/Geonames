@@ -54,9 +54,24 @@ class Install extends Command {
 
         $countries = $this->option('country');
 
-        $this->call('geonames:feature-class', ['--country' => $countries]);
+        try {
+            $this->call('geonames:feature-class');
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+            $this->error($e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString());
 
-        $this->call('geonames:feature-code', ['--country' => $countries]);
+            return false;
+        }
+
+        try {
+            $this->call('geonames:feature-code', ['--country' => $countries]);
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+            $this->error($e->getTraceAsString());
+
+            return false;
+        }
+
 
         //        $this->call('geonames:download', [
         //            '--country' => $countries

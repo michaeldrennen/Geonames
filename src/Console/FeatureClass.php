@@ -4,6 +4,7 @@ namespace MichaelDrennen\Geonames\Console;
 
 use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\BaseTrait;
+use Illuminate\Support\Facades\DB;
 
 class FeatureClass extends Command {
 
@@ -51,6 +52,8 @@ class FeatureClass extends Command {
     public function handle() {
         $this->startTime = microtime(true);
         $this->line("Starting " . $this->signature);
+
+        DB::table('geo_feature_classes')->truncate();
 
 
         DB::table('geo_feature_classes')->insert(['id'          => 'A',

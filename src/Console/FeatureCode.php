@@ -6,6 +6,7 @@ use Curl\Curl;
 use MichaelDrennen\Geonames\Log;
 use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\BaseTrait;
+use Illuminate\Support\Facades\DB;
 
 class FeatureCode extends Command {
     use BaseTrait;
@@ -14,7 +15,7 @@ class FeatureCode extends Command {
      *
      * @var string
      */
-    protected $signature = 'geonames:feature-code';
+    protected $signature = 'geonames:feature-code {--country=* : Add the 2 digit code for each country. One per option.}';
 
     /**
      * The console command description.
@@ -31,6 +32,8 @@ class FeatureCode extends Command {
     protected $featureCodeRemoteFileName = '';
     protected $featureCodeRemoteFilePath = '';
     protected $featureCodeLocalFilePath = '';
+
+    protected $countries;
 
 
     /**
@@ -51,9 +54,17 @@ class FeatureCode extends Command {
         //
         $this->line("Starting " . $this->signature);
 
+        $this->comment(print_r(config('geonames'), true));
+
+        $countries = $this->option('country');
+        $this->countries = $countries ?? config('geonames.countries');
+
+        $this->setStorage();
+
         $this->setFeatureCodeRemoteFileName();
         $this->setFeatureCodeRemoteFilePath();
-        $this->setStorage();
+
+        $this->setFeatureCodeLocalFilePath();
         $this->downloadFeatureCodeFile();
         $this->insert($this->featureCodeLocalFilePath);
 
