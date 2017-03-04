@@ -189,7 +189,7 @@ class Update extends Command {
     /**
      * @return array
      */
-    protected function getAllLinksOnDownloadPage() {
+    protected function getAllLinksOnDownloadPage(): array {
         $crawler = $this->client->request('GET', $this->urlForDownloadList);
 
         return $crawler->filter('a')->each(function (Crawler $node, $i) {
@@ -203,7 +203,7 @@ class Update extends Command {
      * @return string The file name of the current modifications file on the geonames website.
      * @throws \Exception If we can't find the modifications file name in the list of links.
      */
-    protected function filterModificationsLink(array $links) {
+    protected function filterModificationsLink(array $links): string {
         foreach ($links as $link) {
             if (preg_match('/^modifications-/', $link) === 1) {
                 return $link;

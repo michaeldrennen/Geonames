@@ -82,7 +82,7 @@ class Install extends Command {
         }
 
         try {
-            $this->call('geonames:initialize', ['--country' => $countries]);
+            $this->call('geonames:initialize');
         } catch (\Exception $e) {
             $this->error($e->getMessage());
             $this->error($e->getTraceAsString());
