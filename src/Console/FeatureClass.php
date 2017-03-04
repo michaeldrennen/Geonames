@@ -86,6 +86,9 @@ class FeatureClass extends Command {
 
         $this->endTime = microtime(true);
         $this->runTime = $this->endTime - $this->startTime;
+
+        $this->info("The feature_classes table was truncated and refilled in " . $this->runTime . " seconds.");
+
         $this->line("Finished " . $this->signature);
     }
 
