@@ -8,6 +8,43 @@ use MichaelDrennen\Geonames\BaseTrait;
 
 use Illuminate\Console\Command;
 
+function curl_get_file_size($url) {
+    // Assume failure.
+    $result = -1;
+
+    $curl = curl_init($url);
+
+    // Issue a HEAD request and follow any redirects.
+    curl_setopt($curl, CURLOPT_NOBODY, true);
+    curl_setopt($curl, CURLOPT_HEADER, true);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+    //curl_setopt( $curl, CURLOPT_USERAGENT, get_user_agent_string() );
+
+    $data = curl_exec($curl);
+    curl_close($curl);
+
+    if ($data) {
+        $content_length = "unknown";
+        $status = "unknown";
+
+        if (preg_match("/^HTTP\/1\.[01] (\d\d\d)/", $data, $matches)) {
+            $status = (int)$matches[1];
+        }
+
+        if (preg_match("/Content-Length: (\d+)/", $data, $matches)) {
+            $content_length = (int)$matches[1];
+        }
+
+        // http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+        if ($status == 200 || ($status > 300 && $status <= 308)) {
+            $result = $content_length;
+        }
+    }
+
+    return $result;
+}
+
 
 class Download extends Command {
 
@@ -143,19 +180,36 @@ class Download extends Command {
      */
     protected function downloadAndSaveFile($remoteFilePath) {
         $this->line("Starting download of " . $remoteFilePath);
+
+
         $basename = basename($remoteFilePath);
         $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $basename;
 
-        // This function isn't working.
-        //        try{
-        //            $this->line("Attempting to get the remote file size.");
-        //            $fileSize = $this->getRemoteFileSize($remoteFilePath);
-        //            $this->line("The files is " . $this->getHumanFileSize($fileSize));
-        //        } catch( \Exception $e ){
-        //            $this->line($e->getMessage());
-        //        }
 
         $this->line("Downloading the full file...");
+
+        $fileSize = curl_get_file_size($remoteFilePath);
+
+        //$bar = $this->output->createProgressBar(319000000);
+
+
+        $geonamesBar = $this->output->createProgressBar($fileSize);
+
+
+        file_put_contents(storage_path() . '/test.txt', '0/0');
+        $geonamesBar->advance();
+
+        $this->curl->verbose();
+        $this->curl->setopt(CURLOPT_NOPROGRESS, false);
+        $this->curl->setopt(CURLOPT_PROGRESSFUNCTION, function ($resource, $download_size = 0, $downloaded = 0, $upload_size = 0, $uploaded = 0) use ($geonamesBar) {
+
+
+            //$geonamesBar->advance();
+            $geonamesBar->setProgress($downloaded);
+        });
+
+
+
         $this->curl->get($remoteFilePath);
 
         if ($this->curl->error) {
@@ -174,11 +228,6 @@ class Download extends Command {
         $this->localFiles[] = $localFilePath;
         $this->info("Data saved to " . $localFilePath);
     }
-
-
-
-
-
 
 
 }

@@ -72,14 +72,23 @@ class Install extends Command {
             return false;
         }
 
+        try {
+            $this->call('geonames:download', ['--country' => $countries]);
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+            $this->error($e->getTraceAsString());
 
-        //        $this->call('geonames:download', [
-        //            '--country' => $countries
-        //        ]);
-        //
-        //        $this->call('geonames:initialize', [
-        //            '--country' => $countries
-        //        ]);
+            return false;
+        }
+
+        try {
+            $this->call('geonames:initialize', ['--country' => $countries]);
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+            $this->error($e->getTraceAsString());
+
+            return false;
+        }
 
 
         $this->endTime = microtime(true);

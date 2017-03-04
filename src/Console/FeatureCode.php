@@ -2,6 +2,7 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
+use Carbon\Carbon;
 use Curl\Curl;
 use MichaelDrennen\Geonames\Log;
 use Illuminate\Console\Command;
@@ -154,11 +155,13 @@ class FeatureCode extends Command {
             list($feature_class, $feature_code) = explode('.', $id);
 
 
-            $insertResult = DB::table('geo_feature_codes')->insert(['id' => $id,
-                                                    'feature_class' => $feature_class,
-                                                    'feature_code'  => $feature_code,
-                                                    'name'          => $name,
-                                                    'description'   => $description,]);
+            $insertResult = DB::table('geo_feature_codes')->insert(['id'            => $id,
+                                                                    'feature_class' => $feature_class,
+                                                                    'feature_code'  => $feature_code,
+                                                                    'name'          => $name,
+                                                                    'description'   => $description,
+                                                                    'created_at'    => Carbon::now(),
+                                                                    'updated_at'    => Carbon::now(),]);
 
             if ($insertResult === true) {
                 $numRowsInserted++;
