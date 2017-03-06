@@ -17,16 +17,16 @@ class CreateGeoSettingsTable extends Migration {
             $table->increments('id');
 
             // A json encoded array of the countries we want to maintain in our database.
-            $table->json('countries');
+            $table->text('countries')->nullable();
 
             // The date and time when this database was first filled with geonames records.
-            $table->dateTime('installed_at');
+            $table->dateTime('installed_at')->nullable();
 
             // The date and time when the geonames table was last updated with the modifications file.
-            $table->dateTime('last_modified_at');
+            $table->dateTime('last_modified_at')->nullable();
 
             // Is it live? Currently updating? Offline?
-            $table->string('status', 255);
+            $table->string('status', 255)->nullable();
 
             // Laravel created_at and updated_at timestamp fields.
             $table->timestamps();

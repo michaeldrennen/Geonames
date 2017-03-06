@@ -6,6 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class GeoSetting extends Model {
 
+    /**
+     * @var array
+     */
+    protected $guarded = [];
+
+    /**
+     * The attributes that should be casted to native types.
+     *
+     * @var array
+     */
+    protected $casts = ['countries' => 'array',];
+
+
     const ID = 1;
 
     /**
@@ -29,15 +42,35 @@ class GeoSetting extends Model {
     const STATUS_ERROR = 'error';
 
     /**
+     * In a perfect world, the geo_settings record was created when you ran the geonames:install command.
+     * During development, I could not always count on the record to exist there. So I created this little
+     * method to create the record if it did not exist. When users start to tinker with this library, and
+     * accidentally delete the settings record (or change it's id or whatever), this will self-heal the system.
+     * @param array $countries
+     * @return bool
+     */
+    public static function init($countries = ['*']): bool {
+        if (self::find(self::ID)) {
+            return true;
+        }
+
+        // Create settings record.
+        $setting = GeoSetting::create(['id'        => 1,
+                                       'countries' => $countries]);
+
+        if ($setting) {
+            return true;
+        }
+        throw new \Exception("Unable to create the settings record in the init() function.");
+    }
+
+    /**
      * @param string $status The status of our geonames system.
      * @return bool
      * @throws \Exception
      */
     public static function setStatus(string $status): bool {
-        if (!defined(self::$status)) {
-            throw new \Exception("The status you passed in (" . $status . ") is not a defined status.");
-        }
-
+        self::init();
         return self::where('id', self::ID)->update(['status' => $status]);
     }
 }
