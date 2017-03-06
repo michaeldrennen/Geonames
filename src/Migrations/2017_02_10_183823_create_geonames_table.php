@@ -35,6 +35,11 @@ class CreateGeonamesTable extends Migration {
             $table->primary('geonameid');
 
             $table->index('asciiname');
+            $table->index('country_code');
+            $table->index('latitude');
+            $table->index('longitude');
+            $table->index('feature_class');
+
         });
     }
 

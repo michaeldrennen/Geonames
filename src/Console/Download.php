@@ -8,6 +8,7 @@ use MichaelDrennen\Geonames\BaseTrait;
 use MichaelDrennen\RemoteFile\RemoteFile;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 
 
 
@@ -63,10 +64,11 @@ class Download extends Command {
         $this->info("Turning off the memory limit for php. Some of these files are pretty big.");
         ini_set('memory_limit', -1);
 
+        $this->emptyTheStorageDirectory();
 
         $countries = $this->option('country');
-
         $this->line("We will be saving the downloaded files to: " . $this->storageDir);
+
 
         try {
             $remoteFilePaths = $this->getRemoteFilePathsToDownloadForGeonamesTable($countries);
@@ -182,6 +184,24 @@ class Download extends Command {
         }
         $this->localFiles[] = $localFilePath;
         $this->info("Data saved to " . $localFilePath);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function emptyTheStorageDirectory() {
+
+        $allFiles = Storage::allFiles($this->getStorage());
+        $this->line("We found " . count($allFiles) . " in our storage directory.");
+        $this->line("Deleting all of the txt and zip files out of " . $this->getStorage());
+        Storage::delete($allFiles);
+
+        $allFiles = Storage::allFiles($this->getStorage());
+        $numFiles = count($allFiles);
+        if ($numFiles != 0) {
+            throw new \Exception("We were unable to delete all of the files in " . $this->getStorage() . " Check the permissions.");
+        }
+        $this->line("The storage dir is clean. Start downloading files.");
     }
 
 

@@ -6,13 +6,14 @@ namespace MichaelDrennen\Geonames\Console;
 use Doctrine\Instantiator\Exception\InvalidArgumentException;
 use MichaelDrennen\Geonames\Geoname;
 use MichaelDrennen\Geonames\Log;
-use MichaelDrennen\MungString;
+use MichaelDrennen\Geonames\BaseTrait;
+use MichaelDrennen\Geonames\GeoSetting;
 
 use Symfony\Component\DomCrawler\Crawler;
 use Curl\Curl;
 use Goutte\Client;
 use Illuminate\Console\Command;
-use MichaelDrennen\Geonames\BaseTrait;
+
 
 class Update extends Command {
     use BaseTrait;
@@ -43,15 +44,39 @@ class Update extends Command {
      */
     protected $modificationsTxtFileName;
 
+    /**
+     * @var Curl
+     */
     protected $curl;
+
+    /**
+     * @var Client
+     */
     protected $client;
 
+    /**
+     * @var string
+     */
     protected $urlForDownloadList = 'http://download.geonames.org/export/dump/';
 
+    /**
+     * @var array
+     */
     protected $linksOnDownloadPage = [];
 
+    /**
+     * @var
+     */
     protected $startTime;
+
+    /**
+     * @var
+     */
     protected $endTime;
+
+    /**
+     * @var
+     */
     protected $runTime;
 
 
@@ -79,6 +104,7 @@ class Update extends Command {
      * @return mixed
      */
     public function handle() {
+        GeoSetting::setStatus(GeoSetting::STATUS_UPDATING);
         $this->startTime = microtime(true);
         $this->line("Starting " . $this->signature);
 
@@ -147,13 +173,21 @@ class Update extends Command {
         $this->runTime = $this->endTime - $this->startTime;
         Log::info('', "Finished updates in " . $localFilePath . " in " . $this->runTime . " seconds.", 'update');
         $this->line("Finished " . $this->signature);
+        GeoSetting::setStatus(GeoSetting::STATUS_LIVE);
 
-        return;
+        return true;
     }
 
 
+    /**
+     * Go to the downloads page on the geonames.org site, download the modifications file, and
+     * save it locally.
+     * @return string The absolute file path of the local copy of the modifications file.
+     * @throws \Exception
+     */
     protected function saveRemoteModificationsFile() {
         $this->line("Downloading the modifications file from geonames.org");
+
         // Grab the remote file.
         $this->linksOnDownloadPage = $this->getAllLinksOnDownloadPage();
         $modificationFileName = $this->filterModificationsLink($this->linksOnDownloadPage);
@@ -174,7 +208,6 @@ class Update extends Command {
         // Save it locally
         $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $modificationFileName;
 
-
         $bytesWritten = file_put_contents($localFilePath, $data);
         if ($bytesWritten === false) {
             Log::error($absoluteUrlToModificationsFile, "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?", 'local');
@@ -187,6 +220,7 @@ class Update extends Command {
 
 
     /**
+     * Returns a list of every link (href) on the geonames.org page for downloads.
      * @return array
      */
     protected function getAllLinksOnDownloadPage(): array {
@@ -199,6 +233,9 @@ class Update extends Command {
 
 
     /**
+     * The geonames.org link to the modifications file has a different file name every day.
+     * This function accepts an array of ALL of the links from the downloads page, and returns
+     * the file name of the current modifications file.
      * @param array $links The list of links on the geonames export page.
      * @return string The file name of the current modifications file on the geonames website.
      * @throws \Exception If we can't find the modifications file name in the list of links.
