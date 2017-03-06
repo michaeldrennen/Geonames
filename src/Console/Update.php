@@ -2,8 +2,6 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
-
-use Doctrine\Instantiator\Exception\InvalidArgumentException;
 use MichaelDrennen\Geonames\Geoname;
 use MichaelDrennen\Geonames\Log;
 use MichaelDrennen\Geonames\BaseTrait;
@@ -13,6 +11,9 @@ use Symfony\Component\DomCrawler\Crawler;
 use Curl\Curl;
 use Goutte\Client;
 use Illuminate\Console\Command;
+
+use StdClass;
+
 
 
 class Update extends Command {
@@ -81,22 +82,17 @@ class Update extends Command {
 
 
     /**
-     * Initialize constructor.
+     * Update constructor.
+     * @param Curl $curl
+     * @param Client $client
      */
     public function __construct(Curl $curl, Client $client) {
         parent::__construct();
         $this->setStorage();
-        $this->setModificationFileNameForToday();
         $this->curl = $curl;
         $this->client = $client;
     }
 
-    /**
-     * @todo Check when the file on geonames.org gets updated. Take their timezone into account.
-     */
-    protected function setModificationFileNameForToday() {
-        $this->modificationsTxtFileName = $this->modificationsTxtFileNamePrefix . date('Y-m-d') . '.txt';
-    }
 
     /**
      * Execute the console command.
@@ -111,37 +107,34 @@ class Update extends Command {
 
         $localFilePath = $this->saveRemoteModificationsFile();
 
-        $modificationRows = file($localFilePath);
+        $modificationRows = $this->prepareRowsForUpdate($localFilePath);
 
-        foreach ($modificationRows as $row) {
-            $array = explode("\t", $row);
-
-            $array = array_map('trim', $array);
+        foreach ($modificationRows as $obj):
 
             try {
-                $geoname = Geoname::firstOrNew(['geonameid' => $array[0]]);
+                $geoname = Geoname::firstOrNew(['geonameid' => $obj->geonameid]);
 
-                $geoname->name = $array[1];
-                $geoname->asciiname = $array[2];
-                $geoname->alternatenames = $array[3];
-                $geoname->latitude = empty($array[4]) ? null : number_format((float)$array[4], 8);
-                $geoname->longitude = empty($array[5]) ? null : number_format((float)$array[5], 8);
-                $geoname->feature_class = $array[6];
-                $geoname->feature_code = $array[7];
-                $geoname->country_code = $array[8];
-                $geoname->cc2 = $array[9];
-                $geoname->admin1_code = $array[10];
-                $geoname->admin2_code = $array[11];
-                $geoname->admin3_code = $array[12];
-                $geoname->admin4_code = $array[13];
-                $geoname->population = $array[14];
-                $geoname->elevation = empty($array[15]) ? NULL : $array[15];
-                $geoname->dem = empty($array[16]) ? NULL : $array[16];
-                $geoname->timezone = $array[17];
-                $geoname->modification_date = $array[18];
+                $geoname->name = $obj->name;
+                $geoname->asciiname = $obj->asciiname;
+                $geoname->alternatenames = $obj->alternatenames;
+                $geoname->latitude = $obj->latitude;
+                $geoname->longitude = $obj->longitude;
+                $geoname->feature_class = $obj->feature_class;
+                $geoname->feature_code = $obj->feature_code;
+                $geoname->country_code = $obj->country_code;
+                $geoname->cc2 = $obj->cc2;
+                $geoname->admin1_code = $obj->admin1_code;
+                $geoname->admin2_code = $obj->admin2_code;
+                $geoname->admin3_code = $obj->admin3_code;
+                $geoname->admin4_code = $obj->admin4_code;
+                $geoname->population = $obj->population;
+                $geoname->elevation = $obj->elevation;
+                $geoname->dem = $obj->dem;
+                $geoname->timezone = $obj->timezone;
+                $geoname->modification_date = $obj->modification_date;
 
                 if (!$geoname->isDirty()) {
-                    $this->info("Geoname record " . $array[0] . " does not need to be updated.");
+                    $this->info("Geoname record " . $obj->geonameid . " does not need to be updated.");
                     continue;
                 }
 
@@ -150,24 +143,24 @@ class Update extends Command {
                 if ($saveResult) {
 
                     if ($geoname->wasRecentlyCreated) {
-                        $this->info("Geoname record " . $array[0] . " was inserted.");
-                        Log::insert('', "Geoname record " . $array[0] . " was inserted.", "create");
+                        $this->info("Geoname record " . $obj->geonameid . " was inserted.");
+                        Log::insert('', "Geoname record " . $obj->geonameid . " was inserted.", "create");
                     } else {
-                        $this->info("Geoname record " . $array[0] . " was updated.");
-                        Log::modification('', "Geoname record " . $array[0] . " was updated.", "update");
+                        $this->info("Geoname record " . $obj->geonameid . " was updated.");
+                        Log::modification('', "Geoname record " . $obj->geonameid . " was updated.", "update");
                     }
 
                 } else {
-                    Log::error('', "Unable to updateOrCreate geoname record: [" . $array[0] . "]");
-                    $this->error("Unable to updateOrCreate the geoname record: " . $array[0] . "]");
+                    Log::error('', "Unable to updateOrCreate geoname record: [" . $obj->geonameid . "]");
+                    $this->error("Unable to updateOrCreate the geoname record: " . $obj->geonameid . "]");
                     continue;
                 }
             } catch (\Exception $e) {
                 $this->error(get_class($e));
-                Log::error('', $e->getMessage() . " Unable to save the geoname record with id: [" . $array[0] . "]", 'database');
-                $this->error("[" . $e->getMessage() . "] Unable to save the geoname record with id: [" . $array[0] . "]");
+                Log::error('', $e->getMessage() . " Unable to save the geoname record with id: [" . $obj->geonameid . "]", 'database');
+                $this->error("[" . $e->getMessage() . "] Unable to save the geoname record with id: [" . $obj->geonameid . "]");
             }
-        }
+        endforeach;
 
         $this->endTime = microtime(true);
         $this->runTime = $this->endTime - $this->startTime;
@@ -176,6 +169,55 @@ class Update extends Command {
         GeoSetting::setStatus(GeoSetting::STATUS_LIVE);
 
         return true;
+    }
+
+    /**
+     * Given the local path to the modifications file, pull it into an array, and mung the rows so they are ready
+     * to be sent to the Laravel model for updates.
+     * @param string $absoluteLocalFilePath
+     * @return array An array of StdClass objects to be passed to the Laravel model.
+     */
+    protected function prepareRowsForUpdate(string $absoluteLocalFilePath): array {
+        $modificationRows = file($absoluteLocalFilePath);
+
+        // An array of StdClass objects to be passed to the Laravel model.
+        $geonamesData = [];
+        foreach ($modificationRows as $row):
+
+            $array = explode("\t", $row);
+            $array = array_map('trim', $array);
+
+            $object = new StdClass;
+            $object->geonameid = $array[0];
+            $object->name = $array[1];
+            $object->asciiname = $array[2];
+            $object->alternatenames = $array[3];
+
+            // The lat and long fields are decimal (nullable), so if the value in the modifications file is blank, we
+            // want the value to be null instead of 0 (zero).
+            $object->latitude = empty($array[4]) ? null : number_format((float)$array[4], 8);
+            $object->longitude = empty($array[5]) ? null : number_format((float)$array[5], 8);
+
+            $object->feature_class = $array[6];
+            $object->feature_code = $array[7];
+            $object->country_code = $array[8];
+            $object->cc2 = $array[9];
+            $object->admin1_code = $array[10];
+            $object->admin2_code = $array[11];
+            $object->admin3_code = $array[12];
+            $object->admin4_code = $array[13];
+            $object->population = $array[14];
+
+            // Null is different than zero, which was getting entered when the field was blank.
+            $object->elevation = empty($array[15]) ? null : $array[15];
+            $object->dem = empty($array[16]) ? null : $array[16];
+
+            $object->timezone = $array[17];
+            $object->modification_date = $array[18];
+            $geonamesData[] = $object;
+        endforeach;
+
+        return $geonamesData;
     }
 
 
@@ -190,8 +232,8 @@ class Update extends Command {
 
         // Grab the remote file.
         $this->linksOnDownloadPage = $this->getAllLinksOnDownloadPage();
-        $modificationFileName = $this->filterModificationsLink($this->linksOnDownloadPage);
-        $absoluteUrlToModificationsFile = $this->urlForDownloadList . '/' . $modificationFileName;
+        $this->modificationsTxtFileName = $this->filterModificationsLink($this->linksOnDownloadPage);
+        $absoluteUrlToModificationsFile = $this->urlForDownloadList . '/' . $this->modificationsTxtFileName;
         $this->curl->get($absoluteUrlToModificationsFile);
 
 
@@ -201,13 +243,12 @@ class Update extends Command {
             throw new \Exception("Unable to download the file at '" . $absoluteUrlToModificationsFile . "', " . $this->curl->error_message);
         }
 
+        $data = $this->curl->response;
         $this->info("Downloaded " . $absoluteUrlToModificationsFile);
 
-        $data = $this->curl->response;
 
         // Save it locally
-        $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $modificationFileName;
-
+        $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $this->modificationsTxtFileName;
         $bytesWritten = file_put_contents($localFilePath, $data);
         if ($bytesWritten === false) {
             Log::error($absoluteUrlToModificationsFile, "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?", 'local');
@@ -226,7 +267,7 @@ class Update extends Command {
     protected function getAllLinksOnDownloadPage(): array {
         $crawler = $this->client->request('GET', $this->urlForDownloadList);
 
-        return $crawler->filter('a')->each(function (Crawler $node, $i) {
+        return $crawler->filter('a')->each(function (Crawler $node) {
             return $node->attr('href');
         });
     }
