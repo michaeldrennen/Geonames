@@ -19,6 +19,10 @@ class GeoSetting extends Model {
     protected $casts = ['countries' => 'array',];
 
 
+    /**
+     * The id value from the database for our settings row. If for whatever reason, you needed to change it,
+     * it'd be nice to only have to do it in one place.
+     */
     const ID = 1;
 
     /**
@@ -42,6 +46,30 @@ class GeoSetting extends Model {
     const STATUS_ERROR = 'error';
 
     /**
+     * The name of the id column in the database. If for whatever reason, you needed to change it,
+     * it'd be nice to only have to do it in one place.
+     */
+    const DB_COLUMN_ID = 'id';
+
+    /**
+     * The name of the storage subdir's column in the database. If for whatever reason, you needed to change it,
+     * it'd be nice to only have to do it in one place.
+     */
+    const DB_COLUMN_STORAGE_SUBDIR = 'storage_subdir';
+
+    /**
+     * The name of the country's column in the database. If for whatever reason, you needed to change it,
+     * it'd be nice to only have to do it in one place.
+     */
+    const DB_COLUMN_COUNTRIES = 'countries';
+
+    /**
+     * The name of the status column in the database. If for whatever reason, you needed to change it,
+     * it'd be nice to only have to do it in one place.
+     */
+    const DB_COLUMN_STATUS = 'status';
+
+    /**
      * In a perfect world, the geo_settings record was created when you ran the geonames:install command.
      * During development, I could not always count on the record to exist there. So I created this little
      * method to create the record if it did not exist. When users start to tinker with this library, and
@@ -49,14 +77,15 @@ class GeoSetting extends Model {
      * @param array $countries
      * @return bool
      */
-    public static function init($countries = ['*']): bool {
+    public static function init($countries = ['*'], $storageSubDir = 'geonames'): bool {
         if (self::find(self::ID)) {
             return true;
         }
 
         // Create settings record.
-        $setting = GeoSetting::create(['id'        => 1,
-                                       'countries' => $countries]);
+        $setting = GeoSetting::create([self::DB_COLUMN_ID             => self::ID,
+                                       self::DB_COLUMN_COUNTRIES      => $countries,
+                                       self::DB_COLUMN_STORAGE_SUBDIR => $storageSubDir]);
 
         if ($setting) {
             return true;
@@ -71,6 +100,16 @@ class GeoSetting extends Model {
      */
     public static function setStatus(string $status): bool {
         self::init();
-        return self::where('id', self::ID)->update(['status' => $status]);
+
+        return self::where(self::DB_COLUMN_ID, self::ID)->update([self::DB_COLUMN_STATUS => $status]);
+    }
+
+    /**
+     * @return string
+     */
+    public static function getStorage(): string {
+        $columnName = self::DB_COLUMN_STORAGE_SUBDIR;
+
+        return (string)self::first()->$columnName;
     }
 }

@@ -3,6 +3,7 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use MichaelDrennen\Geonames\BaseTrait;
 use MichaelDrennen\Geonames\GeoSetting;
 

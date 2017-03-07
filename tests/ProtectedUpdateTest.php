@@ -28,4 +28,20 @@ class ProtectedUpdateTest extends TestCase {
             $this->assertTrue($matched);
         }
     }
+
+    public function testPrepareRowsForUpdate() {
+        $this->markTestSkipped('Unable to access the config() helper in this test. Wait until a patch is ready.');
+        $filePath = './AD.txt';
+        $methodName = 'prepareRowsForUpdate';
+        $args = [];
+
+        $object = new Update(new Curl(), new Client());
+
+        $reflection = new \ReflectionClass(get_class($object));
+        $method = $reflection->getMethod($methodName);
+        $method->setAccessible(true);
+        $whatisthis = $method->invokeArgs($object, $args);
+
+
+    }
 }

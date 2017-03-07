@@ -29,7 +29,8 @@ class GeonamesServiceProvider extends ServiceProvider {
                              Console\Install::class,
                              Console\Initialize::class,
                              Console\Download::class,
-                             Console\Update::class]);
+                             Console\Update::class,
+                             Console\Test::class]);
         }
     }
 

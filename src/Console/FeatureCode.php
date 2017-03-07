@@ -16,7 +16,7 @@ class FeatureCode extends Command {
      *
      * @var string
      */
-    protected $signature = 'geonames:feature-code {--country=* : Add the 2 digit code for each country. One per option.}';
+    protected $signature = 'geonames:feature-code';
 
     /**
      * The console command description.
@@ -34,7 +34,6 @@ class FeatureCode extends Command {
     protected $featureCodeRemoteFilePath = '';
     protected $featureCodeLocalFilePath = '';
 
-    protected $countries;
 
 
     /**
@@ -54,10 +53,6 @@ class FeatureCode extends Command {
     public function handle() {
         //
         $this->line("Starting " . $this->signature . "\n");
-
-
-        $countries = $this->option('country');
-        $this->countries = $countries ?? config('geonames.countries');
 
         $this->setStorage();
 

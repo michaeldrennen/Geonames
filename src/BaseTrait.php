@@ -2,6 +2,7 @@
 namespace MichaelDrennen\Geonames;
 
 use Curl\Curl;
+use MichaelDrennen\Geonames\GeoSetting;
 
 trait BaseTrait {
     /**
