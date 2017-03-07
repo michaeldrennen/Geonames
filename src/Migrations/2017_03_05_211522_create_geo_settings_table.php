@@ -28,6 +28,9 @@ class CreateGeoSettingsTable extends Migration {
             // Is it live? Currently updating? Offline?
             $table->string('status', 255)->nullable();
 
+            // The name of a directory under storage_dir()
+            $table->string('storage_subdir', 255)->nullable();
+
             // Laravel created_at and updated_at timestamp fields.
             $table->timestamps();
         });

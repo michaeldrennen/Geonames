@@ -66,17 +66,17 @@ class Update extends Command {
     protected $linksOnDownloadPage = [];
 
     /**
-     * @var
+     * @var float When the update started. Microseconds included.
      */
     protected $startTime;
 
     /**
-     * @var
+     * @var float When the update ended. Microseconds included.
      */
     protected $endTime;
 
     /**
-     * @var
+     * @var float How long the update command took to run. Microseconds included.
      */
     protected $runTime;
 
@@ -101,13 +101,17 @@ class Update extends Command {
      */
     public function handle() {
         GeoSetting::setStatus(GeoSetting::STATUS_UPDATING);
-        $this->startTime = microtime(true);
+        $this->startTime = (float)microtime(true);
         $this->line("Starting " . $this->signature);
 
 
+        // Download the file from geonames.org and save it on local storage.
         $localFilePath = $this->saveRemoteModificationsFile();
 
+        //
         $modificationRows = $this->prepareRowsForUpdate($localFilePath);
+
+        $bar = $this->output->createProgressBar(count($modificationRows));
 
         foreach ($modificationRows as $obj):
 
@@ -134,7 +138,8 @@ class Update extends Command {
                 $geoname->modification_date = $obj->modification_date;
 
                 if (!$geoname->isDirty()) {
-                    $this->info("Geoname record " . $obj->geonameid . " does not need to be updated.");
+                    //$this->info("Geoname record " . $obj->geonameid . " does not need to be updated.");
+                    $bar->advance();
                     continue;
                 }
 
@@ -143,26 +148,25 @@ class Update extends Command {
                 if ($saveResult) {
 
                     if ($geoname->wasRecentlyCreated) {
-                        $this->info("Geoname record " . $obj->geonameid . " was inserted.");
                         Log::insert('', "Geoname record " . $obj->geonameid . " was inserted.", "create");
                     } else {
-                        $this->info("Geoname record " . $obj->geonameid . " was updated.");
                         Log::modification('', "Geoname record " . $obj->geonameid . " was updated.", "update");
                     }
+                    $bar->advance();
 
                 } else {
                     Log::error('', "Unable to updateOrCreate geoname record: [" . $obj->geonameid . "]");
-                    $this->error("Unable to updateOrCreate the geoname record: " . $obj->geonameid . "]");
+                    $bar->advance();
                     continue;
                 }
+
             } catch (\Exception $e) {
-                $this->error(get_class($e));
                 Log::error('', $e->getMessage() . " Unable to save the geoname record with id: [" . $obj->geonameid . "]", 'database');
-                $this->error("[" . $e->getMessage() . "] Unable to save the geoname record with id: [" . $obj->geonameid . "]");
+                $bar->advance();
             }
         endforeach;
 
-        $this->endTime = microtime(true);
+        $this->endTime = (float)microtime(true);
         $this->runTime = $this->endTime - $this->startTime;
         Log::info('', "Finished updates in " . $localFilePath . " in " . $this->runTime . " seconds.", 'update');
         $this->line("Finished " . $this->signature);
