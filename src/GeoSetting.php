@@ -126,6 +126,7 @@ class GeoSetting extends Model {
         if (self::where(self::DB_COLUMN_ID, self::ID)->update([self::DB_COLUMN_COUNTRIES => $existingLanguages])) {
             return true;
         }
+
         throw new \Exception("Unable to add this language to our settings " . $languageCode);
     }
 
@@ -150,7 +151,6 @@ class GeoSetting extends Model {
     public static function getLanguages(): array {
         $columnName = self::DB_COLUMN_LANGUAGES;
         $languages = (string)self::first()->$columnName;
-
         return $languages;
     }
 
@@ -176,7 +176,6 @@ class GeoSetting extends Model {
         if (empty($storageSubdir)) {
             $storageSubdir = self::setStorage();
         }
-
         return $storageSubdir;
     }
 

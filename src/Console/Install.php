@@ -14,7 +14,7 @@ class Install extends Command {
     /**
      * @var string The name and signature of the console command.
      */
-    protected $signature = 'geonames:install {--country=* : Add the 2 digit code for each country. One per option.}';
+    protected $signature = 'geonames:install {--country=* : Add the 2 digit code for each country. One per option.} {--language=en : Add the 2 character language code.}';
 
     /**
      * @var string The console command description.
@@ -51,7 +51,6 @@ class Install extends Command {
     public function handle() {
         $this->createSettings($this->option('country'));
         GeoSetting::setStatus(GeoSetting::STATUS_INSTALLING);
-
 
         $this->startTime = microtime(true);
         $this->line("Starting " . $this->signature);
