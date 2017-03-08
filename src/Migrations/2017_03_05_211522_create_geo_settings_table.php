@@ -19,6 +19,12 @@ class CreateGeoSettingsTable extends Migration {
             // A json encoded array of the countries we want to maintain in our database.
             $table->text('countries')->nullable();
 
+            // These are countries that need to be added after the initial install.
+            $table->text('countries_to_be_added')->nullable();
+
+            // A json encoded array of the languages.
+            $table->text('languages')->nullable();
+
             // The date and time when this database was first filled with geonames records.
             $table->dateTime('installed_at')->nullable();
 

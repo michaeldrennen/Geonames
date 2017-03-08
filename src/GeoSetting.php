@@ -4,6 +4,10 @@ namespace MichaelDrennen\Geonames;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Class GeoSetting
+ * @package MichaelDrennen\Geonames
+ */
 class GeoSetting extends Model {
 
     /**
@@ -16,7 +20,9 @@ class GeoSetting extends Model {
      *
      * @var array
      */
-    protected $casts = ['countries' => 'array',];
+    protected $casts = ['countries'             => 'array',
+                        'countries_to_be_added' => 'array',
+                        'languages'             => 'array'];
 
 
     /**
@@ -45,6 +51,12 @@ class GeoSetting extends Model {
      */
     const STATUS_ERROR = 'error';
 
+
+    /**
+     *
+     */
+    const DEFAULT_STORAGE_SUBDIR = 'geonames';
+
     /**
      * The name of the id column in the database. If for whatever reason, you needed to change it,
      * it'd be nice to only have to do it in one place.
@@ -68,6 +80,12 @@ class GeoSetting extends Model {
      * it'd be nice to only have to do it in one place.
      */
     const DB_COLUMN_STATUS = 'status';
+
+    /**
+     * The name of the languages column in the database. If for whatever reason, you needed to change it,
+     * it'd be nice to only have to do it in one place.
+     */
+    const DB_COLUMN_LANGUAGES = 'languages';
 
     /**
      * In a perfect world, the geo_settings record was created when you ran the geonames:install command.
@@ -94,6 +112,49 @@ class GeoSetting extends Model {
     }
 
     /**
+     * @param string $languageCode
+     * @return bool
+     * @throws \Exception
+     */
+    public static function addLanguage($languageCode = 'en') {
+        $existingLanguages = self::getLanguages();
+        if (array_search($languageCode, $existingLanguages) !== false) {
+            return true;
+        }
+
+        $existingLanguages[] = $languageCode;
+        if (self::where(self::DB_COLUMN_ID, self::ID)->update([self::DB_COLUMN_COUNTRIES => $existingLanguages])) {
+            return true;
+        }
+        throw new \Exception("Unable to add this language to our settings " . $languageCode);
+    }
+
+    /**
+     * @param $languageCode
+     * @return bool
+     * @throws \Exception
+     */
+    public static function removeLanguage($languageCode) {
+        $existingLanguages = self::getLanguages();
+        $existingLanguageIndex = array_search($languageCode, $existingLanguages);
+        if ($existingLanguageIndex !== false) {
+            return true;
+        }
+        unset($existingLanguages[ $existingLanguageIndex ]);
+        if (self::where(self::DB_COLUMN_ID, self::ID)->update([self::DB_COLUMN_COUNTRIES => $existingLanguages])) {
+            return true;
+        }
+        throw new \Exception("Unable to remove this language to our settings " . $languageCode);
+    }
+
+    public static function getLanguages(): array {
+        $columnName = self::DB_COLUMN_LANGUAGES;
+        $languages = (string)self::first()->$columnName;
+
+        return $languages;
+    }
+
+    /**
      * @param string $status The status of our geonames system.
      * @return bool
      * @throws \Exception
@@ -105,11 +166,54 @@ class GeoSetting extends Model {
     }
 
     /**
+     * Return the string representing the storage subdir for Geonames, or set it to default, and return that.
+     * It's possible for this function to trigger an Exception from the setStorage() call.
      * @return string
      */
     public static function getStorage(): string {
         $columnName = self::DB_COLUMN_STORAGE_SUBDIR;
+        $storageSubdir = (string)self::first()->$columnName;
+        if (empty($storageSubdir)) {
+            $storageSubdir = self::setStorage();
+        }
 
-        return (string)self::first()->$columnName;
+        return $storageSubdir;
+    }
+
+    /**
+     * @param string|null $storageSubdir
+     * @return string Either the string that was passed in, or the default string defined in DB_COLUMN_STORAGE_SUBDIR
+     * @throws \Exception
+     */
+    public static function setStorage(string $storageSubdir = null): string {
+        $storageSubdir = $storageSubdir ?? self::DEFAULT_STORAGE_SUBDIR;
+        if (self::where(self::DB_COLUMN_ID, self::ID)->update([self::DB_COLUMN_STORAGE_SUBDIR => $storageSubdir])) {
+            self::createStorageDirInFilesystem($storageSubdir);
+
+            return $storageSubdir;
+        }
+        throw new \Exception("Unable to setStorage to: " . $storageSubdir);
+    }
+
+    /**
+     * @param string $storageSubdir
+     * @return string
+     * @throws \Exception
+     */
+    public static function createStorageDirInFilesystem(string $storageSubdir): string {
+        $path = storage_path() . DIRECTORY_SEPARATOR . $storageSubdir;
+        if (file_exists($path) && is_writable($path)) {
+            return $path;
+        }
+
+        if (file_exists($path) && !is_writable($path)) {
+            throw new \Exception("The storage path at '" . $path . "' exists but we can't write to it.");
+        }
+
+        if (mkdir($path, 0700)) {
+            return $path;
+        }
+
+        throw new \Exception("We were unable to create the storage path at '" . $path . "' so check to make sure you have the proper permissions.");
     }
 }

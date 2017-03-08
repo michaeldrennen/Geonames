@@ -10,7 +10,7 @@ use MichaelDrennen\Geonames\BaseTrait;
 use Illuminate\Support\Facades\DB;
 
 class FeatureCode extends Command {
-    use BaseTrait;
+
     /**
      * The name and signature of the console command.
      *
@@ -53,8 +53,6 @@ class FeatureCode extends Command {
     public function handle() {
         //
         $this->line("Starting " . $this->signature . "\n");
-
-        $this->setStorage();
 
         $this->setFeatureCodeRemoteFileName();
         $this->setFeatureCodeRemoteFilePath();

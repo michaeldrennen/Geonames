@@ -42,8 +42,6 @@ class Install extends Command {
      */
     public function __construct() {
         parent::__construct();
-
-
     }
 
 
@@ -53,6 +51,8 @@ class Install extends Command {
     public function handle() {
         $this->createSettings($this->option('country'));
         GeoSetting::setStatus(GeoSetting::STATUS_INSTALLING);
+
+
         $this->startTime = microtime(true);
         $this->line("Starting " . $this->signature);
 

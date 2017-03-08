@@ -36,11 +36,28 @@ class Status extends Command {
         $this->line("Status of this Geonames Installation");
         $settings = GeoSetting::first();
 
-        $headers = [];
-        $settings = $settings->toArray();
-        $this->table($headers, $settings);
+        print_r($settings);
 
-        $this->line("Finished " . $this->signature);
+
+        $headers = ['Status',
+                    'Countries',
+                    'Countries to be Added',
+                    'Storage Subdir',
+                    'Installed',
+                    'Last Modified',
+                    'Created',
+                    'Updated'];
+
+        $settings = [$settings->status,
+                     implode("\n", $settings->countries),
+                     implode("\n", $settings->countries_to_be_added),
+                     $settings->storage_subdir,
+                     $settings->installed_at,
+                     $settings->last_modified_at,
+                     $settings->created_at,
+                     $settings->updated_at];
+
+        $this->table($headers, $settings);
     }
 
 }
