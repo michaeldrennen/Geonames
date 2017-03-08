@@ -29,6 +29,10 @@ class ProtectedUpdateTest extends TestCase {
         }
     }
 
+
+    /**
+     *
+     */
     public function testPrepareRowsForUpdate() {
         $this->markTestSkipped('Unable to access the config() helper in this test. Wait until a patch is ready.');
         $filePath = './AD.txt';
@@ -41,7 +45,5 @@ class ProtectedUpdateTest extends TestCase {
         $method = $reflection->getMethod($methodName);
         $method->setAccessible(true);
         $whatisthis = $method->invokeArgs($object, $args);
-
-
     }
 }
