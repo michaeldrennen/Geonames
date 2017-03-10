@@ -4,8 +4,8 @@ namespace MichaelDrennen\Geonames\Console;
 
 use MichaelDrennen\Geonames\Geoname;
 use MichaelDrennen\Geonames\Log;
-use MichaelDrennen\Geonames\BaseTrait;
 use MichaelDrennen\Geonames\GeoSetting;
+use MichaelDrennen\Geonames\Console\GeonamesConsoleTrait;
 
 use Symfony\Component\DomCrawler\Crawler;
 use Curl\Curl;
@@ -17,7 +17,8 @@ use StdClass;
 
 
 class Update extends Command {
-    use BaseTrait;
+    use GeonamesConsoleTrait;
+
     /**
      * The name and signature of the console command.
      *
@@ -88,7 +89,6 @@ class Update extends Command {
      */
     public function __construct(Curl $curl, Client $client) {
         parent::__construct();
-        $this->setStorage();
         $this->curl = $curl;
         $this->client = $client;
     }

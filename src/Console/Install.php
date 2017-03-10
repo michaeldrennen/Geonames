@@ -4,12 +4,12 @@ namespace MichaelDrennen\Geonames\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use MichaelDrennen\Geonames\BaseTrait;
 use MichaelDrennen\Geonames\GeoSetting;
+use MichaelDrennen\Geonames\Console\GeonamesConsoleTrait;
 
 class Install extends Command {
 
-    use BaseTrait;
+    use GeonamesConsoleTrait;
 
     /**
      * @var string The name and signature of the console command.

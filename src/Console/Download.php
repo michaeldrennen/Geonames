@@ -4,17 +4,17 @@ namespace MichaelDrennen\Geonames\Console;
 
 use Curl\Curl;
 use MichaelDrennen\Geonames\Log;
-use MichaelDrennen\Geonames\BaseTrait;
+
 use MichaelDrennen\RemoteFile\RemoteFile;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
-
+use MichaelDrennen\Geonames\Console\GeonamesConsoleTrait;
 
 
 class Download extends Command {
 
-    use BaseTrait;
+    use GeonamesConsoleTrait;
 
     /**
      * The name and signature of the console command.
@@ -48,7 +48,7 @@ class Download extends Command {
      */
     public function __construct(Curl $curl) {
         parent::__construct();
-        $this->setStorage();
+
         $this->curl = $curl;
     }
 

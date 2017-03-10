@@ -2,15 +2,19 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
+use MichaelDrennen\Geonames\Console\GeonamesConsoleTrait;
+use MichaelDrennen\Geonames\GeoSetting;
 use ZipArchive;
 use SplFileInfo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Console\Command;
-use MichaelDrennen\Geonames\BaseTrait;
+
 
 class Initialize extends Command {
-    use BaseTrait;
+
+    use GeonamesConsoleTrait;
+
     /**
      * The name and signature of the console command.
      *
@@ -50,7 +54,7 @@ class Initialize extends Command {
      */
     public function __construct() {
         parent::__construct();
-        $this->setStorage();
+
         // Add the master txt file to the list of files to ignore.
         // *this can't be done above where we assign properties.
         $this->txtFilesToIgnore[] = $this->masterTxtFileName;

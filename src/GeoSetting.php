@@ -53,7 +53,8 @@ class GeoSetting extends Model {
 
 
     /**
-     *
+     * This library makes use of the Laravel storage_dir() as the root. This const defines the name of the child
+     * directory that stores all of our downloaded geonames files.
      */
     const DEFAULT_STORAGE_SUBDIR = 'geonames';
 
@@ -93,9 +94,12 @@ class GeoSetting extends Model {
      * method to create the record if it did not exist. When users start to tinker with this library, and
      * accidentally delete the settings record (or change it's id or whatever), this will self-heal the system.
      * @param array $countries
-     * @return bool
+     * @param array $languages
+     * @param string $storageSubDir
+     * @return bool Really only returns true. All other errors throw an Exception.
+     * @throws \Exception
      */
-    public static function init($countries = ['*'], $storageSubDir = 'geonames'): bool {
+    public static function init($countries = ['*'], $languages = ['en'], $storageSubDir = 'geonames'): bool {
         if (self::find(self::ID)) {
             return true;
         }
@@ -103,6 +107,7 @@ class GeoSetting extends Model {
         // Create settings record.
         $setting = GeoSetting::create([self::DB_COLUMN_ID             => self::ID,
                                        self::DB_COLUMN_COUNTRIES      => $countries,
+                                       self::DB_COLUMN_LANGUAGES      => $languages,
                                        self::DB_COLUMN_STORAGE_SUBDIR => $storageSubDir]);
 
         if ($setting) {
@@ -112,11 +117,13 @@ class GeoSetting extends Model {
     }
 
     /**
+     * Saves a new language code to the settings if it isn't already in there.
      * @param string $languageCode
      * @return bool
      * @throws \Exception
+     * @todo Verify that the language code is valid.
      */
-    public static function addLanguage($languageCode = 'en') {
+    public static function addLanguage(string $languageCode = 'en'): bool {
         $existingLanguages = self::getLanguages();
         if (array_search($languageCode, $existingLanguages) !== false) {
             return true;
@@ -131,11 +138,12 @@ class GeoSetting extends Model {
     }
 
     /**
-     * @param $languageCode
-     * @return bool
+     * Removes a language code from the settings if it was in there.
+     * @param string $languageCode
+     * @return bool Returns true. Any error gets thrown as an exception.
      * @throws \Exception
      */
-    public static function removeLanguage($languageCode) {
+    public static function removeLanguage(string $languageCode): bool {
         $existingLanguages = self::getLanguages();
         $existingLanguageIndex = array_search($languageCode, $existingLanguages);
         if ($existingLanguageIndex !== false) {
@@ -148,9 +156,14 @@ class GeoSetting extends Model {
         throw new \Exception("Unable to remove this language to our settings " . $languageCode);
     }
 
+    /**
+     * Returns an array of the language codes stored in the settings.
+     * @return array
+     */
     public static function getLanguages(): array {
         $columnName = self::DB_COLUMN_LANGUAGES;
         $languages = (string)self::first()->$columnName;
+
         return $languages;
     }
 
@@ -172,10 +185,18 @@ class GeoSetting extends Model {
      */
     public static function getStorage(): string {
         $columnName = self::DB_COLUMN_STORAGE_SUBDIR;
-        $storageSubdir = (string)self::first()->$columnName;
+
+        $settingRecord = self::first();
+        if (is_null($settingRecord)) {
+            throw new \Exception("The setting record does not exist in the database yet. You need to run geonames:install first.");
+        }
+
+        $storageSubdir = (string)$settingRecord->$columnName;
+
         if (empty($storageSubdir)) {
             $storageSubdir = self::setStorage();
         }
+
         return $storageSubdir;
     }
 
@@ -214,5 +235,9 @@ class GeoSetting extends Model {
         }
 
         throw new \Exception("We were unable to create the storage path at '" . $path . "' so check to make sure you have the proper permissions.");
+    }
+
+    public static function getAbsoluteLocalStoragePath() {
+        return storage_path() . DIRECTORY_SEPARATOR . self::getStorage();
     }
 }

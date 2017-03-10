@@ -4,65 +4,94 @@ namespace MichaelDrennen\Geonames\Console;
 
 use Carbon\Carbon;
 use Curl\Curl;
-use MichaelDrennen\Geonames\Log;
 use Illuminate\Console\Command;
-use MichaelDrennen\Geonames\BaseTrait;
 use Illuminate\Support\Facades\DB;
+
+use MichaelDrennen\Geonames\GeoSetting;
+use MichaelDrennen\Geonames\Log;
 
 class FeatureCode extends Command {
 
+    use GeonamesConsoleTrait;
+
     /**
-     * The name and signature of the console command.
-     *
-     * @var string
+     * @var string  The name and signature of the console command.
      */
     protected $signature = 'geonames:feature-code';
 
     /**
-     * The console command description.
-     *
-     * @var string
+     * @var string  The console command description.
      */
-    protected $description = "Download and insert the feature code list from geonames.";
+    protected $description = "Download and insert the feature code files from geonames. Every language. They're only ~600 rows each.";
 
     /**
      * @var Curl Instance of a Curl object that we use to download the files.
      */
     protected $curl;
 
-    protected $featureCodeRemoteFileName = '';
-    protected $featureCodeRemoteFilePath = '';
-    protected $featureCodeLocalFilePath = '';
-
-
 
     /**
      * Create a new command instance.
-     * @param Curl $curl
      */
     public function __construct() {
         parent::__construct();
-
     }
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      */
     public function handle() {
-        //
         $this->line("Starting " . $this->signature . "\n");
 
-        $this->setFeatureCodeRemoteFileName();
-        $this->setFeatureCodeRemoteFilePath();
+        // Get all of the feature code lines from the geonames.org download page.
+        $featureCodeFileDownloadLinks = $this->getFeatureCodeFileDownloadLinks();
 
-        $this->setFeatureCodeLocalFilePath();
-        $this->downloadFeatureCodeFile();
-        $this->insert($this->featureCodeLocalFilePath);
+        $this->line(print_r($featureCodeFileDownloadLinks, true));
+
+
+        // Download each of the files that we found.
+        $localPathsToFeatureCodeFiles = self::downloadFiles($this, $featureCodeFileDownloadLinks);
+
+        $this->line(print_r($localPathsToFeatureCodeFiles, true));
+
+        // Run each of those files through LOAD DATA INFILE.
+
+
+        //$this->downloadFeatureCodeFile();
+        //$this->insert($this->featureCodeLocalFilePath);
 
         $this->line("\nFinished " . $this->signature);
     }
+
+
+    /**
+     * @return array A list of all of the featureCode files from the geonames.org site.
+     */
+    protected function getFeatureCodeFileDownloadLinks(): array {
+        $links = $this->getAllLinksOnDownloadPage();
+
+        $featureCodeFileDownloadLinks = [];
+        foreach ($links as $link) {
+            $string = 'featureCodes_';
+            $length = strlen($string);
+            if (substr($link, 0, $length) === $string) {
+                $featureCodeFileDownloadLinks[] = self::$url . $link;
+            }
+        }
+
+        return $featureCodeFileDownloadLinks;
+    }
+
+    protected function downloadFeatureCodeFiles(): array {
+        $localPaths = [];
+
+        return $localPaths;
+    }
+
+
+
+
+
 
 
     protected function setFeatureCodeRemoteFileName() {

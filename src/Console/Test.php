@@ -8,7 +8,7 @@ use MichaelDrennen\Geonames\GeoSetting;
 
 class Test extends Command {
 
-    use BaseTrait;
+    use GeonamesConsoleTrait;
 
     /**
      * @var string The name and signature of the console command.

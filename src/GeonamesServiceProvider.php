@@ -19,9 +19,6 @@ class GeonamesServiceProvider extends ServiceProvider {
         $this->loadMigrationsFrom(__DIR__ . '/Migrations');
 
 
-        // The defaults are fine, but if you want to optimize this is a good place to start.
-        $this->publishes([__DIR__ . '/Config/geonames.php' => config_path('geonames.php'),]);
-
         // Let's register our commands. These are needed to keep our geonames data up-to-date.
         if ($this->app->runningInConsole()) {
             $this->commands([Console\Status::class,

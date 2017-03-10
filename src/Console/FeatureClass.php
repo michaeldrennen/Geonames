@@ -3,12 +3,12 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Illuminate\Console\Command;
-use MichaelDrennen\Geonames\BaseTrait;
 use Illuminate\Support\Facades\DB;
+use MichaelDrennen\Geonames\Console\GeonamesConsoleTrait;
 
 class FeatureClass extends Command {
 
-    use BaseTrait;
+    use GeonamesConsoleTrait;
 
     /**
      * @var string The name and signature of the console command.
