@@ -82,4 +82,22 @@ trait GeonamesConsoleTrait {
         return $localFilePath;
     }
 
+    /**
+     * Given a csv file on disk, this function converts it to a php array.
+     * @param string $localFilePath The absolute path to a csv file in storage.
+     * @param string $delimiter In a csv file, the character between fields.
+     * @return array    A multi-dimensional made of the data in the csv file.
+     */
+    public static function csvFileToArray(string $localFilePath, $delimiter = "\t"): array {
+        $rows = [];
+        if (($handle = fopen($localFilePath, "r")) !== false) {
+            while (($data = fgetcsv($handle, 0, $delimiter)) !== false) {
+                $rows[] = $data;
+            }
+            fclose($handle);
+        }
+
+        return $rows;
+    }
+
 }
