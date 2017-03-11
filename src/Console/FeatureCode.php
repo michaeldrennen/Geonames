@@ -5,7 +5,8 @@ namespace MichaelDrennen\Geonames\Console;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Schema;
+use MichaelDrennen\Geonames\GeoSetting;
 use MichaelDrennen\Geonames\Log;
 
 /**
@@ -52,16 +53,15 @@ class FeatureCode extends Command {
     public function handle() {
         $this->line("Starting " . $this->signature . "\n");
 
+        GeoSetting::init();
+
         // Get all of the feature code lines from the geonames.org download page.
         $featureCodeFileDownloadLinks = $this->getFeatureCodeFileDownloadLinks();
-
-        $this->line(print_r($featureCodeFileDownloadLinks, true));
 
 
         // Download each of the files that we found.
         $localPathsToFeatureCodeFiles = self::downloadFiles($this, $featureCodeFileDownloadLinks);
 
-        $this->line(print_r($localPathsToFeatureCodeFiles, true));
 
         // Run each of those files through LOAD DATA INFILE.
         $this->line("Creating the temp table named geonames_working.");
@@ -81,7 +81,7 @@ class FeatureCode extends Command {
         if ($allRowsInserted === true) {
             Schema::drop(self::TABLE);
             Schema::rename(self::TABLE_WORKING, self::TABLE);
-            $this->info("Success. The " . self::TABLE . " is live.");
+            $this->info("\nSuccess. The " . self::TABLE . " is live.");
         } else {
             Log::error('', "Failed to insert all of the feature_code rows.", 'database');
         }
@@ -165,8 +165,7 @@ class FeatureCode extends Command {
         list($id, $name, $description, $language_code) = $row;
         list($feature_class, $feature_code) = explode('.', $id);
 
-        return ['id'            => $id,
-                'language_code' => $language_code,
+        return ['language_code' => $language_code,
                 'feature_class' => $feature_class,
                 'feature_code'  => $feature_code,
                 'name'          => $name,
