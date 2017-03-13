@@ -51,6 +51,7 @@ class FeatureCode extends Command {
      * Execute the console command.
      */
     public function handle() {
+        $this->startTimer();
         $this->line("Starting " . $this->signature . "\n");
 
         GeoSetting::init();
@@ -86,7 +87,7 @@ class FeatureCode extends Command {
             Log::error('', "Failed to insert all of the feature_code rows.", 'database');
         }
 
-
+        $this->info( "The feature_codes data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
         $this->line("\nFinished " . $this->signature);
     }
 

@@ -7,13 +7,58 @@ use MichaelDrennen\RemoteFile\RemoteFile;
 use MichaelDrennen\Geonames\Log;
 use Illuminate\Console\Command;
 use Symfony\Component\DomCrawler\Crawler;
+use ZipArchive;
 
 trait GeonamesConsoleTrait {
 
     /**
-     * @var string
+     * @var string  The base download URL for the geonames.org site.
+     *              I use a static var instead of a const because traits can't have constants.
      */
     protected static $url = 'http://download.geonames.org/export/dump/';
+
+    /**
+     * @var float When this command starts.
+     */
+    protected $startTime;
+
+    /**
+     * @var float When this command ends.
+     */
+    protected $endTime;
+
+    /**
+     * @var float The number of seconds that this command took to run.
+     */
+    protected $runTime;
+
+    /**
+     * Start the timer. Record the start time in startTime()
+     */
+    protected function startTimer () {
+        $this->startTime = microtime( true );
+    }
+
+    /**
+     * Stop the timer. Record the end time in endTime, and the time elapsed in runTime.
+     */
+    protected function stopTimer () {
+        $this->endTime = microtime( true );
+        $this->runTime = $this->endTime - $this->startTime;
+    }
+
+    /**
+     * This will return the time between startTimer() and stopTimer(), OR between
+     * startTimer() and now
+     * @return float    The time elapsed in seconds.
+     */
+    protected function getRunTime (): float {
+        if ( $this->runTime > 0 ) {
+            return (float)$this->runTime;
+        }
+
+        return (float)microtime( true ) - $this->startTime;
+    }
 
     /**
      * @return array An array of all the anchor tag href attributes on the given url parameter.
@@ -32,6 +77,11 @@ trait GeonamesConsoleTrait {
     }
 
 
+    /**
+     * @param Command $command
+     * @param array $downloadLinks
+     * @return array
+     */
     public static function downloadFiles(Command $command, array $downloadLinks): array {
         $localFilePaths = [];
         foreach ($downloadLinks as $link) {
@@ -41,6 +91,12 @@ trait GeonamesConsoleTrait {
         return $localFilePaths;
     }
 
+    /**
+     * @param Command $command The command instance from the console script.
+     * @param string $link The absolute path to the remote file we want to download.
+     * @return string           The absolute local path to the file we just downloaded.
+     * @throws \Exception
+     */
     public static function downloadFile(Command $command, string $link): string {
         $curl = new Curl();
 
@@ -98,6 +154,30 @@ trait GeonamesConsoleTrait {
         }
 
         return $rows;
+    }
+
+    /**
+     * Unzips the zip file into our geonames storage dir that is set in GeoSettings.
+     * @param string $localFilePath Absolute local path to the zip archive.
+     * @throws \Exception
+     */
+    public static function unzip ( $localFilePath ) {
+        $storage = GeoSetting::getAbsoluteLocalStoragePath();
+        $zip = new ZipArchive;
+        $zipOpenResult = $zip->open( $localFilePath );
+        if ( $zipOpenResult !== true ) {
+            throw new \Exception( "Error [" . $zipOpenResult . "] Unable to unzip the archive at " . $localFilePath );
+        }
+        $extractResult = $zip->extractTo( $storage );
+        if ( $extractResult === false ) {
+            throw new \Exception( "Unable to unzip the file at " . $localFilePath );
+        }
+        $closeResult = $zip->close();
+        if ( $closeResult === false ) {
+            throw new \Exception( "After unzipping unable to close the file at " . $localFilePath );
+        }
+
+        return;
     }
 
 }

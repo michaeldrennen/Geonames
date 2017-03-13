@@ -13,22 +13,23 @@ class GeonamesServiceProvider extends ServiceProvider {
      *
      * @return void
      */
-    public function boot() {
+    public function boot () {
         // There are a number of tables that need to be created for our Geonames package.
         // Feel free to modify those migrations to create indexes that are appropriate for your application.
-        $this->loadMigrationsFrom(__DIR__ . '/Migrations');
+        $this->loadMigrationsFrom( __DIR__ . '/Migrations' );
 
 
         // Let's register our commands. These are needed to keep our geonames data up-to-date.
-        if ($this->app->runningInConsole()) {
-            $this->commands([Console\Status::class,
-                             Console\FeatureClass::class,
-                             Console\FeatureCode::class,
-                             Console\Install::class,
-                             Console\Initialize::class,
-                             Console\Download::class,
-                             Console\Update::class,
-                             Console\Test::class]);
+        if ( $this->app->runningInConsole() ) {
+            $this->commands( [Console\Install::class,
+                              Console\AlternateName::class,
+                              Console\Status::class,
+                              Console\FeatureClass::class,
+                              Console\FeatureCode::class,
+                              Console\Initialize::class,
+                              Console\Download::class,
+                              Console\Update::class,
+                              Console\Test::class] );
         }
     }
 
@@ -37,7 +38,7 @@ class GeonamesServiceProvider extends ServiceProvider {
      *
      * @return void
      */
-    public function register() {
+    public function register () {
         //
     }
 }

@@ -4,7 +4,7 @@ namespace MichaelDrennen\Geonames\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use MichaelDrennen\Geonames\Console\GeonamesConsoleTrait;
+
 
 class FeatureClass extends Command {
 
@@ -20,38 +20,22 @@ class FeatureClass extends Command {
      */
     protected $description = "Populate the FeatureClasses table.";
 
-    /**
-     * @var float When this command starts.
-     */
-    protected $startTime;
-
-    /**
-     * @var float When this command ends.
-     */
-    protected $endTime;
-
-    /**
-     * @var float The number of seconds that this command took to run.
-     */
-    protected $runTime;
-
 
     /**
      * Initialize constructor.
      */
     public function __construct() {
         parent::__construct();
-
-
     }
 
 
     /**
      * Execute the console command.
+     * I don't worry about creating a temp/working table here, because it runs so fast. We're
+     * only inserting a couple rows.
      */
     public function handle() {
-        $this->startTime = microtime(true);
-        $this->line("Starting " . $this->signature);
+        $this->startTimer();
 
         DB::table('geo_feature_classes')->truncate();
 
@@ -84,13 +68,6 @@ class FeatureClass extends Command {
                                                   'description' => 'forest,heath,...',]);
 
 
-        $this->endTime = microtime(true);
-        $this->runTime = $this->endTime - $this->startTime;
-
-        $this->info("The feature_classes table was truncated and refilled in " . $this->runTime . " seconds.");
-
-        $this->line("Finished " . $this->signature);
+        $this->info( "The feature_classes table was truncated and refilled in " . $this->getRunTime() . " seconds." );
     }
-
-
 }

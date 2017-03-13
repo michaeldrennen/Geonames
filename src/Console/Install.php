@@ -14,7 +14,10 @@ class Install extends Command {
     /**
      * @var string The name and signature of the console command.
      */
-    protected $signature = 'geonames:install {--country=* : Add the 2 digit code for each country. One per option.} {--language=en : Add the 2 character language code.}';
+    protected $signature = 'geonames:install 
+        {--country=* : Add the 2 digit code for each country. One per option.} 
+        {--language=* : Add the 2 character language code.} 
+        {--storage=geonames : The name of the directory, rooted in the storage_dir() path, where we store all downloaded files.}';
 
     /**
      * @var string The console command description.
@@ -49,7 +52,9 @@ class Install extends Command {
      * Execute the console command.
      */
     public function handle() {
-        $this->createSettings($this->option('country'));
+
+        GeoSetting::install( $this->option( 'country' ), $this->option( 'language' ), $this->option( 'storage' ) );
+
         GeoSetting::setStatus(GeoSetting::STATUS_INSTALLING);
 
         $this->startTime = microtime(true);
@@ -70,6 +75,16 @@ class Install extends Command {
             $this->error($e->getMessage());
             $this->error($e->getTraceAsString());
             GeoSetting::setStatus(GeoSetting::STATUS_ERROR);
+            return false;
+        }
+
+        try {
+            $this->call( 'geonames:alternate-name' );
+        } catch ( \Exception $e ) {
+            $this->error( $e->getMessage() );
+            $this->error( $e->getTraceAsString() );
+            GeoSetting::setStatus( GeoSetting::STATUS_ERROR );
+
             return false;
         }
 

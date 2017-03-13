@@ -1,5 +1,6 @@
 <?php
 namespace MichaelDrennen\Geonames;
+
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -75,6 +76,11 @@ class GeoSetting extends Model {
     const DB_COLUMN_COUNTRIES = 'countries';
 
     /**
+     *
+     */
+    const DB_COLUMN_COUNTRIES_TO_BE_ADDED = 'countries_to_be_added';
+
+    /**
      * The name of the status column in the database. If for whatever reason, you needed to change it,
      * it'd be nice to only have to do it in one place.
      */
@@ -85,6 +91,29 @@ class GeoSetting extends Model {
      * it'd be nice to only have to do it in one place.
      */
     const DB_COLUMN_LANGUAGES = 'languages';
+
+    public static function install ( array $countriesToBeAdded = ['*'], array $languages = ['en'], string $storageSubDir = 'geonames' ): bool {
+        if ( $settings = self::find( self::ID ) ) {
+            $settings->{self::DB_COLUMN_COUNTRIES_TO_BE_ADDED} = $countriesToBeAdded;
+            $settings->{self::DB_COLUMN_LANGUAGES} = $languages;
+            $settings->{self::DB_COLUMN_STORAGE_SUBDIR} = $storageSubDir;
+            $settings->save();
+
+            return true;
+        }
+
+        // Create settings record.
+        $setting = GeoSetting::create( [self::DB_COLUMN_ID                    => self::ID,
+                                        self::DB_COLUMN_COUNTRIES_TO_BE_ADDED => $countriesToBeAdded,
+                                        self::DB_COLUMN_LANGUAGES             => $languages,
+                                        self::DB_COLUMN_STORAGE_SUBDIR        => $storageSubDir] );
+
+        if ( $setting ) {
+            return true;
+        }
+        Log::error( '', "Unable to create the settings record in the install() function.", 'local' );
+        throw new \Exception( "Unable to create the settings record in the install() function." );
+    }
 
     /**
      * In a perfect world, the geo_settings record was created when you ran the geonames:install command.
@@ -97,21 +126,23 @@ class GeoSetting extends Model {
      * @return bool Really only returns true. All other errors throw an Exception.
      * @throws \Exception
      */
-    public static function init($countries = ['*'], $languages = ['en'], $storageSubDir = 'geonames'): bool {
-        if (self::find(self::ID)) {
+    public static function init ( array $countries = ['*'], array $languages = ['en'], string $storageSubDir = 'geonames' ): bool {
+
+        if ( self::find( self::ID ) ) {
             return true;
         }
 
         // Create settings record.
-        $setting = GeoSetting::create([self::DB_COLUMN_ID             => self::ID,
-                                       self::DB_COLUMN_COUNTRIES      => $countries,
-                                       self::DB_COLUMN_LANGUAGES      => $languages,
-                                       self::DB_COLUMN_STORAGE_SUBDIR => $storageSubDir]);
+        $setting = GeoSetting::create( [self::DB_COLUMN_ID             => self::ID,
+                                        self::DB_COLUMN_COUNTRIES      => $countries,
+                                        self::DB_COLUMN_LANGUAGES      => $languages,
+                                        self::DB_COLUMN_STORAGE_SUBDIR => $storageSubDir] );
 
-        if ($setting) {
+        if ( $setting ) {
             return true;
         }
-        throw new \Exception("Unable to create the settings record in the init() function.");
+        Log::error( '', "Unable to create the settings record in the init() function.", 'local' );
+        throw new \Exception( "Unable to create the settings record in the init() function." );
     }
 
     /**
@@ -121,18 +152,18 @@ class GeoSetting extends Model {
      * @throws \Exception
      * @todo Verify that the language code is valid.
      */
-    public static function addLanguage(string $languageCode = 'en'): bool {
+    public static function addLanguage ( string $languageCode = 'en' ): bool {
         $existingLanguages = self::getLanguages();
-        if (array_search($languageCode, $existingLanguages) !== false) {
+        if ( array_search( $languageCode, $existingLanguages ) !== false ) {
             return true;
         }
 
         $existingLanguages[] = $languageCode;
-        if (self::where(self::DB_COLUMN_ID, self::ID)->update([self::DB_COLUMN_COUNTRIES => $existingLanguages])) {
+        if ( self::where( self::DB_COLUMN_ID, self::ID )->update( [self::DB_COLUMN_COUNTRIES => $existingLanguages] ) ) {
             return true;
         }
 
-        throw new \Exception("Unable to add this language to our settings " . $languageCode);
+        throw new \Exception( "Unable to add this language to our settings " . $languageCode );
     }
 
     /**
@@ -141,24 +172,24 @@ class GeoSetting extends Model {
      * @return bool Returns true. Any error gets thrown as an exception.
      * @throws \Exception
      */
-    public static function removeLanguage(string $languageCode): bool {
+    public static function removeLanguage ( string $languageCode ): bool {
         $existingLanguages = self::getLanguages();
-        $existingLanguageIndex = array_search($languageCode, $existingLanguages);
-        if ($existingLanguageIndex !== false) {
+        $existingLanguageIndex = array_search( $languageCode, $existingLanguages );
+        if ( $existingLanguageIndex !== false ) {
             return true;
         }
-        unset($existingLanguages[ $existingLanguageIndex ]);
-        if (self::where(self::DB_COLUMN_ID, self::ID)->update([self::DB_COLUMN_COUNTRIES => $existingLanguages])) {
+        unset( $existingLanguages[ $existingLanguageIndex ] );
+        if ( self::where( self::DB_COLUMN_ID, self::ID )->update( [self::DB_COLUMN_COUNTRIES => $existingLanguages] ) ) {
             return true;
         }
-        throw new \Exception("Unable to remove this language to our settings " . $languageCode);
+        throw new \Exception( "Unable to remove this language to our settings " . $languageCode );
     }
 
     /**
      * Returns an array of the language codes stored in the settings.
      * @return array
      */
-    public static function getLanguages(): array {
+    public static function getLanguages (): array {
         $columnName = self::DB_COLUMN_LANGUAGES;
         $languages = (string)self::first()->$columnName;
 
@@ -170,28 +201,29 @@ class GeoSetting extends Model {
      * @return bool
      * @throws \Exception
      */
-    public static function setStatus(string $status): bool {
+    public static function setStatus ( string $status ): bool {
         self::init();
 
-        return self::where(self::DB_COLUMN_ID, self::ID)->update([self::DB_COLUMN_STATUS => $status]);
+        return self::where( self::DB_COLUMN_ID, self::ID )->update( [self::DB_COLUMN_STATUS => $status] );
     }
 
     /**
      * Return the string representing the storage subdir for Geonames, or set it to default, and return that.
      * It's possible for this function to trigger an Exception from the setStorage() call.
      * @return string
+     * @throws \Exception
      */
-    public static function getStorage(): string {
+    public static function getStorage (): string {
         $columnName = self::DB_COLUMN_STORAGE_SUBDIR;
 
         $settingRecord = self::first();
-        if (is_null($settingRecord)) {
-            throw new \Exception("The setting record does not exist in the database yet. You need to run geonames:install first.");
+        if ( is_null( $settingRecord ) ) {
+            throw new \Exception( "The setting record does not exist in the database yet. You need to run geonames:install first." );
         }
 
         $storageSubdir = (string)$settingRecord->$columnName;
 
-        if (empty($storageSubdir)) {
+        if ( empty( $storageSubdir ) ) {
             $storageSubdir = self::setStorage();
         }
 
@@ -203,14 +235,14 @@ class GeoSetting extends Model {
      * @return string Either the string that was passed in, or the default string defined in DB_COLUMN_STORAGE_SUBDIR
      * @throws \Exception
      */
-    public static function setStorage(string $storageSubdir = null): string {
+    public static function setStorage ( string $storageSubdir = null ): string {
         $storageSubdir = $storageSubdir ?? self::DEFAULT_STORAGE_SUBDIR;
-        if (self::where(self::DB_COLUMN_ID, self::ID)->update([self::DB_COLUMN_STORAGE_SUBDIR => $storageSubdir])) {
-            self::createStorageDirInFilesystem($storageSubdir);
+        if ( self::where( self::DB_COLUMN_ID, self::ID )->update( [self::DB_COLUMN_STORAGE_SUBDIR => $storageSubdir] ) ) {
+            self::createStorageDirInFilesystem( $storageSubdir );
 
             return $storageSubdir;
         }
-        throw new \Exception("Unable to setStorage to: " . $storageSubdir);
+        throw new \Exception( "Unable to setStorage to: " . $storageSubdir );
     }
 
     /**
@@ -218,24 +250,56 @@ class GeoSetting extends Model {
      * @return string
      * @throws \Exception
      */
-    public static function createStorageDirInFilesystem(string $storageSubdir): string {
+    public static function createStorageDirInFilesystem ( string $storageSubdir ): string {
         $path = storage_path() . DIRECTORY_SEPARATOR . $storageSubdir;
-        if (file_exists($path) && is_writable($path)) {
+        if ( file_exists( $path ) && is_writable( $path ) ) {
             return $path;
         }
 
-        if (file_exists($path) && !is_writable($path)) {
-            throw new \Exception("The storage path at '" . $path . "' exists but we can't write to it.");
+        if ( file_exists( $path ) && !is_writable( $path ) ) {
+            throw new \Exception( "The storage path at '" . $path . "' exists but we can't write to it." );
         }
 
-        if (mkdir($path, 0700)) {
+        if ( mkdir( $path, 0700 ) ) {
             return $path;
         }
 
-        throw new \Exception("We were unable to create the storage path at '" . $path . "' so check to make sure you have the proper permissions.");
+        throw new \Exception( "We were unable to create the storage path at '" . $path . "' so check to make sure you have the proper permissions." );
     }
 
-    public static function getAbsoluteLocalStoragePath() {
+    public static function getAbsoluteLocalStoragePath () {
         return storage_path() . DIRECTORY_SEPARATOR . self::getStorage();
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public static function getCountriesToBeAdded (): array {
+        $columnName = self::DB_COLUMN_COUNTRIES_TO_BE_ADDED;
+
+        $settingRecord = self::first();
+        if ( is_null( $settingRecord ) ) {
+            throw new \Exception( "The setting record does not exist in the database yet. You need to run geonames:install first." );
+        }
+
+        return $settingRecord->$columnName;
+    }
+
+    /**
+     * After the Install command inserts all of the required geonames records, we move the value from
+     * countries_to_be_added to the countries field.
+     * @return bool
+     * @throws \Exception
+     */
+    public static function setCountriesFromCountriesToBeAdded (): bool {
+        $settingRecord = self::first();
+        if ( is_null( $settingRecord ) ) {
+            throw new \Exception( "The setting record does not exist in the database yet. You need to run geonames:install first." );
+        }
+
+        $settingRecord->{self::DB_COLUMN_COUNTRIES} = $settingRecord->{self::DB_COLUMN_COUNTRIES_TO_BE_ADDED};
+
+        return $settingRecord->save();
     }
 }
