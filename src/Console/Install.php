@@ -5,7 +5,6 @@ namespace MichaelDrennen\Geonames\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use MichaelDrennen\Geonames\GeoSetting;
-use MichaelDrennen\Geonames\Console\GeonamesConsoleTrait;
 
 class Install extends Command {
 
@@ -89,16 +88,7 @@ class Install extends Command {
         }
 
         try {
-            $this->call('geonames:download');
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
-            $this->error($e->getTraceAsString());
-            GeoSetting::setStatus(GeoSetting::STATUS_ERROR);
-            return false;
-        }
-
-        try {
-            $this->call('geonames:initialize');
+            $this->call( 'geonames:geoname' );
         } catch (\Exception $e) {
             $this->error($e->getMessage());
             $this->error($e->getTraceAsString());
@@ -111,6 +101,8 @@ class Install extends Command {
         $this->runTime = $this->endTime - $this->startTime;
         GeoSetting::setStatus(GeoSetting::STATUS_LIVE);
         $this->line("Finished " . $this->signature);
+
+        $this->call( 'geonames:status' );
     }
 
 

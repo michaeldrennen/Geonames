@@ -155,7 +155,7 @@ class InsertGeonames extends Command {
         if ( $fileName === $this->allCountriesZipFileName ) {
             return true;
         }
-        if ( preg_match( '^[A-Z]{2}\.zip', $fileName ) === 1 ) {
+        if ( preg_match( '/^[A-Z]{2}\.zip$/', $fileName ) === 1 ) {
             return true;
         }
         return false;
@@ -169,7 +169,7 @@ class InsertGeonames extends Command {
         if ( $fileName === $this->allCountriesTxtFileName ) {
             return true;
         }
-        if ( preg_match( '^[A-Z]{2}\.txt', $fileName ) === 1 ) {
+        if ( preg_match( '/^[A-Z]{2}\.txt$/', $fileName ) === 1 ) {
             return true;
         }
         return false;
