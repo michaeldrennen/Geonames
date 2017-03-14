@@ -2,14 +2,14 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
-use Curl\Curl;
+
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use MichaelDrennen\Geonames\GeoSetting;
 use MichaelDrennen\Geonames\Log;
 
 
-class Download extends Command {
+class DownloadGeonames extends Command {
 
     use GeonamesConsoleTrait;
 
@@ -18,7 +18,7 @@ class Download extends Command {
      *
      * @var string
      */
-    protected $signature = 'geonames:download';
+    protected $signature = 'geonames:download-geonames';
 
     /**
      * The console command description.

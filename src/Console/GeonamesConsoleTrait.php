@@ -2,12 +2,13 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Curl\Curl;
+use ZipArchive;
+use Exception;
+use Illuminate\Console\Command;
+use Symfony\Component\DomCrawler\Crawler;
 use MichaelDrennen\Geonames\GeoSetting;
 use MichaelDrennen\RemoteFile\RemoteFile;
 use MichaelDrennen\Geonames\Log;
-use Illuminate\Console\Command;
-use Symfony\Component\DomCrawler\Crawler;
-use ZipArchive;
 
 trait GeonamesConsoleTrait {
 
@@ -124,7 +125,7 @@ trait GeonamesConsoleTrait {
         if ($curl->error) {
             $command->error("\n" . $curl->error_code . ':' . $curl->error_message);
             Log::error($link, $curl->error_message, $curl->error_code);
-            throw new \Exception("Unable to download the file at '" . $link . "', " . $curl->error_message);
+            throw new Exception( "Unable to download the file at '" . $link . "', " . $curl->error_message );
         }
 
         $command->info("\n" . "Downloaded " . $link . "\n");
@@ -132,7 +133,7 @@ trait GeonamesConsoleTrait {
         $bytesWritten = file_put_contents($localFilePath, $data);
         if ($bytesWritten === false) {
             Log::error($link, "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?", 'local');
-            throw new \Exception("Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?");
+            throw new Exception( "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?" );
         }
 
         return $localFilePath;
@@ -166,15 +167,33 @@ trait GeonamesConsoleTrait {
         $zip = new ZipArchive;
         $zipOpenResult = $zip->open( $localFilePath );
         if ( $zipOpenResult !== true ) {
-            throw new \Exception( "Error [" . $zipOpenResult . "] Unable to unzip the archive at " . $localFilePath );
+            throw new Exception( "Error [" . $zipOpenResult . "] Unable to unzip the archive at " . $localFilePath );
         }
         $extractResult = $zip->extractTo( $storage );
         if ( $extractResult === false ) {
-            throw new \Exception( "Unable to unzip the file at " . $localFilePath );
+            throw new Exception( "Unable to unzip the file at " . $localFilePath );
         }
         $closeResult = $zip->close();
         if ( $closeResult === false ) {
-            throw new \Exception( "After unzipping unable to close the file at " . $localFilePath );
+            throw new Exception( "After unzipping unable to close the file at " . $localFilePath );
+        }
+
+        return;
+    }
+
+
+    /**
+     * Pass in an array of absolute local file paths, and this function will extract
+     * them to our geonames storage directory.
+     * @param array $absoluteFilePaths
+     */
+    public static function unzipFiles ( array $absoluteFilePaths ) {
+        try {
+
+        } catch ( Exception $e ) {
+            foreach ( $absoluteFilePaths as $absoluteFilePath ) {
+                self::unzip( $absoluteFilePath );
+            }
         }
 
         return;

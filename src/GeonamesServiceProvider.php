@@ -21,14 +21,16 @@ class GeonamesServiceProvider extends ServiceProvider {
 
         // Let's register our commands. These are needed to keep our geonames data up-to-date.
         if ( $this->app->runningInConsole() ) {
-            $this->commands( [Console\Install::class,
+            $this->commands( [Console\Geoname::class,
+                              Console\DownloadGeonames::class,
+                              Console\InsertGeonames::class,
+
                               Console\AlternateName::class,
-                              Console\Status::class,
                               Console\FeatureClass::class,
                               Console\FeatureCode::class,
-                              Console\Initialize::class,
-                              Console\Download::class,
+
                               Console\Update::class,
+                              Console\Status::class,
                               Console\Test::class] );
         }
     }
