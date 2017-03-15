@@ -148,10 +148,10 @@ class InsertGeonames extends Command {
 
 
     /**
-     * @param $fileName
+     * @param string $fileName
      * @return bool
      */
-    private function isCountryZipFile ( $fileName ): bool {
+    private function isCountryZipFile ( string $fileName ): bool {
         if ( $fileName === $this->allCountriesZipFileName ) {
             return true;
         }
@@ -162,10 +162,10 @@ class InsertGeonames extends Command {
     }
 
     /**
-     * @param $fileName
+     * @param string $fileName
      * @return bool
      */
-    private function isCountryTxtFile ( $fileName ): bool {
+    private function isCountryTxtFile ( string $fileName ): bool {
         if ( $fileName === $this->allCountriesTxtFileName ) {
             return true;
         }
@@ -177,10 +177,10 @@ class InsertGeonames extends Command {
 
 
     /**
-     * @param $fileName
+     * @param string $fileName
      * @return string
      */
-    private function getAbsolutePathToFile ( $fileName ): string {
+    private function getAbsolutePathToFile ( string $fileName ): string {
         return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $fileName;
     }
 
@@ -310,6 +310,7 @@ SET created_at=NOW(),updated_at=null";
 
         Schema::rename( self::TABLE_WORKING, self::TABLE );
         $this->info( "Renamed " . self::TABLE_WORKING . " to " . self::TABLE );
+        GeoSetting::setCountriesFromCountriesToBeAdded();
     }
 
 
@@ -326,5 +327,6 @@ SET created_at=NOW(),updated_at=null";
 
         return false;
     }
+
 
 }

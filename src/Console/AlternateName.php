@@ -24,8 +24,7 @@ class AlternateName extends Command {
     protected $description = "Populate the alternate_names table.";
 
     const REMOTE_FILE_NAME = 'alternateNames.zip';
-    //const LOCAL_TXT_FILE_NAME = 'alternateNames.txt';
-    const LOCAL_ALTERNATE_NAMES_FILE_NAME = 'alternateNamesTest.txt';
+    const LOCAL_ALTERNATE_NAMES_FILE_NAME = 'alternateNames.txt';
     const LOCAL_ISO_LANGUAGE_CODES_FILE_NAME = 'iso-languagecodes.txt';
 
     /**

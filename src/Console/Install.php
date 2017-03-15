@@ -56,6 +56,12 @@ class Install extends Command {
 
         GeoSetting::setStatus(GeoSetting::STATUS_INSTALLING);
 
+        $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
+        if ( $emptyDirResult === true ) {
+            $this->line( "This storage dir has been emptied: " . GeoSetting::getAbsoluteLocalStoragePath() );
+        }
+
+
         $this->startTime = microtime(true);
         $this->line("Starting " . $this->signature);
 
@@ -99,22 +105,20 @@ class Install extends Command {
 
         $this->endTime = microtime(true);
         $this->runTime = $this->endTime - $this->startTime;
+
+        GeoSetting::setInstalledAt();
         GeoSetting::setStatus(GeoSetting::STATUS_LIVE);
+        $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
+        if ( $emptyDirResult === true ) {
+            $this->line( "Our storage directory has been emptied." );
+        }
         $this->line("Finished " . $this->signature);
 
         $this->call( 'geonames:status' );
     }
 
 
-    protected function createSettings(array $countries = ['*']) {
-        // Truncate settings table.
-        DB::table('geo_settings')->truncate();
 
-        // Create settings record.
-        GeoSetting::create(['id'        => 1,
-                            'countries' => $countries]);
-
-    }
 
 
 }

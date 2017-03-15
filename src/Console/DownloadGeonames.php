@@ -100,22 +100,6 @@ class DownloadGeonames extends Command {
 
 
 
-    /**
-     * @throws \Exception
-     */
-    protected function emptyTheStorageDirectory() {
 
-        $allFiles = Storage::allFiles($this->getStorage());
-        $this->line("We found " . count($allFiles) . " in our storage directory.");
-        $this->line("Deleting all of the txt and zip files out of " . $this->getStorage());
-        Storage::delete($allFiles);
-
-        $allFiles = Storage::allFiles($this->getStorage());
-        $numFiles = count($allFiles);
-        if ($numFiles != 0) {
-            throw new \Exception("We were unable to delete all of the files in " . $this->getStorage() . " Check the permissions.");
-        }
-        $this->line("The storage dir is clean. Start downloading files.");
-    }
 
 }

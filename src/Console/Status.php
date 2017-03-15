@@ -53,10 +53,10 @@ class Status extends Command {
                    @implode( ", ", $settings->countries_to_be_added ),
                    @implode( ", ", $settings->languages ),
                    $settings->storage_subdir,
-                   $settings->installed_at,
-                   $settings->last_modified_at,
-                   $settings->created_at->diffForHumans(),
-                   $settings->updated_at->diffForHumans()];
+                   isset( $settings->installed_at ) ? $settings->installed_at->diffForHumans() : '',
+                   isset( $settings->last_modified_at ) ? $settings->last_modified_at->diffForHumans() : '',
+                   isset( $settings->created_at ) ? $settings->created_at->diffForHumans() : '',
+                   isset( $settings->updated_at ) ? $settings->updated_at->diffForHumans() : ''];
 
 
         $this->table( $headers, $rows );
