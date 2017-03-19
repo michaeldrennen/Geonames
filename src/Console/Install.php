@@ -52,6 +52,8 @@ class Install extends Command {
      */
     public function handle() {
 
+        print_r( $this->options() );
+
         GeoSetting::install( $this->option( 'country' ), $this->option( 'language' ), $this->option( 'storage' ) );
 
         GeoSetting::setStatus(GeoSetting::STATUS_INSTALLING);
@@ -80,6 +82,16 @@ class Install extends Command {
             $this->error($e->getMessage());
             $this->error($e->getTraceAsString());
             GeoSetting::setStatus(GeoSetting::STATUS_ERROR);
+            return false;
+        }
+
+        try {
+            $this->call( 'geonames:iso-language_code' );
+        } catch ( \Exception $e ) {
+            $this->error( $e->getMessage() );
+            $this->error( $e->getTraceAsString() );
+            GeoSetting::setStatus( GeoSetting::STATUS_ERROR );
+
             return false;
         }
 

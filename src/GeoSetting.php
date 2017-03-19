@@ -127,6 +127,15 @@ class GeoSetting extends Model {
      * @throws Exception
      */
     public static function install ( array $countriesToBeAdded = [self::DEFAULT_COUNTRIES_TO_BE_ADDED], array $languages = [self::DEFAULT_LANGUAGES], string $storageSubDir = self::DEFAULT_STORAGE_SUBDIR ): bool {
+
+        try {
+            $storageSubDir = self::setStorage( $storageSubDir );
+        } catch ( Exception $e ) {
+            Log::error( '', "Unable to create the storage sub directory in the install() function.", 'filesystem' );
+            throw $e;
+        }
+
+
         if ( $settings = self::find( self::ID ) ) {
             $settings->{self::DB_COLUMN_COUNTRIES_TO_BE_ADDED} = $countriesToBeAdded;
             $settings->{self::DB_COLUMN_LANGUAGES} = $languages;
@@ -139,16 +148,18 @@ class GeoSetting extends Model {
         }
 
         // Create settings record.
-        $setting = GeoSetting::create( [self::DB_COLUMN_ID                    => self::ID,
-                                        self::DB_COLUMN_COUNTRIES_TO_BE_ADDED => $countriesToBeAdded,
-                                        self::DB_COLUMN_LANGUAGES             => $languages,
-                                        self::DB_COLUMN_STORAGE_SUBDIR        => $storageSubDir] );
-
-        if ( $setting ) {
-            return true;
+        try {
+            GeoSetting::create( [self::DB_COLUMN_ID                    => self::ID,
+                                 self::DB_COLUMN_COUNTRIES_TO_BE_ADDED => $countriesToBeAdded,
+                                 self::DB_COLUMN_LANGUAGES             => $languages,
+                                 self::DB_COLUMN_STORAGE_SUBDIR        => $storageSubDir] );
+        } catch ( Exception $e ) {
+            Log::error( '', "Unable to create the settings record in the install() function.", 'local' );
+            throw new Exception( "Unable to create the settings record in the install() function." );
         }
-        Log::error( '', "Unable to create the settings record in the install() function.", 'local' );
-        throw new Exception( "Unable to create the settings record in the install() function." );
+
+
+        return true;
     }
 
     /**
@@ -172,7 +183,7 @@ class GeoSetting extends Model {
         $setting = GeoSetting::create( [self::DB_COLUMN_ID             => self::ID,
                                         self::DB_COLUMN_COUNTRIES      => $countries,
                                         self::DB_COLUMN_LANGUAGES      => $languages,
-                                        self::DB_COLUMN_STORAGE_SUBDIR => $storageSubDir] );
+                                        self::DB_COLUMN_STORAGE_SUBDIR => self::setStorage( $storageSubDir )] );
 
         if ( $setting ) {
             return true;
@@ -274,7 +285,7 @@ class GeoSetting extends Model {
             throw new Exception( "The storage path at '" . $path . "' exists but we can't write to it." );
         }
 
-        if ( mkdir( $path, 0700 ) ) {
+        if ( mkdir( $path, 0700, true ) ) {
             return $path;
         }
 

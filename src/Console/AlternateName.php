@@ -2,13 +2,17 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use MichaelDrennen\Geonames\GeoSetting;
 use MichaelDrennen\Geonames\Log;
 
-
+/**
+ * Class AlternateName
+ * @package MichaelDrennen\Geonames\Console
+ */
 class AlternateName extends Command {
 
     use GeonamesConsoleTrait;
@@ -23,9 +27,16 @@ class AlternateName extends Command {
      */
     protected $description = "Populate the alternate_names table.";
 
+    /**
+     *
+     */
     const REMOTE_FILE_NAME = 'alternateNames.zip';
+
+    /**
+     *
+     */
     const LOCAL_ALTERNATE_NAMES_FILE_NAME = 'alternateNames.txt';
-    const LOCAL_ISO_LANGUAGE_CODES_FILE_NAME = 'iso-languagecodes.txt';
+
 
     /**
      * The name of our alternate names table in our database. Using constants here, so I don't need
@@ -40,16 +51,6 @@ class AlternateName extends Command {
 
 
     /**
-     *
-     */
-    const ISO_LANGUAGE_CODES_TABLE = 'geo_iso_language_codes';
-
-    /**
-     *
-     */
-    const ISO_LANGUAGE_CODES_TABLE_WORKING = 'geo_iso_language_codes_working';
-
-    /**
      * Initialize constructor.
      */
     public function __construct () {
@@ -58,41 +59,49 @@ class AlternateName extends Command {
 
 
     /**
-     * Execute the console command.
-     * I don't worry about creating a temp/working table here, because it runs so fast. We're
-     * only inserting a couple rows.
+     * Execute the console command. The zip file this command downloads has two files in it. The alternate names, and
+     * iso language codes file. The iso language codes file is available as a separate download, so for simplicity's
+     * sake I handle the iso language code download and insertion in another console command.
+     * @return bool
+     * @throws Exception
      */
     public function handle () {
+        ini_set( 'memory_limit', -1 );
         $this->startTimer();
         GeoSetting::init();
 
-        $link = $this->getAlternateNameDownloadLink();
-        //$absoluteLocalFilePathOfZipFile = $this->downloadFile( $this, $link );
-        //$absoluteLocalFilePathOfZipFile = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::REMOTE_FILE_NAME;
+        $urlToAlternateNamesZipFile = $this->getAlternateNameDownloadLink();
 
 
-        //        try {
-        //            $this->line("Unzipping " . $absoluteLocalFilePathOfZipFile);
-        //            $this->unzip( $absoluteLocalFilePathOfZipFile );
-        //        } catch ( \Exception $e ) {
-        //            $this->error( $e->getMessage() );
-        //            Log::error( $link, $e->getMessage(), 'remote' );
-        //
-        //            return false;
-        //        }
+        try {
+            $absoluteLocalFilePathOfAlternateNamesZipFile = $this->downloadFile( $this, $urlToAlternateNamesZipFile );
+        } catch ( Exception $e ) {
+            $this->error( $e->getMessage() );
+            Log::error( $urlToAlternateNamesZipFile, $e->getMessage(), 'remote' );
 
-        $absoluteLocalFilePathOfAlternateNamesFile = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME;
-        $absoluteLocalFilePathOfIsoLanguageCodesFile = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ISO_LANGUAGE_CODES_FILE_NAME;
+            return false;
+        }
+
+        // DEBUG
+        //$absoluteLocalFilePathOfAlternateNamesZipFile = $this->getLocalAbsolutePathToAlternateNamesZipFile();
+
+
+        try {
+            $this->line( "Unzipping " . $absoluteLocalFilePathOfAlternateNamesZipFile );
+            $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile );
+        } catch ( Exception $e ) {
+            $this->error( $e->getMessage() );
+            Log::error( $absoluteLocalFilePathOfAlternateNamesZipFile, $e->getMessage(), 'local' );
+
+            return false;
+        }
+
+        $absoluteLocalFilePathOfAlternateNamesFile = $this->getLocalAbsolutePathToAlternateNamesTextFile();
 
         if ( !file_exists( $absoluteLocalFilePathOfAlternateNamesFile ) ) {
-            throw new \Exception( "The unzipped file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
+            throw new \Exception( "The unzipped alternateNames.txt file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
         }
 
-        if ( !file_exists( $absoluteLocalFilePathOfIsoLanguageCodesFile ) ) {
-            throw new \Exception( "The unzipped file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
-        }
-
-        $this->insertIsoLanguageCodesWithLoadDataInfile( $absoluteLocalFilePathOfIsoLanguageCodesFile );
 
         $this->insertAlternateNamesWithLoadDataInfile( $absoluteLocalFilePathOfAlternateNamesFile );
 
@@ -101,10 +110,27 @@ class AlternateName extends Command {
     }
 
     /**
+     * @return string   The absolute path to the remote alternate names zip file.
+     */
+    protected function getAlternateNameDownloadLink (): string {
+        return self::$url . self::REMOTE_FILE_NAME;
+    }
+
+    /**
+     * This function is used in debugging only. The main block of code has no need for this function, since the
+     * downloadFile() function returns this exact path as it's return value. The alternate names file takes a while
+     * to download on my slow connection, so I save a copy of it for testing, and use this function to point to it.
+     * @return string The absolute local path to the downloaded zip file.
+     */
+    protected function getLocalAbsolutePathToAlternateNamesZipFile (): string {
+        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::REMOTE_FILE_NAME;
+    }
+
+    /**
      * @return string
      */
-    protected function getAlternateNameDownloadLink () {
-        return self::$url . self::REMOTE_FILE_NAME;
+    protected function getLocalAbsolutePathToAlternateNamesTextFile (): string {
+        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME;
     }
 
 
@@ -113,7 +139,7 @@ class AlternateName extends Command {
      * @throws \Exception
      */
     protected function insertAlternateNamesWithLoadDataInfile ( $localFilePath ) {
-        ini_set( 'memory_limit', -1 );
+
         $this->line( "\nAttempting Load Data Infile on " . $localFilePath );
 
 
@@ -152,49 +178,5 @@ class AlternateName extends Command {
         Schema::dropIfExists( self::ALTERNATE_NAMES_TABLE );
         Schema::rename( self::ALTERNATE_NAMES_TABLE_WORKING, self::ALTERNATE_NAMES_TABLE );
         $this->info( "Renamed " . self::ALTERNATE_NAMES_TABLE_WORKING . " to " . self::ALTERNATE_NAMES_TABLE . "." );
-    }
-
-
-    /**
-     * @param $localFilePath
-     * @throws \Exception
-     */
-    protected function insertIsoLanguageCodesWithLoadDataInfile ( $localFilePath ) {
-        ini_set( 'memory_limit', -1 );
-        $this->line( "\nAttempting Load Data Infile on " . $localFilePath );
-
-
-        $this->line( "Dropping the temp table named " . self::ISO_LANGUAGE_CODES_TABLE_WORKING . " (if it exists)." );
-        Schema::dropIfExists( self::ISO_LANGUAGE_CODES_TABLE_WORKING );
-
-        $this->line( "Creating the temp table named " . self::ISO_LANGUAGE_CODES_TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::ISO_LANGUAGE_CODES_TABLE_WORKING . ' LIKE ' . self::ISO_LANGUAGE_CODES_TABLE . ';' );
-
-
-        // This file includes a header row. That is why I skip the first line with the IGNORE 1 LINES statement.
-        $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
-    INTO TABLE " . self::ISO_LANGUAGE_CODES_TABLE_WORKING . " IGNORE 1 LINES
-        (   iso_639_3, 
-            iso_639_2,
-            iso_639_1, 
-            language_name,          
-            @created_at, 
-            @updated_at)
-    SET created_at=NOW(),updated_at=null";
-
-        $this->line( "Running the LOAD DATA INFILE query. This could take a good long while." );
-
-        $rowsInserted = DB::connection()->getpdo()->exec( $query );
-        if ( $rowsInserted === false ) {
-            Log::error( '', "Unable to load data infile for iso language names.", 'database' );
-            throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()->getpdo()->errorInfo(), true ) );
-        }
-
-        $this->info( "Inserted text file into: " . self::ISO_LANGUAGE_CODES_TABLE_WORKING );
-
-        $this->line( "Dropping the active " . self::ISO_LANGUAGE_CODES_TABLE . " table." );
-        Schema::dropIfExists( self::ISO_LANGUAGE_CODES_TABLE );
-        Schema::rename( self::ISO_LANGUAGE_CODES_TABLE_WORKING, self::ISO_LANGUAGE_CODES_TABLE );
-        $this->info( "Renamed " . self::ISO_LANGUAGE_CODES_TABLE_WORKING . " to " . self::ISO_LANGUAGE_CODES_TABLE . "." );
     }
 }

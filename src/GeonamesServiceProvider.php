@@ -25,12 +25,14 @@ class GeonamesServiceProvider extends ServiceProvider {
                               Console\Geoname::class,
                               Console\DownloadGeonames::class,
                               Console\InsertGeonames::class,
+                              Console\NoCountry::class,
 
                               Console\AlternateName::class,
+                              Console\IsoLanguageCode::class,
                               Console\FeatureClass::class,
                               Console\FeatureCode::class,
 
-                              Console\Update::class,
+                              Console\UpdateGeonames::class,
                               Console\Status::class,
                               Console\Test::class] );
         }

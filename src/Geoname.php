@@ -3,6 +3,7 @@
 namespace MichaelDrennen\Geonames;
 
 use Illuminate\Database\Eloquent\Model;
+use MichaelDrennen\Geonames\Events\GeonameUpdated;
 
 class Geoname extends Model {
     protected $primaryKey = 'geonameid';
@@ -12,8 +13,14 @@ class Geoname extends Model {
      */
     protected $guarded = [];
 
+    /**
+     * @var string
+     */
     protected $dateFormat = 'Y-m-d';
 
+    /**
+     * @var array
+     */
     protected $dates = ['modification_date'];
 
     /**
@@ -25,4 +32,11 @@ class Geoname extends Model {
                         'dem'        => 'integer',
                         'latitude'   => 'double',
                         'longitude'  => 'double',];
+
+    /**
+     * The event map for the model.
+     *
+     * @var array
+     */
+    protected $events = ['updated' => GeonameUpdated::class];
 }

@@ -15,8 +15,7 @@ use Illuminate\Console\Command;
 use StdClass;
 
 
-
-class Update extends Command {
+class UpdateGeonames extends Command {
     use GeonamesConsoleTrait;
 
     /**
@@ -24,7 +23,7 @@ class Update extends Command {
      *
      * @var string
      */
-    protected $signature = 'geonames:update';
+    protected $signature = 'geonames:update-geonames';
 
     /**
      * The console command description.
