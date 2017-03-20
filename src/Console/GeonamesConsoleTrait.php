@@ -109,6 +109,11 @@ trait GeonamesConsoleTrait {
         $fileSize = RemoteFile::getFileSize( $link );
         if ( $fileSize > 0 ) {
             $geonamesBar = $command->output->createProgressBar( $fileSize );
+
+            $geonamesBar->setFormat( "\nDownloading %message% %current%/%max% [%bar%] %percent:3s%%\n" );
+
+            $geonamesBar->setMessage( $basename );
+
             $curl->verbose();
             $curl->setopt( CURLOPT_NOPROGRESS, false );
             $curl->setopt( CURLOPT_PROGRESSFUNCTION, function ( $resource, $download_size = 0, $downloaded = 0, $upload_size = 0, $uploaded = 0 ) use ( $geonamesBar ) {
@@ -126,7 +131,6 @@ trait GeonamesConsoleTrait {
             throw new Exception( "Unable to download the file at [" . $link . "]\n" . $curl->error_message );
         }
 
-        $command->info( "\n" . "Downloaded " . $link . "\n" );
         $data = $curl->response;
         $bytesWritten = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === false ) {

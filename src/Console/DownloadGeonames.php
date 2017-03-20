@@ -47,33 +47,26 @@ class DownloadGeonames extends Command {
      * @return mixed
      */
     public function handle() {
-        //
-        $this->line("Starting " . $this->signature);
-
-        $this->info("Turning off the memory limit for php. Some of these files are pretty big.");
         ini_set('memory_limit', -1);
 
-        //$this->emptyTheStorageDirectory();
-
-        $countries = GeoSetting::getCountriesToBeAdded();
-        $this->line( "We will be saving the downloaded files to: " . GeoSetting::getAbsoluteLocalStoragePath() );
-
-
         try {
-            $remoteFilePaths = $this->getRemoteFilePathsToDownloadForGeonamesTable($countries);
-        } catch (\Exception $e) {
+            $countries = GeoSetting::getCountriesToBeAdded();
+        } catch ( \Exception $e ) {
             $this->error($e->getMessage());
-            Log::error('', $e->getMessage(), 'local');
+            Log::error( '', $e->getMessage(), 'database' );
             return false;
         }
 
-        $this->line("Attempting to download the following files:");
-        foreach ($remoteFilePaths as $remoteFilePath) {
-            $this->info("  " . $remoteFilePath);
+        $remoteFilePaths = $this->getRemoteFilePathsToDownloadForGeonamesTable( $countries );
+
+        try {
+            $this->downloadFiles( $this, $remoteFilePaths );
+        } catch ( \Exception $e ) {
+            $this->error( $e->getMessage() );
+            Log::error( '', $e->getMessage(), 'remote' );
+
+            return false;
         }
-
-        $localFilePaths = $this->downloadFiles( $this, $remoteFilePaths );
-
 
         return true;
     }
@@ -84,7 +77,7 @@ class DownloadGeonames extends Command {
      * @param array $countries The value from GeoSetting countries_to_be_added
      * @return array
      */
-    protected function getRemoteFilePathsToDownloadForGeonamesTable ( array $countries ) {
+    protected function getRemoteFilePathsToDownloadForGeonamesTable ( array $countries ): array {
         // If the config setting for countries has the wildcard symbol "*", then the user wants data for all countries.
         if (array_search("*", $countries) !== false) {
             return [self::$url . 'allCountries.zip'];
@@ -96,10 +89,4 @@ class DownloadGeonames extends Command {
         }
         return $files;
     }
-
-
-
-
-
-
 }

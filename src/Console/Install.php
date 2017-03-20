@@ -86,7 +86,7 @@ class Install extends Command {
         }
 
         try {
-            $this->call( 'geonames:iso-language_code' );
+            $this->call( 'geonames:iso-language-code' );
         } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
             $this->error( $e->getTraceAsString() );
@@ -123,6 +123,8 @@ class Install extends Command {
         $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
         if ( $emptyDirResult === true ) {
             $this->line( "Our storage directory has been emptied." );
+        } else {
+            $this->error( "We were unable to empty the storage directory." );
         }
         $this->line("Finished " . $this->signature);
 

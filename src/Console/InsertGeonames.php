@@ -71,9 +71,6 @@ class InsertGeonames extends Command {
      * @return mixed
      */
     public function handle() {
-        $this->line("Starting " . $this->signature);
-
-        $this->line( "Turning off the memory limit for php." );
         ini_set('memory_limit', -1);
 
 
@@ -93,6 +90,7 @@ class InsertGeonames extends Command {
             $this->insert($absolutePathToMasterTxtFile);
         } catch ( Exception $e ) {
             $this->error($e->getMessage());
+            Log::error( '', $e->getMessage(), 'database' );
         }
 
         $this->line("Finished " . $this->signature);
@@ -226,8 +224,12 @@ class InsertGeonames extends Command {
                 throw new Exception( "Unable to open this file in read mode " . $absolutePathToTextFile );
             }
 
-            $this->line( "Opened..." );
             $bar = $this->output->createProgressBar( $inputFileSize );
+
+            $bar->setFormat( "\nCombining %message% %current%/%max% [%bar%] %percent:3s%%\n" );
+
+            $bar->setMessage( $textFile );
+
             while ( ( $buffer = fgets( $inputResource ) ) !== false ) {
                 $bytesWritten = fwrite( $masterResource, $buffer );
                 if ( $bytesWritten === false ) {
@@ -267,7 +269,7 @@ class InsertGeonames extends Command {
         $this->line( "Dropping the temp table named " . self::TABLE_WORKING . " (if it exists)." );
         Schema::dropIfExists( self::TABLE_WORKING );
 
-        $this->line("Creating the temp table named geonames_working.");
+        $this->line( "Creating the temp table named " . self::TABLE_WORKING );
         DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . '; ' );
 
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
@@ -327,6 +329,4 @@ SET created_at=NOW(),updated_at=null";
 
         return false;
     }
-
-
 }
