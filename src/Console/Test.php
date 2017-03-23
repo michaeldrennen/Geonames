@@ -3,8 +3,8 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Illuminate\Console\Command;
-use MichaelDrennen\Geonames\BaseTrait;
-use MichaelDrennen\Geonames\GeoSetting;
+use MichaelDrennen\Geonames\Models\BaseTrait;
+use MichaelDrennen\Geonames\Models\GeoSetting;
 
 class Test extends Command {
 

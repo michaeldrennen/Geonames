@@ -7,9 +7,8 @@ use Illuminate\Console\Command;
 use Exception;
 
 
-use League\Flysystem\Adapter\Local;
-use MichaelDrennen\Geonames\GeoSetting;
-use MichaelDrennen\Geonames\Log;
+use MichaelDrennen\Geonames\Models\GeoSetting;
+use MichaelDrennen\Geonames\Models\Log;
 use MichaelDrennen\LocalFile\LocalFile;
 
 class InsertGeonames extends Command {

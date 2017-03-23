@@ -1,5 +1,5 @@
 <?php
-namespace MichaelDrennen\Geonames;
+namespace MichaelDrennen\Geonames\Models;
 
 use Exception;
 use Carbon\Carbon;

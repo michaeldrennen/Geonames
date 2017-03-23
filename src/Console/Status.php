@@ -3,7 +3,7 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Illuminate\Console\Command;
-use MichaelDrennen\Geonames\GeoSetting;
+use MichaelDrennen\Geonames\Models\GeoSetting;
 
 class Status extends Command {
 

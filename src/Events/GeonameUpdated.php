@@ -2,9 +2,8 @@
 
 namespace MichaelDrennen\Geonames\Events;
 
-use MichaelDrennen\Geonames\Geoname;
 use Illuminate\Queue\SerializesModels;
-
+use MichaelDrennen\Geonames\Models\Geoname;
 /**
  * Class GeonameUpdated
  * @package MichaelDrennen\Geonames\Events

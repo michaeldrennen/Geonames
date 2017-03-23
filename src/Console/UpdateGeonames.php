@@ -2,17 +2,18 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
-use MichaelDrennen\Geonames\Geoname;
-use MichaelDrennen\Geonames\Log;
-use MichaelDrennen\Geonames\GeoSetting;
-use MichaelDrennen\Geonames\Console\GeonamesConsoleTrait;
-
 use Symfony\Component\DomCrawler\Crawler;
 use Curl\Curl;
 use Goutte\Client;
 use Illuminate\Console\Command;
-
 use StdClass;
+
+use MichaelDrennen\Geonames\Models\Geoname;
+use MichaelDrennen\Geonames\Models\Log;
+use MichaelDrennen\Geonames\Models\GeoSetting;
+
+
+
 
 
 class UpdateGeonames extends Command {

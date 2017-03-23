@@ -1,12 +1,13 @@
 <?php
+// @todo Pretty sure I can delete this. Double check then clean up.
+
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use MichaelDrennen\Geonames\BaseTrait;
 use Curl\Curl;
-use MichaelDrennen\Geonames\Log;
+use MichaelDrennen\Geonames\Models\Log;
 
 class FeatureCodeSeeder extends Seeder {
-    use BaseTrait;
+
     protected $featureCodeRemoteFileName = '';
     protected $featureCodeRemoteFilePath = '';
     protected $featureCodeLocalFilePath = '';

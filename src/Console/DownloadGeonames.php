@@ -4,9 +4,8 @@ namespace MichaelDrennen\Geonames\Console;
 
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
-use MichaelDrennen\Geonames\GeoSetting;
-use MichaelDrennen\Geonames\Log;
+use MichaelDrennen\Geonames\Models\GeoSetting;
+use MichaelDrennen\Geonames\Models\Log;
 
 
 class DownloadGeonames extends Command {

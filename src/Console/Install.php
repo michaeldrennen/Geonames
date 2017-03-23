@@ -3,8 +3,7 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use MichaelDrennen\Geonames\GeoSetting;
+use MichaelDrennen\Geonames\Models\GeoSetting;
 
 class Install extends Command {
 

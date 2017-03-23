@@ -42,6 +42,8 @@ class GeonamesServiceProvider extends ServiceProvider {
             $schedule = app( Schedule::class );
             $schedule->command( 'geonames:update' )->dailyAt( '05:00' )->withoutOverlapping();
         } );
+
+        $this->loadRoutesFrom( __DIR__ . '/Routes/web.php' );
     }
 
 

@@ -6,10 +6,9 @@ use ZipArchive;
 use Exception;
 use Illuminate\Console\Command;
 use Symfony\Component\DomCrawler\Crawler;
-use MichaelDrennen\Geonames\GeoSetting;
 use MichaelDrennen\RemoteFile\RemoteFile;
-use MichaelDrennen\Geonames\Log;
-
+use MichaelDrennen\Geonames\Models\Log;
+use MichaelDrennen\Geonames\Models\GeoSetting;
 trait GeonamesConsoleTrait {
 
     /**

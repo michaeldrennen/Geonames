@@ -5,8 +5,8 @@ namespace MichaelDrennen\Geonames\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use MichaelDrennen\Geonames\GeoSetting;
-use MichaelDrennen\Geonames\Log;
+use MichaelDrennen\Geonames\Models\GeoSetting;
+use MichaelDrennen\Geonames\Models\Log;
 
 /**
  * Class IsoLanguageCodes
