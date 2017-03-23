@@ -3,7 +3,7 @@
 namespace MichaelDrennen\Geonames;
 
 use Illuminate\Support\ServiceProvider;
-
+use Illuminate\Console\Scheduling\Schedule;
 
 class GeonamesServiceProvider extends ServiceProvider {
 
@@ -36,7 +36,14 @@ class GeonamesServiceProvider extends ServiceProvider {
                               Console\Status::class,
                               Console\Test::class] );
         }
+
+        // Schedule our Update command to run once a day. Keep our tables up to date.
+        $this->app->booted( function () {
+            $schedule = app( Schedule::class );
+            $schedule->command( 'geonames:update' )->dailyAt( '05:00' )->withoutOverlapping();
+        } );
     }
+
 
     /**
      * Register the application services.

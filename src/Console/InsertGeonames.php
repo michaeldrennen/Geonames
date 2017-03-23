@@ -7,8 +7,10 @@ use Illuminate\Console\Command;
 use Exception;
 
 
+use League\Flysystem\Adapter\Local;
 use MichaelDrennen\Geonames\GeoSetting;
 use MichaelDrennen\Geonames\Log;
+use MichaelDrennen\LocalFile\LocalFile;
 
 class InsertGeonames extends Command {
 
@@ -67,24 +69,26 @@ class InsertGeonames extends Command {
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
+     * @throws Exception
      */
     public function handle() {
         ini_set('memory_limit', -1);
 
+        $zipFileNames = $this->getLocalCountryZipFileNames();
 
-        $zipFiles = $this->getLocalCountryZipFileNames();
-        $this->line("We found " . count($zipFiles) . " zip files that were downloaded from geonames.");
+        $absolutePathsToZipFiles = GeoSetting::getAbsoluteLocalStoragePathToFiles( $zipFileNames );
 
         try {
-            $this->unzipFiles( $zipFiles );
+            $this->unzipFiles( $absolutePathsToZipFiles );
         } catch ( Exception $e ) {
             $this->error( "Unable to unzip at least one of the country zip files." );
             Log::error( '', "We were unable to unzip at least one of the country zip files.", 'local' );
+            throw $e;
         }
 
         $absolutePathToMasterTxtFile = $this->combineTxtFiles();
+
+        $this->info( "Num Lines: " . LocalFile::lineCount( $absolutePathToMasterTxtFile ) );
 
         try {
             $this->insert($absolutePathToMasterTxtFile);
@@ -146,13 +150,18 @@ class InsertGeonames extends Command {
 
 
     /**
-     * @param string $fileName
-     * @return bool
+     * The geonames.org download page has a zip file for every country's geonames records that gets updated daily.
+     * This little function accepts a filename, and returns true if the name represents one of these zip files.
+     * @param string $fileName The name of a file on our local file system.
+     * @return bool True if the filename is one of the zip files that holds geonames records for a country.
      */
     private function isCountryZipFile ( string $fileName ): bool {
+        // If the file name passed in is the file with every country's geonames data, then true.
         if ( $fileName === $this->allCountriesZipFileName ) {
             return true;
         }
+
+        // A regex here checks for a two character country code and a .zip file extension.
         if ( preg_match( '/^[A-Z]{2}\.zip$/', $fileName ) === 1 ) {
             return true;
         }
@@ -160,8 +169,9 @@ class InsertGeonames extends Command {
     }
 
     /**
-     * @param string $fileName
-     * @return bool
+     * Given a file name, returns true if it represents an unzipped text file with a country's geonames records.
+     * @param string $fileName The name of a file on our local file system.
+     * @return bool True if the filename is one of the text files that holds geonames records for a country.
      */
     private function isCountryTxtFile ( string $fileName ): bool {
         if ( $fileName === $this->allCountriesTxtFileName ) {
@@ -174,13 +184,6 @@ class InsertGeonames extends Command {
     }
 
 
-    /**
-     * @param string $fileName
-     * @return string
-     */
-    private function getAbsolutePathToFile ( string $fileName ): string {
-        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $fileName;
-    }
 
     /**
      * Find all of the unzipped country txt files, and combine them into one master file.
@@ -188,23 +191,20 @@ class InsertGeonames extends Command {
      * @throws Exception
      */
     protected function combineTxtFiles (): string {
-        $absolutePathToMasterTxtFile = $this->getAbsolutePathToFile($this->masterTxtFileName);
-        $textFiles = $this->getLocalCountryTxtFileNames();
+        $absolutePathToMasterTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->masterTxtFileName );
+        $textFileNames = $this->getLocalCountryTxtFileNames();
 
-        if ($this->allCountriesInLocalTxtFiles($textFiles)) {
-            $this->line("The allCountries text file was found, so no need to combine files. Just rename it to master.");
+        // If the all countries zip file was downloaded, there is nothing to combine. Just rename the file to master.
+        if ( $this->allCountriesInLocalTxtFiles( $textFileNames ) ) {
 
-            $absolutePathToAllCountriesTxtFile = $this->getAbsolutePathToFile($this->allCountriesTxtFileName);
+            $absolutePathToAllCountriesTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->allCountriesTxtFileName );
             $renameResult = rename($absolutePathToAllCountriesTxtFile, $absolutePathToMasterTxtFile);
             if ($renameResult === false) {
                 throw new Exception( "We were unable to rename the allCountries to the master file." );
             }
-            $this->line("The allCountries file has been renamed. Ready to insert.");
 
             return $absolutePathToMasterTxtFile;
         }
-
-        $this->line("We found " . count($textFiles) . " text files that we are going to combine.");
 
         // Create and/or truncate the master txt file before we start putting data in it.
         $masterResource = fopen($absolutePathToMasterTxtFile, "w+");
@@ -213,9 +213,11 @@ class InsertGeonames extends Command {
             throw new Exception( "We were unable to create a master txt file to put all of our rows into." );
         }
 
-        foreach ($textFiles as $textFile) {
-            $absolutePathToTextFile = $this->getAbsolutePathToFile($textFile);
-            $this->line("\nStarting to process " . $absolutePathToTextFile);
+        foreach ( $textFileNames as $textFile ) {
+            $absolutePathToTextFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $textFile );
+
+            $this->line( "File: " . $absolutePathToTextFile );
+
             $inputFileSize = filesize($absolutePathToTextFile);
 
             $inputResource = @fopen($absolutePathToTextFile, 'r');
@@ -249,6 +251,10 @@ class InsertGeonames extends Command {
             throw new Exception( "Unable to close the master file at " . $absolutePathToMasterTxtFile );
         }
 
+        //$this->line("Pre-lineCount");
+        //$this->line("Filesize: " . filesize($absolutePathToMasterTxtFile));
+        //$this->line("Lines: " . LocalFile::lineCount($absolutePathToMasterTxtFile) );
+
         return $absolutePathToMasterTxtFile;
     }
 
@@ -261,9 +267,11 @@ class InsertGeonames extends Command {
     protected function insert($localFilePath) {
         $this->line("\nStarting to insert the records found in " . $localFilePath);
         if (is_null($this->numLinesInMasterFile)) {
-            $this->line("We are going to try to insert " . $this->numLinesInMasterFile . " geoname records.");
+            $numLines = LocalFile::lineCount( $localFilePath );
+            $this->line( "We are going to try to insert " . $numLines . " geoname records from the allCountries file." );
         } else {
-            $this->line("We are going to try to insert the geoname records from the allCountries file.");
+            $this->line( "We are going to try to insert " . $this->numLinesInMasterFile . " geoname records." );
+
         }
 
         $this->line( "Dropping the temp table named " . self::TABLE_WORKING . " (if it exists)." );

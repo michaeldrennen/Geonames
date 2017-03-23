@@ -188,17 +188,16 @@ trait GeonamesConsoleTrait {
      * Pass in an array of absolute local file paths, and this function will extract
      * them to our geonames storage directory.
      * @param array $absoluteFilePaths
+     * @throws Exception
      */
     public static function unzipFiles ( array $absoluteFilePaths ) {
         try {
-
-        } catch ( Exception $e ) {
             foreach ( $absoluteFilePaths as $absoluteFilePath ) {
                 self::unzip( $absoluteFilePath );
             }
+        } catch ( Exception $e ) {
+            throw $e;
         }
-
-        return;
     }
 
 }

@@ -52,8 +52,6 @@ class Install extends Command {
      */
     public function handle() {
 
-        print_r( $this->options() );
-
         GeoSetting::install( $this->option( 'country' ), $this->option( 'language' ), $this->option( 'storage' ) );
 
         GeoSetting::setStatus(GeoSetting::STATUS_INSTALLING);

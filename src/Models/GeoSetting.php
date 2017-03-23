@@ -4,7 +4,8 @@ namespace MichaelDrennen\Geonames;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
+
+use Illuminate\Support\Facades\File;
 
 /**
  * Class GeoSetting
@@ -59,12 +60,12 @@ class GeoSetting extends Model {
     /**
      * If you wanted multiple specific countries: "'CA','US','MX";
      */
-    const DEFAULT_COUNTRIES_TO_BE_ADDED = "'*'";
+    const DEFAULT_COUNTRIES_TO_BE_ADDED = "*";
 
     /**
-     * If you wanted multiple specific languages: "'en','ru";
+     * If you wanted multiple specific languages: "'en','ru'";
      */
-    const DEFAULT_LANGUAGES = "'en'";
+    const DEFAULT_LANGUAGES = "en";
 
     /**
      * This library makes use of the Laravel storage_dir() as the root. This const defines the name of the child
@@ -128,16 +129,16 @@ class GeoSetting extends Model {
      */
     public static function install ( array $countriesToBeAdded = [self::DEFAULT_COUNTRIES_TO_BE_ADDED], array $languages = [self::DEFAULT_LANGUAGES], string $storageSubDir = self::DEFAULT_STORAGE_SUBDIR ): bool {
 
-        try {
-            $storageSubDir = self::setStorage( $storageSubDir );
-        } catch ( Exception $e ) {
-            Log::error( '', "Unable to create the storage sub directory in the install() function.", 'filesystem' );
-            throw $e;
-        }
-
+        // Establish defaults. If the user of the Install script did not call any options when running the script, these
+        // parameters (above) will come in as empty arrays. Hence the default values up there won't get called.
+        // So we take care of that right here.
+        $countriesToBeAdded = empty( $countriesToBeAdded ) ? [self::DEFAULT_COUNTRIES_TO_BE_ADDED] : $countriesToBeAdded;
+        $languages = empty( $languages ) ? [self::DEFAULT_LANGUAGES] : $languages;
+        $storageSubDir = empty( $storageSubDir ) ? [self::DEFAULT_STORAGE_SUBDIR] : $storageSubDir;
 
         if ( $settings = self::find( self::ID ) ) {
             $settings->{self::DB_COLUMN_COUNTRIES_TO_BE_ADDED} = $countriesToBeAdded;
+            $settings->{self::DB_COLUMN_COUNTRIES} = [];
             $settings->{self::DB_COLUMN_LANGUAGES} = $languages;
             $settings->{self::DB_COLUMN_STORAGE_SUBDIR} = $storageSubDir;
             $settings->{self::DB_COLUMN_INSTALLED_AT} = null;
@@ -156,6 +157,13 @@ class GeoSetting extends Model {
         } catch ( Exception $e ) {
             Log::error( '', "Unable to create the settings record in the install() function.", 'local' );
             throw new Exception( "Unable to create the settings record in the install() function." );
+        }
+
+        try {
+            self::setStorage( $storageSubDir );
+        } catch ( Exception $e ) {
+            Log::error( '', "Unable to create the storage sub directory in the install() function.", 'filesystem' );
+            throw $e;
         }
 
 
@@ -256,18 +264,26 @@ class GeoSetting extends Model {
 
 
     /**
-     * @param string|null $storageSubdir
+     * @param string $storageSubdir
      * @return string Either the string that was passed in, or the default string defined in DB_COLUMN_STORAGE_SUBDIR
      * @throws Exception
      */
-    public static function setStorage ( string $storageSubdir = null ): string {
+    public static function setStorage ( string $storageSubdir ): string {
         $storageSubdir = $storageSubdir ?? self::DEFAULT_STORAGE_SUBDIR;
-        if ( self::where( self::DB_COLUMN_ID, self::ID )->update( [self::DB_COLUMN_STORAGE_SUBDIR => $storageSubdir] ) ) {
+
+        $updateResult = self::where( self::DB_COLUMN_ID, self::ID )->update( [self::DB_COLUMN_STORAGE_SUBDIR => $storageSubdir] );
+
+        if ( $updateResult === false ) {
+            throw new Exception( "Unable to update the storage dir column to: " . $storageSubdir );
+        }
+
+        try {
             self::createStorageDirInFilesystem( $storageSubdir );
 
             return $storageSubdir;
+        } catch ( Exception $e ) {
+            throw $e;
         }
-        throw new Exception( "Unable to setStorage to: " . $storageSubdir );
     }
 
     /**
@@ -319,6 +335,29 @@ class GeoSetting extends Model {
      */
     public static function getAbsoluteLocalStoragePath () {
         return storage_path() . DIRECTORY_SEPARATOR . self::getStorage();
+    }
+
+
+    /**
+     * @param string $fileName
+     * @return string
+     */
+    public static function getAbsoluteLocalStoragePathToFile ( string $fileName ): string {
+        return self::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $fileName;
+    }
+
+
+    /**
+     * @param array $fileNames
+     * @return array
+     */
+    public static function getAbsoluteLocalStoragePathToFiles ( array $fileNames ): array {
+        $absolutePaths = [];
+        foreach ( $fileNames as $fileName ) {
+            $absolutePaths[] = self::getAbsoluteLocalStoragePathToFile( $fileName );
+        }
+
+        return $absolutePaths;
     }
 
 
@@ -390,11 +429,8 @@ class GeoSetting extends Model {
      * @throws Exception
      */
     public static function emptyTheStorageDirectory () {
-
-        $allFiles = Storage::allFiles( self::getAbsoluteLocalStoragePath() );
-        Storage::delete( $allFiles );
-
-        $allFiles = Storage::allFiles( self::getAbsoluteLocalStoragePath() );
+        File::cleanDirectory( self::getAbsoluteLocalStoragePath() );
+        $allFiles = File::files( self::getAbsoluteLocalStoragePath() );
         $numFiles = count( $allFiles );
         if ( $numFiles != 0 ) {
             throw new Exception( "We were unable to delete all of the files in " . self::getAbsoluteLocalStoragePath() . " Check the permissions." );
