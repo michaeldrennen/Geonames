@@ -119,6 +119,11 @@ class GeoSetting extends Model {
     const DB_COLUMN_LANGUAGES = 'languages';
 
     /**
+     * The root url of all of the download files.
+     */
+    const URL = 'http://download.geonames.org/export/dump/';
+
+    /**
      * Create our GeoSetting record in the database. This is where we pull all of our
      * configuration data from to process the install and later queries.
      * @param array $countriesToBeAdded
@@ -358,6 +363,15 @@ class GeoSetting extends Model {
         }
 
         return $absolutePaths;
+    }
+
+    /**
+     * Given a file name, this function returns the remote url to that file on the geonames.org website.
+     * @param string $path
+     * @return string
+     */
+    public static function getDownloadUrlForFile ( string $path ): string {
+        return self::URL . $path;
     }
 
 
