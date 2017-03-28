@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateGeoIsoLanguageCodesTable extends Migration {
+class CreateGeonamesIsoLanguageCodesTable extends Migration {
     /**
      * Run the migrations.
      *
@@ -14,7 +14,7 @@ class CreateGeoIsoLanguageCodesTable extends Migration {
         /**
          * ISO 639-3    ISO 639-2    ISO 639-1    Language Name
          */
-        Schema::create( 'geo_iso_language_codes', function ( Blueprint $table ) {
+        Schema::create( 'geonames_iso_language_codes', function ( Blueprint $table ) {
             $table->char( 'iso_639_3', 3 );
             $table->string( 'iso_639_2', 255 )->nullable();
             $table->char( 'iso_639_1', 2 )->nullable();
@@ -30,6 +30,6 @@ class CreateGeoIsoLanguageCodesTable extends Migration {
      * @return void
      */
     public function down () {
-        Schema::dropIfExists( 'geo_iso_language_codes' );
+        Schema::dropIfExists( 'geonames_iso_language_codes' );
     }
 }

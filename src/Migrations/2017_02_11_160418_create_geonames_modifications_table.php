@@ -4,14 +4,14 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateGeoModificationsTable extends Migration {
+class CreateGeonamesModificationsTable extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
     public function up() {
-        Schema::create('geo_modifications', function (Blueprint $table) {
+        Schema::create( 'geonames_modifications', function ( Blueprint $table ) {
             $table->increments('id');                   // Primary key of this table. Can't be geonameid, as a location can have n modifications.
             $table->date('date');                       // The date of the modification
             $table->integer('geonameid');               // geonameid         : integer id of record in geonames database
@@ -43,6 +43,6 @@ class CreateGeoModificationsTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::dropIfExists('geo_modifications');
+        Schema::dropIfExists( 'geonames_modifications' );
     }
 }

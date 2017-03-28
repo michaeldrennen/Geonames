@@ -4,14 +4,14 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateGeoFeatureCodesTable extends Migration {
+class CreateGeonamesFeatureCodesTable extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
     public function up() {
-        Schema::create('geo_feature_codes', function (Blueprint $table) {
+        Schema::create( 'geonames_feature_codes', function ( Blueprint $table ) {
             $table->increments('id');
             $table->char('language_code', 2);
             $table->char('feature_class', 1);
@@ -32,6 +32,6 @@ class CreateGeoFeatureCodesTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::dropIfExists('geo_feature_codes');
+        Schema::dropIfExists( 'geonames_feature_codes' );
     }
 }

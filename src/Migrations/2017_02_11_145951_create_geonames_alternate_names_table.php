@@ -4,14 +4,14 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateGeoAlternateNamesTable extends Migration {
+class CreateGeonamesAlternateNamesTable extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
     public function up() {
-        Schema::create('geo_alternate_names', function (Blueprint $table) {
+        Schema::create( 'geonames_alternate_names', function ( Blueprint $table ) {
             $table->integer( 'alternateNameId', false, true );     // alternateNameId   : the id of this alternate name, int
             $table->integer( 'geonameid', false, true );
             $table->string( 'isolanguage', 7 )->nullable();        // isolanguage       : iso 639 language code 2- or 3-characters; 4-characters 'post' for postal codes and 'iata','icao' and faac for airport codes, fr_1793 for French Revolution names,  abbr for abbreviation, link for a website, varchar(7)
@@ -31,6 +31,6 @@ class CreateGeoAlternateNamesTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::dropIfExists('geo_alternate_names');
+        Schema::dropIfExists( 'geonames_alternate_names' );
     }
 }

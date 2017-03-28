@@ -11,14 +11,14 @@ use Illuminate\Database\Migrations\Migration;
  * geonames.org website it would be nice to have a record of that for debugging
  * purposes.
  */
-class CreateGeoLogsTable extends Migration {
+class CreateGeonamesLogsTable extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
     public function up() {
-        Schema::create('geo_logs', function (Blueprint $table) {
+        Schema::create( 'geonames_logs', function ( Blueprint $table ) {
             $table->increments('id');
             $table->string('url', 255);      // The url we were trying to retrieve.
             $table->string('type', 255);
@@ -34,6 +34,6 @@ class CreateGeoLogsTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::dropIfExists('geo_logs');
+        Schema::dropIfExists( 'geonames_logs' );
     }
 }

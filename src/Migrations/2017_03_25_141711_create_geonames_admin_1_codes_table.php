@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateAdmin1CodesTable extends Migration {
+class CreateGeonamesAdmin1CodesTable extends Migration {
     /**
      * Run the migrations.
      * Source of data: http://download.geonames.org/export/dump/admin1CodesASCII.txt

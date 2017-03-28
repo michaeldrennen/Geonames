@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateGeoSettingsTable extends Migration {
+class CreateGeonamesSettingsTable extends Migration {
 
     /**
      * Run the migrations.
@@ -12,7 +12,7 @@ class CreateGeoSettingsTable extends Migration {
      * @return void
      */
     public function up() {
-        Schema::create('geo_settings', function (Blueprint $table) {
+        Schema::create( 'geonames_settings', function ( Blueprint $table ) {
             // We should only ever have one record in this table.
             $table->increments('id');
 
@@ -49,6 +49,6 @@ class CreateGeoSettingsTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::dropIfExists('geo_settings');
+        Schema::dropIfExists( 'geonames_settings' );
     }
 }

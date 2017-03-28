@@ -63,8 +63,9 @@ class Admin1Code extends Command {
         ini_set( 'memory_limit', -1 );
         $this->startTimer();
         GeoSetting::init();
-
         $remoteUrl = GeoSetting::getDownloadUrlForFile( self::REMOTE_FILE_NAME );
+
+        DB::table( self::TABLE )->truncate();
 
         try {
             $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl );
@@ -96,14 +97,14 @@ class Admin1Code extends Command {
 
         $rows = file( $localFilePath );
         foreach ( $rows as $i => $row ) {
-            $fields = explode( "\t", $row );
-            $countryAndAdmin1 = $fields[0];
-            $countryAndAdmin1Parts = explode( '.', $countryAndAdmin1 );
-            $countryCode = $countryAndAdmin1Parts[0];
-            $admin1Code = $countryAndAdmin1Parts[1];
-            $name = $fields[1];
-            $asciiName = $fields[2];
-            $geonameId = $fields[3];
+            $fields = explode( "\t", $row );    // US.CO    Colorado    Colorado    5417618
+            $countryAndAdmin1 = $fields[0];     // US.CO
+            $countryAndAdmin1Parts = explode( '.', $countryAndAdmin1 ); // US.CO
+            $countryCode = $countryAndAdmin1Parts[0];   // US
+            $admin1Code = $countryAndAdmin1Parts[1];    // CO
+            $name = $fields[1];                         // Colorado
+            $asciiName = $fields[2];                    // Colorado
+            $geonameId = $fields[3];                    // 5417618
 
             Admin1CodeModel::create( ['geonameid'    => $geonameId,
                                       'country_code' => $countryCode,
