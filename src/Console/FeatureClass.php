@@ -10,21 +10,20 @@ class FeatureClass extends Command {
 
     use GeonamesConsoleTrait;
 
+    const TABLE = 'geonames_feature_classes';
     /**
      * @var string The name and signature of the console command.
      */
     protected $signature = 'geonames:feature-class';
-
     /**
      * @var string The console command description.
      */
     protected $description = "Populate the FeatureClasses table.";
 
-
     /**
      * Initialize constructor.
      */
-    public function __construct() {
+    public function __construct () {
         parent::__construct();
     }
 
@@ -34,40 +33,40 @@ class FeatureClass extends Command {
      * I don't worry about creating a temp/working table here, because it runs so fast. We're
      * only inserting a couple rows.
      */
-    public function handle() {
+    public function handle () {
         $this->startTimer();
 
-        DB::table('geo_feature_classes')->truncate();
+        DB::table( self::TABLE )->truncate();
 
 
-        DB::table('geo_feature_classes')->insert(['id'          => 'A',
-                                                  'description' => 'country, state, region,...',]);
+        DB::table( self::TABLE )->insert( ['id'          => 'A',
+                                           'description' => 'country, state, region,...',] );
 
-        DB::table('geo_feature_classes')->insert(['id'          => 'H',
-                                                  'description' => 'stream, lake, ...',]);
+        DB::table( self::TABLE )->insert( ['id'          => 'H',
+                                           'description' => 'stream, lake, ...',] );
 
-        DB::table('geo_feature_classes')->insert(['id'          => 'L',
-                                                  'description' => 'parks,area, ...',]);
+        DB::table( self::TABLE )->insert( ['id'          => 'L',
+                                           'description' => 'parks,area, ...',] );
 
-        DB::table('geo_feature_classes')->insert(['id'          => 'P',
-                                                  'description' => 'city, village,...',]);
+        DB::table( self::TABLE )->insert( ['id'          => 'P',
+                                           'description' => 'city, village,...',] );
 
-        DB::table('geo_feature_classes')->insert(['id'          => 'R',
-                                                  'description' => 'road, railroad',]);
+        DB::table( self::TABLE )->insert( ['id'          => 'R',
+                                           'description' => 'road, railroad',] );
 
-        DB::table('geo_feature_classes')->insert(['id'          => 'S',
-                                                  'description' => 'spot, building, farm',]);
+        DB::table( self::TABLE )->insert( ['id'          => 'S',
+                                           'description' => 'spot, building, farm',] );
 
-        DB::table('geo_feature_classes')->insert(['id'          => 'T',
-                                                  'description' => 'mountain,hill,rock,...',]);
+        DB::table( self::TABLE )->insert( ['id'          => 'T',
+                                           'description' => 'mountain,hill,rock,...',] );
 
-        DB::table('geo_feature_classes')->insert(['id'          => 'U',
-                                                  'description' => 'undersea',]);
+        DB::table( self::TABLE )->insert( ['id'          => 'U',
+                                           'description' => 'undersea',] );
 
-        DB::table('geo_feature_classes')->insert(['id'          => 'V',
-                                                  'description' => 'forest,heath,...',]);
+        DB::table( self::TABLE )->insert( ['id'          => 'V',
+                                           'description' => 'forest,heath,...',] );
 
 
-        $this->info( "The feature_classes table was truncated and refilled in " . $this->getRunTime() . " seconds." );
+        $this->info( "The " . self::TABLE . " table was truncated and refilled in " . $this->getRunTime() . " seconds." );
     }
 }

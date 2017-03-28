@@ -16,14 +16,12 @@ class CreateGeonamesAdmin2CodesTable extends Migration {
     public function up () {
         // Format : concatenated codes <tab>name <tab> asciiname <tab> geonameId
         Schema::create( 'geonames_admin_2_codes', function ( Blueprint $table ) {
-            $table->integer( 'geonameid', false, true );
-
-            $table->char( 'country_code', 2 );
-            $table->string( 'admin1_code', 20 );
-            $table->string( 'admin2_code', 80 );
-
-            $table->string( 'name', 255 );
-            $table->string( 'asciiname', 255 );
+            $table->integer( 'geonameid', false, true );    // 5581553
+            $table->char( 'country_code', 2 )->nullable();              // US
+            $table->string( 'admin1_code', 20 )->nullable();            // CO
+            $table->string( 'admin2_code', 80 )->nullable();            // 107
+            $table->string( 'name', 255 )->nullable();                  // Routt County
+            $table->string( 'asciiname', 255 )->nullable();             // Routt County
 
             $table->timestamps();
         } );

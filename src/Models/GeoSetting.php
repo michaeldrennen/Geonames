@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\File;
  */
 class GeoSetting extends Model {
 
+    protected $table = 'geonames_settings';
+
     /**
      * @var array
      */
@@ -176,7 +178,7 @@ class GeoSetting extends Model {
     }
 
     /**
-     * In a perfect world, the geo_settings record was created when you ran the geonames:install command.
+     * In a perfect world, the geonames_settings record was created when you ran the geonames:install command.
      * During development, I could not always count on the record to exist there. So I created this little
      * method to create the record if it did not exist. When users start to tinker with this library, and
      * accidentally delete the settings record (or change it's id or whatever), this will self-heal the system.

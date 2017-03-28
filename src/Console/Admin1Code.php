@@ -76,12 +76,14 @@ class Admin1Code extends Command {
             return false;
         }
 
-        $this->insertWithLoadDataInfile( $absoluteLocalPath );
+        $this->insertWithEloquent( $absoluteLocalPath );
 
         $this->info( "The admin_1_codes data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
     }
 
     /**
+     * Using Eloquent instead of LOAD DATA INFILE, because the rows in the downloaded file need to
+     * be munged before they can be inserted.
      * Sample row:
      * US.CO    Colorado    Colorado    5417618
      * @param string $localFilePath
@@ -112,9 +114,7 @@ class Admin1Code extends Command {
                                       'name'         => $name,
                                       'asciiname'    => $asciiName] );
 
-            $geonamesBar->advance( 1 );
-
-
+            $geonamesBar->advance();
         }
     }
 

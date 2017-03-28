@@ -16,11 +16,11 @@ class CreateGeonamesAdmin1CodesTable extends Migration {
         // In the command that I run to fill this table, I split the concatenated values in column 1 into
         // country_code and admin1_code
         Schema::create( 'geonames_admin_1_codes', function ( Blueprint $table ) {
-            $table->integer( 'geonameid' );
-            $table->char( 'country_code', 2 );
-            $table->string( 'admin1_code', 20 );
-            $table->string( 'name', 255 );
-            $table->string( 'asciiname', 255 );
+            $table->integer( 'geonameid' );         // 5417618
+            $table->char( 'country_code', 2 );      // US
+            $table->string( 'admin1_code', 20 );    // CO
+            $table->string( 'name', 255 );          // Colorado
+            $table->string( 'asciiname', 255 );     // Colorado
             $table->timestamps();
         } );
     }

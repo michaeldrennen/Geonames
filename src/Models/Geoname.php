@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use MichaelDrennen\Geonames\Events\GeonameUpdated;
 
 class Geoname extends Model {
+    protected $table = 'geonames';
+
     protected $primaryKey = 'geonameid';
 
     /**

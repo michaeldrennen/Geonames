@@ -33,6 +33,7 @@ class GeonamesServiceProvider extends ServiceProvider {
                               Console\FeatureCode::class,
 
                               Console\Admin1Code::class,
+                              Console\Admin2Code::class,
 
                               Console\UpdateGeonames::class,
                               Console\Status::class,

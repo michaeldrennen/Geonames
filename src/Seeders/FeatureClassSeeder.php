@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
  */
 class FeatureClassSeeder extends Seeder {
 
+
     /**
      * Run the database seeds.
      *

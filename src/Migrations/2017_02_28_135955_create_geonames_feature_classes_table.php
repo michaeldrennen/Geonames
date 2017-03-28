@@ -16,11 +16,6 @@ class CreateGeonamesFeatureClassesTable extends Migration {
             $table->string('description', 255);
             $table->primary('id');
         });
-
-        $seeder = new FeatureClassSeeder();
-        $seeder->run();
-
-
     }
 
     /**

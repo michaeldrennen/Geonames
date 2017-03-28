@@ -5,7 +5,13 @@ namespace MichaelDrennen\Geonames\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Admin1Code extends Model {
-    //
+
+    protected $table = 'geonames_admin_1_codes';
+
+    /**
+     * @var array
+     */
+    protected $guarded = [];
 
     /**
      * The attributes that should be casted to native types.

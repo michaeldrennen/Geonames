@@ -11,7 +11,7 @@ class Log extends Model {
      *
      * @var string
      */
-    protected $table = 'geo_logs';
+    protected $table = 'geonames_logs';
 
     const ERROR = 'error';
     const MODIFICATION = 'modification';

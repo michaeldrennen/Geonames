@@ -52,20 +52,16 @@ class FeatureCode extends Command {
      */
     public function handle() {
         $this->startTimer();
-        $this->line("Starting " . $this->signature . "\n");
 
         GeoSetting::init();
 
         // Get all of the feature code lines from the geonames.org download page.
         $featureCodeFileDownloadLinks = $this->getFeatureCodeFileDownloadLinks();
 
-
         // Download each of the files that we found.
         $localPathsToFeatureCodeFiles = self::downloadFiles($this, $featureCodeFileDownloadLinks);
 
-
         // Run each of those files through LOAD DATA INFILE.
-        $this->line("Creating the temp table named geonames_working.");
         Schema::dropIfExists(self::TABLE_WORKING);
         DB::statement('CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';');
 
@@ -84,11 +80,8 @@ class FeatureCode extends Command {
             Schema::rename(self::TABLE_WORKING, self::TABLE);
             $this->info("\nSuccess. The " . self::TABLE . " is live.");
         } else {
-            Log::error('', "Failed to insert all of the feature_code rows.", 'database');
+            Log::error( '', "Failed to insert all of the " . self::TABLE . " rows.", 'database' );
         }
-
-        $this->info( "The feature_codes data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
-        $this->line("\nFinished " . $this->signature);
     }
 
 
@@ -213,7 +206,7 @@ class FeatureCode extends Command {
 
         foreach ($validRows as $rowNumber => $row) {
 
-            $insertResult = DB::table('geo_feature_codes_working')->insert($this->makeRowInsertable($row));
+            $insertResult = DB::table( self::TABLE_WORKING )->insert( $this->makeRowInsertable( $row ) );
 
             if ($insertResult === true) {
                 $numRowsInserted++;
