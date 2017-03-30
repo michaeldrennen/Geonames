@@ -42,12 +42,12 @@ class AlternateName extends Command {
      * The name of our alternate names table in our database. Using constants here, so I don't need
      * to worry about typos in my code. My IDE will warn me if I'm sloppy.
      */
-    const ALTERNATE_NAMES_TABLE = 'geo_alternate_names';
+    const ALTERNATE_NAMES_TABLE = 'geonames_alternate_names';
 
     /**
      * The name of our temporary/working table in our database.
      */
-    const ALTERNATE_NAMES_TABLE_WORKING = 'geo_alternate_names_working';
+    const ALTERNATE_NAMES_TABLE_WORKING = 'geonames_alternate_names_working';
 
 
     /**

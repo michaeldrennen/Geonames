@@ -36,12 +36,12 @@ class IsoLanguageCode extends Command {
     /**
      *
      */
-    const ISO_LANGUAGE_CODES_TABLE = 'geo_iso_language_codes';
+    const ISO_LANGUAGE_CODES_TABLE = 'geonames_iso_language_codes';
 
     /**
      *
      */
-    const ISO_LANGUAGE_CODES_TABLE_WORKING = 'geo_iso_language_codes_working';
+    const ISO_LANGUAGE_CODES_TABLE_WORKING = 'geonames  _iso_language_codes_working';
 
     /**
      * Initialize constructor.
