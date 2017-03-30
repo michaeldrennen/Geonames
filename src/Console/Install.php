@@ -4,6 +4,7 @@ namespace MichaelDrennen\Geonames\Console;
 
 use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\Models\GeoSetting;
+use Exception;
 
 class Install extends Command {
 
@@ -41,7 +42,7 @@ class Install extends Command {
     /**
      * Initialize constructor.
      */
-    public function __construct() {
+    public function __construct () {
         parent::__construct();
     }
 
@@ -49,11 +50,12 @@ class Install extends Command {
     /**
      * Execute the console command.
      */
-    public function handle() {
+    public function handle () {
 
+        $this->startTimer();
         GeoSetting::install( $this->option( 'country' ), $this->option( 'language' ), $this->option( 'storage' ) );
 
-        GeoSetting::setStatus(GeoSetting::STATUS_INSTALLING);
+        GeoSetting::setStatus( GeoSetting::STATUS_INSTALLING );
 
         $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
         if ( $emptyDirResult === true ) {
@@ -61,75 +63,38 @@ class Install extends Command {
         }
 
 
-        $this->startTime = microtime(true);
-        $this->line("Starting " . $this->signature);
+        $this->line( "Starting " . $this->signature );
+
 
         try {
-            $this->call('geonames:feature-class');
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
-            $this->error($e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString());
-            GeoSetting::setStatus(GeoSetting::STATUS_ERROR);
-            return false;
-        }
-
-        try {
-            $this->call('geonames:feature-code');
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
-            $this->error($e->getTraceAsString());
-            GeoSetting::setStatus(GeoSetting::STATUS_ERROR);
-            return false;
-        }
-
-        try {
+            $this->call( 'geonames:admin-1-code' );
+            $this->call( 'geonames:admin-2-code' );
+            $this->call( 'geonames:feature-class' );
+            $this->call( 'geonames:feature-code' );
             $this->call( 'geonames:iso-language-code' );
-        } catch ( \Exception $e ) {
-            $this->error( $e->getMessage() );
-            $this->error( $e->getTraceAsString() );
-            GeoSetting::setStatus( GeoSetting::STATUS_ERROR );
-
-            return false;
-        }
-
-        try {
             $this->call( 'geonames:alternate-name' );
-        } catch ( \Exception $e ) {
+            $this->call( 'geonames:geoname' );
+
+        } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
-            $this->error( $e->getTraceAsString() );
+            $this->error( $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
             GeoSetting::setStatus( GeoSetting::STATUS_ERROR );
 
             return false;
         }
-
-        try {
-            $this->call( 'geonames:geoname' );
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
-            $this->error($e->getTraceAsString());
-            GeoSetting::setStatus(GeoSetting::STATUS_ERROR);
-            return false;
-        }
-
-
-        $this->endTime = microtime(true);
-        $this->runTime = $this->endTime - $this->startTime;
 
         GeoSetting::setInstalledAt();
-        GeoSetting::setStatus(GeoSetting::STATUS_LIVE);
+        GeoSetting::setStatus( GeoSetting::STATUS_LIVE );
         $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
         if ( $emptyDirResult === true ) {
             $this->line( "Our storage directory has been emptied." );
         } else {
             $this->error( "We were unable to empty the storage directory." );
         }
-        $this->line("Finished " . $this->signature);
+        $this->line( "Finished " . $this->signature );
 
         $this->call( 'geonames:status' );
     }
-
-
-
 
 
 }
