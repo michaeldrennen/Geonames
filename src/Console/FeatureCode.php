@@ -32,12 +32,12 @@ class FeatureCode extends Command {
      * The name of our feature codes table in our database. Using constants here, so I don't need
      * to worry about typos in my code. My IDE will warn me if I'm sloppy.
      */
-    const TABLE = 'geo_feature_codes';
+    const TABLE = 'geonames_feature_codes';
 
     /**
      * The name of our temporary/working table in our database.
      */
-    const TABLE_WORKING = 'geo_feature_codes_working';
+    const TABLE_WORKING = 'geonames_feature_codes_working';
 
 
     /**
@@ -190,13 +190,12 @@ class FeatureCode extends Command {
 
     /**
      * Insert all of the data into our database. We insert these rows into a 'working' table, not the
-     * live table. We do this so users can safely update the geo_feature_codes table on a production box
+     * live table. We do this so users can safely update the geonames_feature_codes table on a production box
      * without any significant downtime.
      * @param array $validRows An associative array of data from the feature code files from geonames.org
      * @return bool Returns true if all of the rows were inserted. False otherwise.
      */
     protected function insertValidRows(array $validRows): bool {
-        $this->line("Inserting rows into the geo_feature_codes_working table.");
         $numRowsInserted = 0;
         $numRowsNotInserted = 0;
         $numRowsToBeInserted = count($validRows);

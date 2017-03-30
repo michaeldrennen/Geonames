@@ -77,11 +77,11 @@ class FeatureCodeSeeder extends Seeder {
             list($id, $name, $description) = $row;
             list($feature_class, $feature_code) = $id;
 
-            DB::table('geo_feature_codes')->insert(['id'            => $id,
-                                                    'feature_class' => $feature_class,
-                                                    'feature_code'  => $feature_code,
-                                                    'name'          => $name,
-                                                    'description'   => $description,]);
+            DB::table( 'geonames_feature_codes' )->insert( ['id'            => $id,
+                                                            'feature_class' => $feature_class,
+                                                            'feature_code'  => $feature_code,
+                                                            'name'          => $name,
+                                                            'description'   => $description,]);
         }
 
 
