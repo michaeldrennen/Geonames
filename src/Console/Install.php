@@ -67,11 +67,12 @@ class Install extends Command {
 
 
         try {
+            $this->call( 'geonames:feature-code' );
+            $this->call( 'geonames:iso-language-code' );
             $this->call( 'geonames:admin-1-code' );
             $this->call( 'geonames:admin-2-code' );
             $this->call( 'geonames:feature-class' );
-            $this->call( 'geonames:feature-code' );
-            $this->call( 'geonames:iso-language-code' );
+
             $this->call( 'geonames:alternate-name' );
             $this->call( 'geonames:geoname' );
 

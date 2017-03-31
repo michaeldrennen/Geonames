@@ -42,12 +42,12 @@ class AlternateName extends Command {
      * The name of our alternate names table in our database. Using constants here, so I don't need
      * to worry about typos in my code. My IDE will warn me if I'm sloppy.
      */
-    const ALTERNATE_NAMES_TABLE = 'geonames_alternate_names';
+    const TABLE = 'geonames_alternate_names';
 
     /**
      * The name of our temporary/working table in our database.
      */
-    const ALTERNATE_NAMES_TABLE_WORKING = 'geonames_alternate_names_working';
+    const TABLE_WORKING = 'geonames_alternate_names_working';
 
 
     /**
@@ -72,7 +72,6 @@ class AlternateName extends Command {
 
         $urlToAlternateNamesZipFile = $this->getAlternateNameDownloadLink();
 
-
         try {
             $absoluteLocalFilePathOfAlternateNamesZipFile = $this->downloadFile( $this, $urlToAlternateNamesZipFile );
         } catch ( Exception $e ) {
@@ -82,12 +81,7 @@ class AlternateName extends Command {
             return false;
         }
 
-        // DEBUG
-        //$absoluteLocalFilePathOfAlternateNamesZipFile = $this->getLocalAbsolutePathToAlternateNamesZipFile();
-
-
         try {
-            $this->line( "Unzipping " . $absoluteLocalFilePathOfAlternateNamesZipFile );
             $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile );
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
@@ -99,14 +93,14 @@ class AlternateName extends Command {
         $absoluteLocalFilePathOfAlternateNamesFile = $this->getLocalAbsolutePathToAlternateNamesTextFile();
 
         if ( !file_exists( $absoluteLocalFilePathOfAlternateNamesFile ) ) {
-            throw new \Exception( "The unzipped alternateNames.txt file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
+            throw new Exception( "The unzipped alternateNames.txt file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
         }
 
 
         $this->insertAlternateNamesWithLoadDataInfile( $absoluteLocalFilePathOfAlternateNamesFile );
 
 
-        $this->info( "The alternate_names data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
+        $this->info( "alternate_names data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
     }
 
     /**
@@ -139,19 +133,12 @@ class AlternateName extends Command {
      * @throws \Exception
      */
     protected function insertAlternateNamesWithLoadDataInfile ( $localFilePath ) {
-
-        $this->line( "\nAttempting Load Data Infile on " . $localFilePath );
-
-
-        $this->line( "Dropping the temp table named " . self::ALTERNATE_NAMES_TABLE_WORKING . " (if it exists)." );
-        Schema::dropIfExists( self::ALTERNATE_NAMES_TABLE_WORKING );
-
-        $this->line( "Creating the temp table named " . self::ALTERNATE_NAMES_TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::ALTERNATE_NAMES_TABLE_WORKING . ' LIKE ' . self::ALTERNATE_NAMES_TABLE . ';' );
-
+        Schema::dropIfExists( self::TABLE_WORKING );
+        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        $this->disableKeys( self::TABLE_WORKING );
 
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
-    INTO TABLE " . self::ALTERNATE_NAMES_TABLE_WORKING . "
+    INTO TABLE " . self::TABLE_WORKING . "
         (   alternateNameId, 
             geonameid,
             isolanguage, 
@@ -172,11 +159,8 @@ class AlternateName extends Command {
             throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()->getpdo()->errorInfo(), true ) );
         }
 
-        $this->info( "Inserted text file into: " . self::ALTERNATE_NAMES_TABLE_WORKING );
-
-        $this->line( "Dropping the active " . self::ALTERNATE_NAMES_TABLE_WORKING . " table." );
-        Schema::dropIfExists( self::ALTERNATE_NAMES_TABLE );
-        Schema::rename( self::ALTERNATE_NAMES_TABLE_WORKING, self::ALTERNATE_NAMES_TABLE );
-        $this->info( "Renamed " . self::ALTERNATE_NAMES_TABLE_WORKING . " to " . self::ALTERNATE_NAMES_TABLE . "." );
+        $this->enableKeys( self::TABLE_WORKING );
+        Schema::dropIfExists( self::TABLE );
+        Schema::rename( self::TABLE_WORKING, self::TABLE );
     }
 }

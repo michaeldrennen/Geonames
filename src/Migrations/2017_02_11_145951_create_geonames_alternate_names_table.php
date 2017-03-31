@@ -12,6 +12,7 @@ class CreateGeonamesAlternateNamesTable extends Migration {
      */
     public function up() {
         Schema::create( 'geonames_alternate_names', function ( Blueprint $table ) {
+            $table->engine = 'MyISAM';
             $table->integer( 'alternateNameId', false, true );     // alternateNameId   : the id of this alternate name, int
             $table->integer( 'geonameid', false, true );
             $table->string( 'isolanguage', 7 )->nullable();        // isolanguage       : iso 639 language code 2- or 3-characters; 4-characters 'post' for postal codes and 'iata','icao' and faac for airport codes, fr_1793 for French Revolution names,  abbr for abbreviation, link for a website, varchar(7)

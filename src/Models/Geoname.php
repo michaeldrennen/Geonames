@@ -4,11 +4,13 @@ namespace MichaelDrennen\Geonames\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use MichaelDrennen\Geonames\Events\GeonameUpdated;
+use MichaelDrennen\Geonames\Models\Admin2Code;
 
 class Geoname extends Model {
     protected $table = 'geonames';
 
     protected $primaryKey = 'geonameid';
+
 
     /**
      * @var array An empty array, because I want all of the fields mass assignable.
@@ -41,4 +43,12 @@ class Geoname extends Model {
      * @var array
      */
     protected $events = ['updated' => GeonameUpdated::class];
+
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function admin2Code () {
+        return $this->hasOne( Admin2Code::class, 'admin2_code', 'admin2_code' );
+    }
 }

@@ -67,6 +67,6 @@ class FeatureClass extends Command {
                                            'description' => 'forest,heath,...',] );
 
 
-        $this->info( "The " . self::TABLE . " table was truncated and refilled in " . $this->getRunTime() . " seconds." );
+        $this->info( self::TABLE . " table was truncated and refilled in " . $this->getRunTime() . " seconds." );
     }
 }

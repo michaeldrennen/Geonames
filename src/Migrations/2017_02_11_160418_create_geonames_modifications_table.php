@@ -12,6 +12,7 @@ class CreateGeonamesModificationsTable extends Migration {
      */
     public function up() {
         Schema::create( 'geonames_modifications', function ( Blueprint $table ) {
+            $table->engine = 'MyISAM';
             $table->increments('id');                   // Primary key of this table. Can't be geonameid, as a location can have n modifications.
             $table->date('date');                       // The date of the modification
             $table->integer('geonameid');               // geonameid         : integer id of record in geonames database

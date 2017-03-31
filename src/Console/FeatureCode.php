@@ -78,7 +78,7 @@ class FeatureCode extends Command {
         if ($allRowsInserted === true) {
             Schema::drop(self::TABLE);
             Schema::rename(self::TABLE_WORKING, self::TABLE);
-            $this->info("\nSuccess. The " . self::TABLE . " is live.");
+            $this->info( self::TABLE . " table was truncated and refilled in " . $this->getRunTime() . " seconds." );
         } else {
             Log::error( '', "Failed to insert all of the " . self::TABLE . " rows.", 'database' );
         }
@@ -200,8 +200,14 @@ class FeatureCode extends Command {
         $numRowsNotInserted = 0;
         $numRowsToBeInserted = count($validRows);
 
+        $this->disableKeys( self::TABLE_WORKING );
+
         // Progress bar for console display.
-        $bar = $this->output->createProgressBar($numRowsToBeInserted);
+        $bar = $this->output->createProgressBar( $numRowsToBeInserted );
+        $bar->setFormat( "Inserting %message% %current%/%max% [%bar%] %percent:3s%%\n" );
+        $bar->setMessage( 'feature codes' );
+        $bar->advance();
+
 
         foreach ($validRows as $rowNumber => $row) {
 
@@ -215,6 +221,9 @@ class FeatureCode extends Command {
             }
             $bar->advance();
         }
+
+        $this->enableKeys( self::TABLE_WORKING );
+
         if ($numRowsInserted != $numRowsToBeInserted) {
             return false;
         }

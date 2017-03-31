@@ -5,6 +5,7 @@ use Curl\Curl;
 use ZipArchive;
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\DomCrawler\Crawler;
 use MichaelDrennen\RemoteFile\RemoteFile;
 use MichaelDrennen\Geonames\Models\Log;
@@ -197,6 +198,18 @@ trait GeonamesConsoleTrait {
         } catch ( Exception $e ) {
             throw $e;
         }
+    }
+
+    protected function disableKeys ( string $table ): bool {
+        $query = 'ALTER TABLE ' . $table . ' DISABLE KEYS;';
+
+        return DB::connection()->getpdo()->exec( $query );
+    }
+
+    protected function enableKeys ( string $table ): bool {
+        $query = 'ALTER TABLE ' . $table . ' ENABLE KEYS;';
+
+        return DB::connection()->getpdo()->exec( $query );
     }
 
 }

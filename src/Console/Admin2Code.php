@@ -41,6 +41,7 @@ class Admin2Code extends Command {
     const TABLE = 'geonames_admin_2_codes';
 
     /**
+     * @todo Remove from code. Not used in small tables.
      * The name of our temporary/working table in our database.
      */
     const TABLE_WORKING = 'geonames_admin_2_codes_working';
@@ -91,11 +92,11 @@ class Admin2Code extends Command {
         $numLines = LocalFile::lineCount( $localFilePath );
 
         $geonamesBar = $this->output->createProgressBar( $numLines );
-
-        $geonamesBar->setFormat( "\nInserting %message% %current%/%max% [%bar%] %percent:3s%%\n" );
-
+        $geonamesBar->setFormat( "Inserting %message% %current%/%max% [%bar%] %percent:3s%%\n" );
         $geonamesBar->setMessage( 'admin 2 codes' );
+        $geonamesBar->advance();
 
+        $this->disableKeys( self::TABLE );
         $rows = file( $localFilePath );
         foreach ( $rows as $i => $row ) {
             $fields = explode( "\t", $row );            // US.CO.107	Routt County	Routt County	5581553
@@ -117,5 +118,6 @@ class Admin2Code extends Command {
 
             $geonamesBar->advance();
         }
+        $this->enableKeys( self::TABLE );
     }
 }

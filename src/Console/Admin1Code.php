@@ -92,10 +92,9 @@ class Admin1Code extends Command {
         $numLines = LocalFile::lineCount( $localFilePath );
 
         $geonamesBar = $this->output->createProgressBar( $numLines );
-
-        $geonamesBar->setFormat( "\nInserting %message% %current%/%max% [%bar%] %percent:3s%%\n" );
-
+        $geonamesBar->setFormat( "Inserting %message% %current%/%max% [%bar%] %percent:3s%%\n" );
         $geonamesBar->setMessage( 'admin 1 codes' );
+        $geonamesBar->advance();
 
         $rows = file( $localFilePath );
         foreach ( $rows as $i => $row ) {
@@ -138,6 +137,7 @@ class Admin1Code extends Command {
             @updated_at)
     SET created_at=NOW(),updated_at=null";
 
+        $this->line( "Inserting via LOAD DATA INFILE: " . $localFilePath );
         $rowsInserted = DB::connection()->getpdo()->exec( $query );
         if ( $rowsInserted === false ) {
             Log::error( '', "Unable to load data infile for " . self::TABLE, 'database' );

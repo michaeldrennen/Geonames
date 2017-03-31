@@ -279,6 +279,10 @@ class InsertGeonames extends Command {
         $this->line( "Creating the temp table named " . self::TABLE_WORKING );
         DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . '; ' );
 
+
+        $this->disableKeys( self::TABLE_WORKING );
+
+
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
     INTO TABLE " . self::TABLE_WORKING . "
         (geonameid, 
@@ -311,6 +315,8 @@ SET created_at=NOW(),updated_at=null";
             throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()->getpdo()->errorInfo(), true ) );
         }
 
+        $this->enableKeys( self::TABLE_WORKING );
+
         $this->info( "Inserted text file into " . self::TABLE_WORKING );
 
         $this->line( "Dropping the active " . self::TABLE . " table." );
@@ -336,4 +342,6 @@ SET created_at=NOW(),updated_at=null";
 
         return false;
     }
+
+
 }
