@@ -4,6 +4,8 @@ namespace MichaelDrennen\Geonames\Repositories;
 use Illuminate\Database\Eloquent\Collection;
 use MichaelDrennen\Geonames\Models\Geoname;
 
+use Illuminate\Support\Facades\DB;
+
 
 class GeonameRepository {
 
@@ -26,7 +28,9 @@ class GeonameRepository {
      * @return Collection   An Eloquent Collection of every geoname record that starts with the characters in $term.
      */
     public function getPlacesStartingWithTerm ( $term ) {
-        $collection = Geoname::select( 'geonameid', 'asciiname', 'country_code' )->where( 'asciiname', 'LIKE', $term . '%' )->get();
+        $collection = Geoname::select( 'geonameid', 'asciiname', 'country_code' )
+                             ->where( 'asciiname', 'LIKE', $term . '%' )
+                             ->get();
 
         return $collection;
     }
@@ -37,7 +41,12 @@ class GeonameRepository {
      * @return Collection
      */
     public function getCitiesFromCountryStartingWithTerm ( $countryCode = '', $asciinameTerm = '' ) {
-        $collection = Geoname::select( 'geonameid', 'asciiname', 'admin1_code', 'country_code' )->admin2Code()->where( 'feature_class', 'P' )->where( 'country_code', $countryCode )->where( 'asciiname', 'LIKE', $asciinameTerm . '%' )->get();
+
+        $collection = Geoname::select( 'geonameid', 'asciiname', 'country_code', 'admin1_code', 'admin2_code' )
+                             ->where( 'feature_class', 'P' )
+                             ->where( 'country_code', $countryCode )
+                             ->where( 'asciiname', 'LIKE', $asciinameTerm . '%' )
+                             ->get();
 
         return $collection;
     }
@@ -48,7 +57,11 @@ class GeonameRepository {
      * @return Collection
      */
     public function getSchoolsFromCountryStartingWithTerm ( $countryCode = '', $asciinameTerm = '' ) {
-        $collection = Geoname::select( 'geonameid', 'asciiname', 'admin1_code', 'country_code' )->whereIn( 'feature_code', $this->featureCodes['schools'] )->where( 'country_code', $countryCode )->where( 'asciiname', 'LIKE', $asciinameTerm . '%' )->get();
+        $collection = Geoname::select( 'geonameid', 'asciiname', 'admin1_code', 'country_code' )
+                             ->whereIn( 'feature_code', $this->featureCodes['schools'] )
+                             ->where( 'country_code', $countryCode )
+                             ->where( 'asciiname', 'LIKE', $asciinameTerm . '%' )
+                             ->get();
 
         return $collection;
     }

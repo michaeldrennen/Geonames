@@ -2,9 +2,11 @@
 
 namespace MichaelDrennen\Geonames\Models;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use MichaelDrennen\Geonames\Events\GeonameUpdated;
-use MichaelDrennen\Geonames\Models\Admin2Code;
+use MichaelDrennen\Geonames\Repositories\Admin2CodeRepository;
 
 class Geoname extends Model {
     protected $table = 'geonames';
@@ -20,7 +22,7 @@ class Geoname extends Model {
     /**
      * @var string
      */
-    protected $dateFormat = 'Y-m-d';
+    //protected $dateFormat = 'Y-m-d';
 
     /**
      * @var array
@@ -46,9 +48,23 @@ class Geoname extends Model {
 
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * This is not an ideal solution, but it's the best we can do with Eloquent. Eloquent does not allow for composite
+     * keys to be used in model relations. There is no primary key that connects a geonames record to a
+     * geonames_admin_2_codes record. However, you can uniquely identify an geonames_admin_2_codes record if you use
+     * the country_code, admin1_code, and admin2_code. All of those values are present in a geonames record. So my
+     * solution is to set up a dynamic attribute in the Geoname model. When you ask for $geoname->admin_2_name, the
+     * following code will be executed.
+     * @return string   If no matching geonames_admin_2_records row can be found, an empty string is returned.
      */
-    public function admin2Code () {
-        return $this->hasOne( Admin2Code::class, 'admin2_code', 'admin2_code' );
+    public function getAdmin2NameAttribute () {
+        try {
+            $admin2CodeRepository = new Admin2CodeRepository();
+            $admin2Code = $admin2CodeRepository->getByCompositeKey( $this->country_code, $this->admin1_code, $this->admin2_code );
+
+            return (string)$admin2Code->asciiname;
+        } catch ( ModelNotFoundException $e ) {
+            return '';
+        }
     }
+
 }

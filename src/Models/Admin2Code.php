@@ -20,4 +20,10 @@ class Admin2Code extends Model {
      * @var array
      */
     protected $casts = ['geonameid' => 'integer'];
+
+    public function geoname () {
+        return $this->hasOne( Geoname::class, 'geonameid', 'geonameid' );
+    }
+
+
 }

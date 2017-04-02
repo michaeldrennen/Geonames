@@ -18,10 +18,18 @@ class GeonamesController extends Controller {
         return response()->json( $results );
     }
 
-    public function citiesByCountryCode ( $countryCode = '', $asciinameTerm = '' ) {
-        $results = $this->geoname->getCitiesFromCountryStartingWithTerm( $countryCode, $asciinameTerm );
+    public function citiesByCountryCode ( $countryCode = '', $asciinameTerm = '' ): string {
+        $geonames = $this->geoname->getCitiesFromCountryStartingWithTerm( $countryCode, $asciinameTerm );
 
-        return response()->json( $results );
+        $rows = [];
+        foreach ( $geonames as $geoname ) {
+            $newRow = ['geonameid' => $geoname->geonameid,
+                       'name'      => $geoname->asciiname,
+                       'county'    => $geoname->admin_2_name];
+            $rows[] = $newRow;
+        }
+
+        return response()->json( $rows );
     }
 
     public function schoolsByCountryCode ( $countryCode = '', $asciinameTerm = '' ) {

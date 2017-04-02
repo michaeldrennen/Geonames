@@ -24,6 +24,8 @@ class CreateGeonamesAdmin2CodesTable extends Migration {
             $table->string( 'name', 255 )->nullable();                  // Routt County
             $table->string( 'asciiname', 255 )->nullable();             // Routt County
 
+            //$table->primary();
+
             $table->timestamps();
         } );
     }
