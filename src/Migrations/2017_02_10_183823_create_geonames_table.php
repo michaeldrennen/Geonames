@@ -41,6 +41,9 @@ class CreateGeonamesTable extends Migration {
             $table->index('latitude');
             $table->index('longitude');
             $table->index('feature_class');
+            $table->index( ['country_code',
+                            'admin1_code',
+                            'admin2_code'] );
 
         });
     }

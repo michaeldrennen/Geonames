@@ -10,6 +10,8 @@
     }
   ],
   "require": {
+    "php": "^7.0",
+    "ext-intl": "*",
     "illuminate/support": "^5.4",
     "illuminate/database": "^5.4",
     "curl/curl": "^1.6",
