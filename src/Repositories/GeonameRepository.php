@@ -61,6 +61,11 @@ class GeonameRepository {
         return $collection;
     }
 
+    /**
+     * @param string $countryCode
+     * @param string $asciinameTerm
+     * @return mixed
+     */
     public function getCitiesNotFromCountryStartingWithTerm ( $countryCode = '', $asciinameTerm = '' ) {
 
         DB::listen( function ( $sql ) {
@@ -92,6 +97,32 @@ class GeonameRepository {
                              ->get();
 
         return $collection;
+    }
+
+
+    /**
+     * A user could start a search term with "St." as oppose to "Saint", and in the geonames table, there are records
+     * that use each of those conventions. It would be frustrating for the user to have to try both variations to find
+     * the place they are looking for. This method accepts a query object and the term, and adds the appropriate where
+     * clauses before returning the query object.
+     * @param $query
+     * @param string $term
+     * @return mixed
+     */
+    protected function addWhereName ( $query, string $term ) {
+        return $query;
+    }
+
+    /**
+     * @todo    Rethink this logic...
+     * @param string $term
+     * @return bool
+     */
+    protected function termHasAbbreviation ( string $term ): bool {
+        $term = strtolower( $term );
+        if ( stripos( $term, 'st.' ) ) {
+
+        }
     }
 
 
