@@ -3,6 +3,7 @@ namespace MichaelDrennen\Geonames\Repositories;
 
 use Illuminate\Database\Eloquent\Collection;
 use MichaelDrennen\Geonames\Models\Geoname;
+use Illuminate\Support\Facades\DB;
 
 
 class GeonameRepository {
@@ -62,10 +63,17 @@ class GeonameRepository {
 
     public function getCitiesNotFromCountryStartingWithTerm ( $countryCode = '', $asciinameTerm = '' ) {
 
+        DB::listen( function ( $sql ) {
+            print_r( $sql->sql );
+            print_r( $sql->bindings );
+        } );
+
         $collection = Geoname::select( $this->defaultGeonamesFields )
                              ->where( 'feature_class', 'P' )
                              ->where( 'country_code', '<>', $countryCode )
                              ->where( 'asciiname', 'LIKE', $asciinameTerm . '%' )
+                             ->orderBy( 'country_code', 'ASC' )
+                             ->orderBy( 'asciiname', 'ASC' )
                              ->get();
 
         return $collection;
