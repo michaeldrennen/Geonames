@@ -14,4 +14,4 @@ A Laravel (php) package to interface with the geo-location services at geonames.
 Want to install all of the geonames records for the US, Canada, and Mexico as well as pull in the feature codes 
 definitions file in English? 
 
-<code>php artisan geonames:install --country=US --country=CA --MX --language=en</code>
+<code>php artisan geonames:install --country=US --country=CA --country=MX --language=en</code>
