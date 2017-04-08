@@ -110,6 +110,17 @@ class GeonameRepository {
      * @return mixed
      */
     protected function addWhereName ( $query, string $term ) {
+
+        if ( $this->termHasAbbreviation( $term ) ) {
+            $queryStrings = [];
+
+
+        } else {
+            $query->where( 'asciiname', $term );
+        }
+
+
+
         return $query;
     }
 
@@ -121,8 +132,22 @@ class GeonameRepository {
     protected function termHasAbbreviation ( string $term ): bool {
         $term = strtolower( $term );
         if ( stripos( $term, 'st.' ) ) {
-
+            return true;
         }
+
+        if ( stripos( $term, 'st ' ) ) {
+            return true;
+        }
+
+        if ( stripos( $term, 'ft.' ) ) {
+            return true;
+        }
+
+        if ( stripos( $term, 'ft ' ) ) {
+            return true;
+        }
+
+        return false;
     }
 
 

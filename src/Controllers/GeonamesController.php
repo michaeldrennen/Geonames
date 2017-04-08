@@ -14,6 +14,16 @@ class GeonamesController extends Controller {
         $this->geoname = $geoname;
     }
 
+    public function searchAll ( Request $request ) {
+        $term = $request->input( 'term' );
+
+        var_dump( $term );
+
+        //$results = $this->geoname->getPlacesStartingWithTerm( $term );
+
+        //return response()->json( $results );
+    }
+
     public function test ( $term = '' ) {
         $results = $this->geoname->getPlacesStartingWithTerm( $term );
 

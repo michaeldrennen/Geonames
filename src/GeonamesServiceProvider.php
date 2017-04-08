@@ -18,6 +18,8 @@ class GeonamesServiceProvider extends ServiceProvider {
         // Feel free to modify those migrations to create indexes that are appropriate for your application.
         $this->loadMigrationsFrom( __DIR__ . '/Migrations' );
 
+        $this->loadViewsFrom( __DIR__ . '/Views', 'geonames' );
+
 
         // Let's register our commands. These are needed to keep our geonames data up-to-date.
         if ( $this->app->runningInConsole() ) {
