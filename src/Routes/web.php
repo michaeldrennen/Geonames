@@ -2,12 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::get( '/geonames/search-all', '\MichaelDrennen\Geonames\Controllers\GeonamesController@searchAll' );
+
 /**
  *
  */
 Route::get( '/geonames/{term}', '\MichaelDrennen\Geonames\Controllers\GeonamesController@test' );
 
-Route::get( '/geonames/search-all', '\MichaelDrennen\Geonames\Controllers\GeonamesController@searchAll' );
+
 
 Route::get( '/geonames/cities/{asciiNameTerm}', '\MichaelDrennen\Geonames\Controllers\GeonamesController@citiesUsingLocale' );
 
