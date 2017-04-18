@@ -15,9 +15,13 @@ class GeonamesController extends Controller {
     }
 
     public function searchAll ( Request $request ) {
+
+    }
+
+    public function ajaxJquerySearchAll ( Request $request ) {
         $term = $request->input( 'term' );
         $results = $this->geoname->getPlacesStartingWithTerm( $term )
-                                 ->take( 4 );
+                                 ->take( 100 );
 
         return response()->json( $results );
     }

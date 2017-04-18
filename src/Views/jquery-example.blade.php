@@ -22,12 +22,51 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script>
 
-
+        console.log("foo");
         $('#geonames-autocomplete-ajax').autocomplete({
-            source: '/geonames/search-all',
+
+
+            source: function (request, response) {
+                $.ajax({
+                    url: "/geonames/search-all",
+                    dataType: "json",
+                    data: "term=" + request.term,
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: item.asciiname,
+                                value: item.geonameid,
+                                asciiname: item.asciiname,
+                                admin2_code: item.admin2_code,
+                                country_code: item.country_code,
+                                admin_2_name: item.admin_2_name
+                            };
+                        }));
+                    }
+                });
+            },
+
+
             minLength: 2,
-            dataType: "jsonp"
-        });
+
+
+            select: function (event, ui) {
+                console.log("Selected: " + ui.item.value + " aka " + ui.item.id);
+            }
+        }).autocomplete("instance")._renderItem = function (ul, item) {
+            var string = '';
+            if (item.country_code == 'US') {
+                string = item.asciiname + ", " + item.admin2_code + "<br />" + item.admin_2_name;
+            } else {
+                string = item.asciiname + ", " + item.country_code;
+            }
+
+            return $("<li>")
+
+                .append("<div>" + string + "</div>")
+                .appendTo(ul);
+        };
+
 
     </script>
 

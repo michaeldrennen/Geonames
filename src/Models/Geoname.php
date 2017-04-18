@@ -20,6 +20,12 @@ class Geoname extends Model {
     protected $guarded = [];
 
     /**
+     * The accessors to append to the model's array form.
+     * @var array
+     */
+    protected $appends = ['admin_2_name'];
+
+    /**
      * @var string
      */
     //protected $dateFormat = 'Y-m-d';
