@@ -38,8 +38,10 @@
                                 value: item.geonameid,
                                 asciiname: item.asciiname,
                                 admin2_code: item.admin2_code,
+                                admin_2_name: item.admin_2_name,
                                 country_code: item.country_code,
-                                admin_2_name: item.admin_2_name
+                                admin1_code: item.admin1_code,
+                                admin1_name: item.admin1_name,
                             };
                         }));
                     }
@@ -56,7 +58,7 @@
         }).autocomplete("instance")._renderItem = function (ul, item) {
             var string = '';
             if (item.country_code == 'US') {
-                string = item.asciiname + ", " + item.admin2_code + "<br />" + item.admin_2_name;
+                string = item.asciiname + ", " + item.admin1_code + "<br /><p><small>" + item.admin_2_name + "</small><p>";
             } else {
                 string = item.asciiname + ", " + item.country_code;
             }

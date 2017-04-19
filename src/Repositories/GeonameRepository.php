@@ -31,7 +31,7 @@ class GeonameRepository {
                                         'asciiname',
                                         'country_code',
                                         'admin1_code',
-                                        'admin2_code'];
+                                        'admin2_code',];
 
     /**
      * @param string $term A few characters of a location's name that would appear in the asciiname column.
@@ -40,6 +40,10 @@ class GeonameRepository {
     public function getPlacesStartingWithTerm ( $term ) {
         $collection = Geoname::select( $this->defaultGeonamesFields )
                              ->where( 'asciiname', 'LIKE', $term . '%' )
+                             ->orderBy( 'country_code' )
+                             ->orderBy( 'admin1_code' )
+                             ->orderBy( 'admin2_code' )
+
                              ->get();
 
         return $collection;

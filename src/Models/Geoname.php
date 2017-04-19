@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use MichaelDrennen\Geonames\Events\GeonameUpdated;
+use MichaelDrennen\Geonames\Repositories\Admin1CodeRepository;
 use MichaelDrennen\Geonames\Repositories\Admin2CodeRepository;
 
 class Geoname extends Model {
@@ -23,7 +24,8 @@ class Geoname extends Model {
      * The accessors to append to the model's array form.
      * @var array
      */
-    protected $appends = ['admin_2_name'];
+    protected $appends = ['admin_1_name',
+                          'admin_2_name'];
 
     /**
      * @var string
@@ -63,6 +65,21 @@ class Geoname extends Model {
 
 
     /**
+     * Given a country_code and admin1_code from the geonames table, it returns the asciiname for this admin 1 record.
+     * @return string
+     */
+    public function getAdmin1NameAttribute () {
+        try {
+            $admin1CodeRepository = new Admin1CodeRepository();
+            $admin1Code = $admin1CodeRepository->getByCompositeKey( $this->country_code, $this->admin1_code );
+
+            return (string)$admin1Code->asciiname;
+        } catch ( ModelNotFoundException $e ) {
+            return '';
+        }
+    }
+
+    /**
      * This is not an ideal solution, but it's the best we can do with Eloquent. Eloquent does not allow for composite
      * keys to be used in model relations. There is no primary key that connects a geonames record to a
      * geonames_admin_2_codes record. However, you can uniquely identify an geonames_admin_2_codes record if you use
@@ -88,6 +105,7 @@ class Geoname extends Model {
             return '';
         }
     }
+
 
     /**
      * @param string $countryCode
