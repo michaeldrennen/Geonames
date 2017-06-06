@@ -25,6 +25,9 @@
     "mockery/mockery": "^0.9.8"
   },
   "autoload": {
+    "classmap": [
+      "src/Seeders"
+    ],
     "psr-4": {
       "MichaelDrennen\\Geonames\\": "src"
     }
