@@ -7,9 +7,20 @@ DO NOT USE IN PRODUCTION YET.
 A Laravel (php) package to interface with the geo-location services at geonames.org.
 
 ## Installation
-<code>composer require michaeldrennen/geonames</code>
+```
+composer require michaeldrennen/geonames
+```
+And then add `geonames` provider to `providers` array in `app.php` config file:
 
-<code>php artisan migrate</code>
+```php
+    MichaelDrennen\Geonames\GeonamesServiceProvider::class,
+```
+
+After that, Run migrate command:
+
+```
+php artisan migrate
+```
 
 Want to install all of the geonames records for the US, Canada, and Mexico as well as pull in the feature codes 
 definitions file in English? 
