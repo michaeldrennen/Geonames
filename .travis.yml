@@ -1,4 +1,7 @@
 language: php
 php:
-  - '7.0'
+  - '7.1'
 install: composer install
+after_success:
+    # or enable logging
+    - travis_retry php vendor/bin/coveralls -v

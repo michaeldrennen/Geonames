@@ -1,8 +1,8 @@
 <?php
 use PHPUnit\Framework\TestCase;
-use MichaelDrennen\Geonames;
 
-use MichaelDrennen\Geonames\Console\Update;
+
+use MichaelDrennen\Geonames\Console\UpdateGeonames;
 use Curl\Curl;
 use Goutte\Client;
 
@@ -16,10 +16,10 @@ class ProtectedUpdateTest extends TestCase {
         $this->markTestSkipped('Unable to access the config() helper in this test. Wait until a patch is ready.');
 
         $methodName = 'getAllLinksOnDownloadPage';
-        $args = [];
-        $object = new Update(new Curl(), new Client());
+        $args       = [];
+        $object     = new UpdateGeonames( new Curl(), new Client() );
         $reflection = new \ReflectionClass(get_class($object));
-        $method = $reflection->getMethod($methodName);
+        $method     = $reflection->getMethod($methodName);
         $method->setAccessible(true);
         $links = $method->invokeArgs($object, $args);
 
@@ -39,7 +39,7 @@ class ProtectedUpdateTest extends TestCase {
         $methodName = 'prepareRowsForUpdate';
         $args = [];
 
-        $object = new Update(new Curl(), new Client());
+        $object = new UpdateGeonames( new Curl(), new Client() );
 
         $reflection = new \ReflectionClass(get_class($object));
         $method = $reflection->getMethod($methodName);

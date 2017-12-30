@@ -81,12 +81,16 @@ class Admin1Code extends Command {
         $this->info( "The admin_1_codes data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
     }
 
+
     /**
      * Using Eloquent instead of LOAD DATA INFILE, because the rows in the downloaded file need to
      * be munged before they can be inserted.
      * Sample row:
      * US.CO    Colorado    Colorado    5417618
+     *
      * @param string $localFilePath
+     *
+     * @throws \Exception
      */
     protected function insertWithEloquent ( string $localFilePath ) {
         $numLines = LocalFile::lineCount( $localFilePath );
@@ -119,6 +123,7 @@ class Admin1Code extends Command {
 
 
     /**
+     * TODO Why do I have this if I am using Eloquent?
      * @param $localFilePath
      * @throws \Exception
      */
