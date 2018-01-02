@@ -49,11 +49,14 @@ class Install extends Command {
 
     /**
      * Execute the console command.
+     *
+     * @return bool
+     * @throws \Exception
      */
     public function handle () {
 
         $this->startTimer();
-        GeoSetting::install( $this->option( 'country' ), $this->option( 'language' ), $this->option( 'storage' ) );
+        GeoSetting::install( [ $this->option( 'country' ) ], [ $this->option( 'language' ) ], $this->option( 'storage' ) );
 
         GeoSetting::setStatus( GeoSetting::STATUS_INSTALLING );
 
@@ -62,9 +65,7 @@ class Install extends Command {
             $this->line( "This storage dir has been emptied: " . GeoSetting::getAbsoluteLocalStoragePath() );
         }
 
-
         $this->line( "Starting " . $this->signature );
-
 
         try {
             $this->call( 'geonames:feature-code' );
@@ -72,7 +73,6 @@ class Install extends Command {
             $this->call( 'geonames:admin-1-code' );
             $this->call( 'geonames:admin-2-code' );
             $this->call( 'geonames:feature-class' );
-
             $this->call( 'geonames:alternate-name' );
             $this->call( 'geonames:geoname' );
 

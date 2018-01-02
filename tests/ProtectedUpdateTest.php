@@ -1,5 +1,6 @@
 <?php
-use PHPUnit\Framework\TestCase;
+
+use Orchestra\Testbench\TestCase;
 
 
 use MichaelDrennen\Geonames\Console\UpdateGeonames;
