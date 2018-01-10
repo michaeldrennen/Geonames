@@ -11,6 +11,7 @@ use MichaelDrennen\Geonames\Models\Log;
 
 /**
  * Class AlternateName
+ *
  * @package MichaelDrennen\Geonames\Console
  */
 class AlternateName extends Command {
@@ -53,7 +54,7 @@ class AlternateName extends Command {
     /**
      * Initialize constructor.
      */
-    public function __construct () {
+    public function __construct() {
         parent::__construct();
     }
 
@@ -62,10 +63,11 @@ class AlternateName extends Command {
      * Execute the console command. The zip file this command downloads has two files in it. The alternate names, and
      * iso language codes file. The iso language codes file is available as a separate download, so for simplicity's
      * sake I handle the iso language code download and insertion in another console command.
+     *
      * @return bool
      * @throws Exception
      */
-    public function handle () {
+    public function handle() {
         ini_set( 'memory_limit', -1 );
         $this->startTimer();
         GeoSetting::init();
@@ -92,7 +94,7 @@ class AlternateName extends Command {
 
         $absoluteLocalFilePathOfAlternateNamesFile = $this->getLocalAbsolutePathToAlternateNamesTextFile();
 
-        if ( !file_exists( $absoluteLocalFilePathOfAlternateNamesFile ) ) {
+        if ( ! file_exists( $absoluteLocalFilePathOfAlternateNamesFile ) ) {
             throw new Exception( "The unzipped alternateNames.txt file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
         }
 
@@ -106,7 +108,7 @@ class AlternateName extends Command {
     /**
      * @return string   The absolute path to the remote alternate names zip file.
      */
-    protected function getAlternateNameDownloadLink (): string {
+    protected function getAlternateNameDownloadLink(): string {
         return self::$url . self::REMOTE_FILE_NAME;
     }
 
@@ -114,25 +116,29 @@ class AlternateName extends Command {
      * This function is used in debugging only. The main block of code has no need for this function, since the
      * downloadFile() function returns this exact path as it's return value. The alternate names file takes a while
      * to download on my slow connection, so I save a copy of it for testing, and use this function to point to it.
+     *
      * @return string The absolute local path to the downloaded zip file.
+     * @throws \Exception
      */
-    protected function getLocalAbsolutePathToAlternateNamesZipFile (): string {
+    protected function getLocalAbsolutePathToAlternateNamesZipFile(): string {
         return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::REMOTE_FILE_NAME;
     }
 
     /**
      * @return string
+     * @throws \Exception
      */
-    protected function getLocalAbsolutePathToAlternateNamesTextFile (): string {
+    protected function getLocalAbsolutePathToAlternateNamesTextFile(): string {
         return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME;
     }
 
 
     /**
      * @param $localFilePath
+     *
      * @throws \Exception
      */
-    protected function insertAlternateNamesWithLoadDataInfile ( $localFilePath ) {
+    protected function insertAlternateNamesWithLoadDataInfile( $localFilePath ) {
         Schema::dropIfExists( self::TABLE_WORKING );
         DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
@@ -156,7 +162,9 @@ class AlternateName extends Command {
         $rowsInserted = DB::connection()->getpdo()->exec( $query );
         if ( $rowsInserted === false ) {
             Log::error( '', "Unable to load data infile for alternate names.", 'database' );
-            throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()->getpdo()->errorInfo(), true ) );
+            throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
+                                                                                                ->getpdo()
+                                                                                                ->errorInfo(), true ) );
         }
 
         $this->enableKeys( self::TABLE_WORKING );

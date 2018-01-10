@@ -339,15 +339,18 @@ class GeoSetting extends Model {
 
     /**
      * @return string
+     * @throws \Exception
      */
-    public static function getAbsoluteLocalStoragePath () {
+    public static function getAbsoluteLocalStoragePath (): string {
         return storage_path() . DIRECTORY_SEPARATOR . self::getStorage();
     }
 
 
     /**
      * @param string $fileName
+     *
      * @return string
+     * @throws \Exception
      */
     public static function getAbsoluteLocalStoragePathToFile ( string $fileName ): string {
         return self::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $fileName;

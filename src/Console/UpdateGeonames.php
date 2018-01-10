@@ -81,23 +81,28 @@ class UpdateGeonames extends Command {
      */
     protected $runTime;
 
+    protected $storageDir;
+
 
     /**
-     * Update constructor.
-     * @param Curl $curl
-     * @param Client $client
+     * UpdateGeonames constructor.
+     *
+     * @param \Curl\Curl     $curl
+     * @param \Goutte\Client $client
+     *
+     * @throws \Exception
      */
     public function __construct(Curl $curl, Client $client) {
         parent::__construct();
         $this->curl = $curl;
         $this->client = $client;
+        $this->storageDir = GeoSetting::getStorage();
     }
 
 
     /**
-     * Execute the console command.
-     *
-     * @return mixed
+     * @return bool
+     * @throws \Exception
      */
     public function handle() {
         GeoSetting::setStatus(GeoSetting::STATUS_UPDATING);

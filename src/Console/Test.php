@@ -5,6 +5,8 @@ namespace MichaelDrennen\Geonames\Console;
 use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\Models\BaseTrait;
 use MichaelDrennen\Geonames\Models\GeoSetting;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class Test extends Command {
 
@@ -19,6 +21,17 @@ class Test extends Command {
      * @var string The console command description.
      */
     protected $description = "A testing ground for new functions.";
+
+    /**
+     * The name of our alternate names table in our database. Using constants here, so I don't need
+     * to worry about typos in my code. My IDE will warn me if I'm sloppy.
+     */
+    const TABLE = 'geonames_alternate_names';
+
+    /**
+     * The name of our temporary/working table in our database.
+     */
+    const TABLE_WORKING = 'geonames_alternate_names_working';
 
 
     /**
@@ -35,13 +48,72 @@ class Test extends Command {
      * Execute the console command.
      */
     public function handle() {
-        $this->line("Starting " . $this->signature);
+        $this->line( "Starting " . $this->signature );
 
-        $dir = GeoSetting::getStorage();
-        $this->line(print_r($dir, true));
+        $directory = '/Users/employee/Documents/GitHub/workbench/storage/geonames/splits';
+
+        $files = scandir( $directory );
+
+        //array_pop($files);
+        //array_pop($files);
 
 
-        $this->line("Finished " . $this->signature);
+        Schema::dropIfExists( self::TABLE_WORKING );
+
+
+        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        $this->disableKeys( self::TABLE_WORKING );
+
+        $this->enableKeys( self::TABLE_WORKING );
+        Schema::dropIfExists( self::TABLE );
+        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        return;
+
+
+        foreach ( $files as $fileName ) {
+
+            if ( '.' == substr( $fileName, 0, 1 ) ) {
+                continue;
+            }
+
+            $this->line( "LOAD DATA LOCAL INFILE: " . $fileName );
+            $filePath = $directory . '/' . $fileName;
+
+
+            $query = "LOAD DATA LOCAL INFILE '" . $filePath . "'
+    INTO TABLE " . self::TABLE_WORKING . "
+        (   alternateNameId, 
+            geonameid,
+            isolanguage, 
+            alternate_name, 
+            isPreferredName, 
+            isShortName, 
+            isColloquial, 
+            isHistoric,              
+            @created_at, 
+            @updated_at)
+    SET created_at=NOW(),updated_at=null";
+
+            //$this->line( "Running the LOAD DATA INFILE query. This could take a good long while." );
+
+            try {
+                $rowsInserted = DB::connection()->getpdo()->exec( $query );
+            } catch ( \Exception $exception ) {
+
+                print_r( DB::connection()
+                           ->getpdo()
+                           ->errorInfo(), true );
+            }
+
+
+        }
+
+        $this->enableKeys( self::TABLE_WORKING );
+        Schema::dropIfExists( self::TABLE );
+        Schema::rename( self::TABLE_WORKING, self::TABLE );
+
+
+        $this->line( "Finished " . $this->signature );
     }
 
 
