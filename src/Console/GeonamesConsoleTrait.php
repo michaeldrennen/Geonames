@@ -109,7 +109,6 @@ trait GeonamesConsoleTrait {
         $basename      = basename( $link );
         $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $basename;
 
-
         // Display a progress bar if we can get the remote file size.
         $fileSize = RemoteFile::getFileSize( $link );
         if ( $fileSize > 0 ) {

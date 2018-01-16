@@ -3,22 +3,39 @@
 use MichaelDrennen\Geonames\GeonamesServiceProvider;
 use MichaelDrennen\Geonames\Models\GeoSetting;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+
 class ConsoleTest extends \Orchestra\Testbench\TestCase {
 
+    use RefreshDatabase;
+
+    protected $dbIsSetUp = false;
 
     /**
      * Setup the test environment.
      */
-    public static
-    function setUpBeforeClass() {
-        parent::setUpBeforeClass();
+    public function setUp() {
+        parent::setUp();
+        if ( false == $this->dbIsSetUp ) {
+            var_dump( "asdf" );
+            $this->artisan( 'migrate', [ '--database' => 'dev' ] );
+            var_dump( "ahslfhalh" );
+            $this->dbIsSetUp = true;
+        }
 
-        shell_exec( 'php artisan migrate --database=testbench' );
         //shell_exec('php artisan geonames:install --country=GR');
 
         //$this->artisan( 'migrate', [ '--database' => 'testbench' ] );
         //$this->artisan( 'geonames:install', [ '--country' => 'US' ] );
 
+    }
+
+    /**
+     * @group test
+     */
+    public function testTest() {
+        $this->assertFalse( false );
     }
 
     /**
@@ -45,14 +62,6 @@ class ConsoleTest extends \Orchestra\Testbench\TestCase {
         $this->assertEquals( $dir, 'geonames' );
 
     }
-
-
-    public function testTest() {
-        $this->assertFalse( false );
-    }
-
-
-
 
 
     /**

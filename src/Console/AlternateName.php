@@ -33,12 +33,12 @@ class AlternateName extends Command {
     /**
      *
      */
-    const REMOTE_FILE_NAME = 'alternateNames.zip';
+    const REMOTE_FILE_NAME_FOR_ALL = 'alternateNames.zip';
 
     /**
      *
      */
-    const LOCAL_ALTERNATE_NAMES_FILE_NAME = 'alternateNames.txt';
+    const LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL = 'alternateNames.txt';
 
 
     /**
@@ -72,7 +72,7 @@ class AlternateName extends Command {
     public function handle() {
         ini_set( 'memory_limit', -1 );
         $this->startTimer();
-        GeoSetting::init();
+        GeoSetting::init( $this->option( 'country' ) );
 
         $urlsToAlternateNamesZipFiles = $this->getAlternateNameDownloadLinks( $this->option( 'country' ) );
 
@@ -88,6 +88,7 @@ class AlternateName extends Command {
             }
         }
 
+        $this->initTable();
 
         foreach ( $absoluteLocalFilePathsOfAlternateNamesZipFiles as $i => $absoluteLocalFilePathOfAlternateNamesZipFile ) {
             try {
@@ -105,10 +106,10 @@ class AlternateName extends Command {
                 throw new Exception( "The unzipped alternateNames.txt file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
             }
 
-
             $this->insertAlternateNamesWithLoadDataInfile( $absoluteLocalFilePathOfAlternateNamesFile );
         }
 
+        $this->finalizeTable();
 
         $this->info( "alternate_names data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
     }
@@ -120,7 +121,7 @@ class AlternateName extends Command {
      */
     protected function getAlternateNameDownloadLinks( array $countryCodes = [] ): array {
         if ( is_null( $countryCodes ) ):
-            return [ self::$url . self::REMOTE_FILE_NAME ];
+            return [ self::$url . self::REMOTE_FILE_NAME_FOR_ALL ];
         endif;
 
         $alternateNameDownloadLinks = [];
@@ -141,7 +142,7 @@ class AlternateName extends Command {
      * @throws \Exception
      */
     protected function getLocalAbsolutePathToAlternateNamesZipFile(): string {
-        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::REMOTE_FILE_NAME;
+        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::REMOTE_FILE_NAME_FOR_ALL;
     }
 
     /**
@@ -152,22 +153,33 @@ class AlternateName extends Command {
      */
     protected function getLocalAbsolutePathToAlternateNamesTextFile( string $countryCode = null ): string {
         if ( is_null( $countryCode ) ):
-            return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME;
+            return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL;
         endif;
         return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . '.zip';
 
     }
 
 
-    /**
-     * @param $localFilePath
-     *
-     * @throws \Exception
-     */
-    protected function insertAlternateNamesWithLoadDataInfile( $localFilePath ) {
+    protected function initTable() {
         Schema::dropIfExists( self::TABLE_WORKING );
         DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
+    }
+
+    protected function finalizeTable() {
+        $this->enableKeys( self::TABLE_WORKING );
+        Schema::dropIfExists( self::TABLE );
+        Schema::rename( self::TABLE_WORKING, self::TABLE );
+    }
+
+    /**
+     * @param $localFilePath
+     *
+     * @returns int The total number of rows inserted.
+     * @throws \Exception
+     */
+    protected function insertAlternateNamesWithLoadDataInfile( $localFilePath ): int {
+        $totalRowsInserted = 0;
 
         try {
             $localFileSplitPaths = LocalFile::split( $localFilePath, 50000, 'split_', null );
@@ -202,11 +214,9 @@ class AlternateName extends Command {
                                                                                                     ->errorInfo(), true ) );
             }
             $this->info( "Inserted file " . ( $i + 1 ) . " of " . $numSplitFiles );
+            $totalRowsInserted += $rowsInserted;
         endforeach;
 
-
-        $this->enableKeys( self::TABLE_WORKING );
-        Schema::dropIfExists( self::TABLE );
-        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        return $totalRowsInserted;
     }
 }
