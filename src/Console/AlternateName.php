@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use MichaelDrennen\Geonames\Models\GeoSetting;
 use MichaelDrennen\Geonames\Models\Log;
+use MichaelDrennen\LocalFile\LocalFile;
 
 /**
  * Class AlternateName
@@ -21,7 +22,8 @@ class AlternateName extends Command {
     /**
      * @var string The name and signature of the console command.
      */
-    protected $signature = 'geonames:alternate-name';
+    protected $signature = 'geonames:alternate-name 
+        {--country=* : Add the 2 character code for each country. Add additional countries with additional "--country=" options on the command line.}    ';
 
     /**
      * @var string The console command description.
@@ -72,44 +74,62 @@ class AlternateName extends Command {
         $this->startTimer();
         GeoSetting::init();
 
-        $urlToAlternateNamesZipFile = $this->getAlternateNameDownloadLink();
+        $urlsToAlternateNamesZipFiles = $this->getAlternateNameDownloadLinks( $this->option( 'country' ) );
 
-        try {
-            $absoluteLocalFilePathOfAlternateNamesZipFile = $this->downloadFile( $this, $urlToAlternateNamesZipFile );
-        } catch ( Exception $e ) {
-            $this->error( $e->getMessage() );
-            Log::error( $urlToAlternateNamesZipFile, $e->getMessage(), 'remote' );
+        $absoluteLocalFilePathsOfAlternateNamesZipFiles = [];
+        foreach ( $urlsToAlternateNamesZipFiles as $i => $urlsToAlternateNamesZipFile ) {
+            try {
+                $absoluteLocalFilePathsOfAlternateNamesZipFiles[] = $this->downloadFile( $this, $urlsToAlternateNamesZipFile );
+            } catch ( Exception $e ) {
+                $this->error( $e->getMessage() );
+                Log::error( $urlsToAlternateNamesZipFiles, $e->getMessage(), 'remote' );
 
-            return false;
-        }
-
-        try {
-            $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile );
-        } catch ( Exception $e ) {
-            $this->error( $e->getMessage() );
-            Log::error( $absoluteLocalFilePathOfAlternateNamesZipFile, $e->getMessage(), 'local' );
-
-            return false;
-        }
-
-        $absoluteLocalFilePathOfAlternateNamesFile = $this->getLocalAbsolutePathToAlternateNamesTextFile();
-
-        if ( ! file_exists( $absoluteLocalFilePathOfAlternateNamesFile ) ) {
-            throw new Exception( "The unzipped alternateNames.txt file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
+                return false;
+            }
         }
 
 
-        $this->insertAlternateNamesWithLoadDataInfile( $absoluteLocalFilePathOfAlternateNamesFile );
+        foreach ( $absoluteLocalFilePathsOfAlternateNamesZipFiles as $i => $absoluteLocalFilePathOfAlternateNamesZipFile ) {
+            try {
+                $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile );
+            } catch ( Exception $e ) {
+                $this->error( $e->getMessage() );
+                Log::error( $absoluteLocalFilePathOfAlternateNamesZipFile, $e->getMessage(), 'local' );
+
+                return false;
+            }
+
+            $absoluteLocalFilePathOfAlternateNamesFile = $this->getLocalAbsolutePathToAlternateNamesTextFile();
+
+            if ( ! file_exists( $absoluteLocalFilePathOfAlternateNamesFile ) ) {
+                throw new Exception( "The unzipped alternateNames.txt file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
+            }
+
+
+            $this->insertAlternateNamesWithLoadDataInfile( $absoluteLocalFilePathOfAlternateNamesFile );
+        }
 
 
         $this->info( "alternate_names data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
     }
 
     /**
-     * @return string   The absolute path to the remote alternate names zip file.
+     * @param array $countryCodes The two character country code, if specified by the user.
+     *
+     * @return array   The absolute paths to the remote alternate names zip files.
      */
-    protected function getAlternateNameDownloadLink(): string {
-        return self::$url . self::REMOTE_FILE_NAME;
+    protected function getAlternateNameDownloadLinks( array $countryCodes = [] ): array {
+        if ( is_null( $countryCodes ) ):
+            return [ self::$url . self::REMOTE_FILE_NAME ];
+        endif;
+
+        $alternateNameDownloadLinks = [];
+        foreach ( $countryCodes as $i => $countryCode ) {
+            $alternateNameDownloadLinks[] = self::$url . '/alternatenames/' . strtoupper( $countryCode ) . '.zip';
+        }
+
+        return $alternateNameDownloadLinks;
+
     }
 
     /**
@@ -125,11 +145,17 @@ class AlternateName extends Command {
     }
 
     /**
+     * @param string $countryCode The two character country code that a user can optionally pass in.
+     *
      * @return string
      * @throws \Exception
      */
-    protected function getLocalAbsolutePathToAlternateNamesTextFile(): string {
-        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME;
+    protected function getLocalAbsolutePathToAlternateNamesTextFile( string $countryCode = null ): string {
+        if ( is_null( $countryCode ) ):
+            return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME;
+        endif;
+        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . '.zip';
+
     }
 
 
@@ -143,7 +169,16 @@ class AlternateName extends Command {
         DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
 
-        $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
+        try {
+            $localFileSplitPaths = LocalFile::split( $localFilePath, 50000, 'split_', null );
+            $numSplitFiles       = count( $localFileSplitPaths );
+        } catch ( Exception $exception ) {
+            throw $exception;
+        }
+
+
+        foreach ( $localFileSplitPaths as $i => $localFileSplitPath ):
+            $query = "LOAD DATA LOCAL INFILE '" . $localFileSplitPath . "'
     INTO TABLE " . self::TABLE_WORKING . "
         (   alternateNameId, 
             geonameid,
@@ -157,15 +192,18 @@ class AlternateName extends Command {
             @updated_at)
     SET created_at=NOW(),updated_at=null";
 
-        $this->line( "Running the LOAD DATA INFILE query. This could take a good long while." );
+            $this->line( "Running the LOAD DATA INFILE query. This could take a good long while." );
 
-        $rowsInserted = DB::connection()->getpdo()->exec( $query );
-        if ( $rowsInserted === false ) {
-            Log::error( '', "Unable to load data infile for alternate names.", 'database' );
-            throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
-                                                                                                ->getpdo()
-                                                                                                ->errorInfo(), true ) );
-        }
+            $rowsInserted = DB::connection()->getpdo()->exec( $query );
+            if ( $rowsInserted === false ) {
+                Log::error( '', "Unable to load data infile for alternate names.", 'database' );
+                throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
+                                                                                                    ->getpdo()
+                                                                                                    ->errorInfo(), true ) );
+            }
+            $this->info( "Inserted file " . ( $i + 1 ) . " of " . $numSplitFiles );
+        endforeach;
+
 
         $this->enableKeys( self::TABLE_WORKING );
         Schema::dropIfExists( self::TABLE );

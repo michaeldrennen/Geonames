@@ -7,6 +7,21 @@ class ConsoleTest extends \Orchestra\Testbench\TestCase {
 
 
     /**
+     * Setup the test environment.
+     */
+    public static
+    function setUpBeforeClass() {
+        parent::setUpBeforeClass();
+
+        shell_exec( 'php artisan migrate --database=testbench' );
+        //shell_exec('php artisan geonames:install --country=GR');
+
+        //$this->artisan( 'migrate', [ '--database' => 'testbench' ] );
+        //$this->artisan( 'geonames:install', [ '--country' => 'US' ] );
+
+    }
+
+    /**
      * @throws \Exception
      * @group admin1
      */
@@ -37,17 +52,7 @@ class ConsoleTest extends \Orchestra\Testbench\TestCase {
     }
 
 
-    /**
-     * Setup the test environment.
-     */
-    public
-    function setUp() {
-        var_dump( "This is ;asdjhflashdflasdf setUp" );
-        parent::setUp();
-        $this->artisan( 'migrate', [ '--database' => 'testbench' ] );
-        $this->artisan( 'geonames:install', [ '--country' => 'US' ] );
 
-    }
 
 
     /**

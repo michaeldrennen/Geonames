@@ -2,14 +2,15 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Curl\Curl;
-use ZipArchive;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\DomCrawler\Crawler;
-use MichaelDrennen\RemoteFile\RemoteFile;
-use MichaelDrennen\Geonames\Models\Log;
 use MichaelDrennen\Geonames\Models\GeoSetting;
+use MichaelDrennen\Geonames\Models\Log;
+use MichaelDrennen\RemoteFile\RemoteFile;
+use Symfony\Component\DomCrawler\Crawler;
+use ZipArchive;
+
 trait GeonamesConsoleTrait {
 
     /**
@@ -36,14 +37,14 @@ trait GeonamesConsoleTrait {
     /**
      * Start the timer. Record the start time in startTime()
      */
-    protected function startTimer () {
+    protected function startTimer() {
         $this->startTime = microtime( true );
     }
 
     /**
      * Stop the timer. Record the end time in endTime, and the time elapsed in runTime.
      */
-    protected function stopTimer () {
+    protected function stopTimer() {
         $this->endTime = microtime( true );
         $this->runTime = $this->endTime - $this->startTime;
     }
@@ -51,9 +52,10 @@ trait GeonamesConsoleTrait {
     /**
      * This will return the time between startTimer() and stopTimer(), OR between
      * startTimer() and now
+     *
      * @return float    The time elapsed in seconds.
      */
-    protected function getRunTime (): float {
+    protected function getRunTime(): float {
         if ( $this->runTime > 0 ) {
             return (float)$this->runTime;
         }
@@ -64,7 +66,7 @@ trait GeonamesConsoleTrait {
     /**
      * @return array An array of all the anchor tag href attributes on the given url parameter.
      */
-    public static function getAllLinksOnDownloadPage (): array {
+    public static function getAllLinksOnDownloadPage(): array {
         $curl = new Curl();
 
         $curl->get( self::$url );
@@ -80,10 +82,12 @@ trait GeonamesConsoleTrait {
 
     /**
      * @param Command $command
-     * @param array $downloadLinks
+     * @param array   $downloadLinks
+     *
      * @return array
+     * @throws \Exception
      */
-    public static function downloadFiles ( Command $command, array $downloadLinks ): array {
+    public static function downloadFiles( Command $command, array $downloadLinks ): array {
         $localFilePaths = [];
         foreach ( $downloadLinks as $link ) {
             $localFilePaths[] = self::downloadFile( $command, $link );
@@ -94,14 +98,15 @@ trait GeonamesConsoleTrait {
 
     /**
      * @param Command $command The command instance from the console script.
-     * @param string $link The absolute path to the remote file we want to download.
+     * @param string  $link    The absolute path to the remote file we want to download.
+     *
      * @return string           The absolute local path to the file we just downloaded.
      * @throws Exception
      */
-    public static function downloadFile ( Command $command, string $link ): string {
+    public static function downloadFile( Command $command, string $link ): string {
         $curl = new Curl();
 
-        $basename = basename( $link );
+        $basename      = basename( $link );
         $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $basename;
 
 
@@ -131,7 +136,7 @@ trait GeonamesConsoleTrait {
             throw new Exception( "Unable to download the file at [" . $link . "]\n" . $curl->error_message );
         }
 
-        $data = $curl->response;
+        $data         = $curl->response;
         $bytesWritten = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === false ) {
             Log::error( $link, "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?", 'local' );
@@ -143,11 +148,13 @@ trait GeonamesConsoleTrait {
 
     /**
      * Given a csv file on disk, this function converts it to a php array.
+     *
      * @param   string $localFilePath The absolute path to a csv file in storage.
-     * @param   string $delimiter In a csv file, the character between fields.
+     * @param   string $delimiter     In a csv file, the character between fields.
+     *
      * @return  array     A multi-dimensional made of the data in the csv file.
      */
-    public static function csvFileToArray ( string $localFilePath, $delimiter = "\t" ): array {
+    public static function csvFileToArray( string $localFilePath, $delimiter = "\t" ): array {
         $rows = [];
         if ( ( $handle = fopen( $localFilePath, "r" ) ) !== false ) {
             while ( ( $data = fgetcsv( $handle, 0, $delimiter ) ) !== false ) {
@@ -161,12 +168,14 @@ trait GeonamesConsoleTrait {
 
     /**
      * Unzips the zip file into our geonames storage dir that is set in GeoSettings.
+     *
      * @param   string $localFilePath Absolute local path to the zip archive.
+     *
      * @throws  Exception
      */
-    public static function unzip ( $localFilePath ) {
-        $storage = GeoSetting::getAbsoluteLocalStoragePath();
-        $zip = new ZipArchive;
+    public static function unzip( $localFilePath ) {
+        $storage       = GeoSetting::getAbsoluteLocalStoragePath();
+        $zip           = new ZipArchive;
         $zipOpenResult = $zip->open( $localFilePath );
         if ( $zipOpenResult !== true ) {
             throw new Exception( "Error [" . $zipOpenResult . "] Unable to unzip the archive at " . $localFilePath );
@@ -187,10 +196,12 @@ trait GeonamesConsoleTrait {
     /**
      * Pass in an array of absolute local file paths, and this function will extract
      * them to our geonames storage directory.
+     *
      * @param array $absoluteFilePaths
+     *
      * @throws Exception
      */
-    public static function unzipFiles ( array $absoluteFilePaths ) {
+    public static function unzipFiles( array $absoluteFilePaths ) {
         try {
             foreach ( $absoluteFilePaths as $absoluteFilePath ) {
                 self::unzip( $absoluteFilePath );
@@ -200,13 +211,13 @@ trait GeonamesConsoleTrait {
         }
     }
 
-    protected function disableKeys ( string $table ): bool {
+    protected function disableKeys( string $table ): bool {
         $query = 'ALTER TABLE ' . $table . ' DISABLE KEYS;';
 
         return DB::connection()->getpdo()->exec( $query );
     }
 
-    protected function enableKeys ( string $table ): bool {
+    protected function enableKeys( string $table ): bool {
         $query = 'ALTER TABLE ' . $table . ' ENABLE KEYS;';
 
         return DB::connection()->getpdo()->exec( $query );

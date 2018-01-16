@@ -2,9 +2,9 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
+use Exception;
 use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\Models\GeoSetting;
-use Exception;
 
 class Install extends Command {
 
@@ -14,8 +14,9 @@ class Install extends Command {
      * @var string The name and signature of the console command.
      */
     protected $signature = 'geonames:install 
-        {--country=* : Add the 2 digit code for each country. One per option.} 
+        {--country=* : Add the 2 digit code for each country. One per option.}      
         {--language=* : Add the 2 character language code.} 
+        {--limit=* : How many records should be inserted from the countries table.}
         {--storage=geonames : The name of the directory, rooted in the storage_dir() path, where we store all downloaded files.}';
 
     /**
@@ -42,7 +43,7 @@ class Install extends Command {
     /**
      * Initialize constructor.
      */
-    public function __construct () {
+    public function __construct() {
         parent::__construct();
     }
 
@@ -53,17 +54,20 @@ class Install extends Command {
      * @return bool
      * @throws \Exception
      */
-    public function handle () {
+    public function handle() {
 
         $this->startTimer();
-        GeoSetting::install( [ $this->option( 'country' ) ], [ $this->option( 'language' ) ], $this->option( 'storage' ) );
+        GeoSetting::install(
+            [ $this->option( 'country' ) ],
+            [ $this->option( 'language' ) ],
+            $this->option( 'storage' ) );
 
         GeoSetting::setStatus( GeoSetting::STATUS_INSTALLING );
 
         $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
-        if ( $emptyDirResult === true ) {
+        if ( $emptyDirResult === true ):
             $this->line( "This storage dir has been emptied: " . GeoSetting::getAbsoluteLocalStoragePath() );
-        }
+        endif;
 
         $this->line( "Starting " . $this->signature );
 
@@ -73,7 +77,7 @@ class Install extends Command {
             $this->call( 'geonames:admin-1-code' );
             $this->call( 'geonames:admin-2-code' );
             $this->call( 'geonames:feature-class' );
-            $this->call( 'geonames:alternate-name' );
+            $this->call( 'geonames:alternate-name', [ '--country' => $this->option( 'country' ) ] );
             $this->call( 'geonames:geoname' );
 
         } catch ( Exception $e ) {
@@ -87,11 +91,11 @@ class Install extends Command {
         GeoSetting::setInstalledAt();
         GeoSetting::setStatus( GeoSetting::STATUS_LIVE );
         $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
-        if ( $emptyDirResult === true ) {
+        if ( $emptyDirResult === true ):
             $this->line( "Our storage directory has been emptied." );
-        } else {
+        else:
             $this->error( "We were unable to empty the storage directory." );
-        }
+        endif;
         $this->line( "Finished " . $this->signature );
 
         $this->call( 'geonames:status' );
