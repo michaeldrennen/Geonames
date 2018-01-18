@@ -4,6 +4,8 @@ namespace MichaelDrennen\Geonames;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
+use \Illuminate\Container\Container as Container;
+use \Illuminate\Support\Facades\Facade as Facade;
 
 class GeonamesServiceProvider extends ServiceProvider {
 
@@ -59,5 +61,19 @@ class GeonamesServiceProvider extends ServiceProvider {
      */
     public function register () {
         //
+
+
+        /**
+         * Setup a new app instance container
+         *
+         * @var Illuminate\Container\Container
+         */
+        $app = new Container();
+        $app->singleton( 'app', 'Illuminate\Container\Container' );
+
+        /**
+         * Set $app as FacadeApplication handler
+         */
+        Facade::setFacadeApplication( $app );
     }
 }

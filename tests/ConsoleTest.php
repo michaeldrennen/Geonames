@@ -3,10 +3,12 @@
 use MichaelDrennen\Geonames\GeonamesServiceProvider;
 use MichaelDrennen\Geonames\Models\GeoSetting;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 
-class ConsoleTest extends \Orchestra\Testbench\TestCase {
+class ConsoleTest extends \PHPUnit\Framework\TestCase {
 
     use RefreshDatabase;
 
@@ -19,9 +21,14 @@ class ConsoleTest extends \Orchestra\Testbench\TestCase {
         parent::setUp();
         if ( false == $this->dbIsSetUp ) {
             var_dump( "asdf" );
-            $this->artisan( 'migrate', [ '--database' => 'dev' ] );
+            Artisan::call( 'migrate', [
+                '--database' => 'dev',
+            ] );
+
             var_dump( "ahslfhalh" );
             $this->dbIsSetUp = true;
+        } else {
+            echo "asdfasdf>>>>>>>>>>>>>>>>>>";
         }
 
         //shell_exec('php artisan geonames:install --country=GR');
