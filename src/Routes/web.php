@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+
 Route::get( '/geonames/search-all', '\MichaelDrennen\Geonames\Controllers\GeonamesController@ajaxJquerySearchAll' );
 
 /**

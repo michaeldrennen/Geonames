@@ -16,8 +16,8 @@ class Install extends Command {
     protected $signature = 'geonames:install 
         {--country=* : Add the 2 digit code for each country. One per option.}      
         {--language=* : Add the 2 character language code.} 
-        {--limit=* : How many records should be inserted from the countries table.}
-        {--storage=geonames : The name of the directory, rooted in the storage_dir() path, where we store all downloaded files.}';
+        {--storage=geonames : The name of the directory, rooted in the storage_dir() path, where we store all downloaded files.}
+        {--test: Call this boolean switch if you want to install just enough records to test the system. Makes it fast.}';
 
     /**
      * @var string The console command description.
@@ -72,13 +72,18 @@ class Install extends Command {
         $this->line( "Starting " . $this->signature );
 
         try {
-            $this->call( 'geonames:feature-code' );
-            $this->call( 'geonames:iso-language-code' );
-            $this->call( 'geonames:admin-1-code' );
-            $this->call( 'geonames:admin-2-code' );
-            $this->call( 'geonames:feature-class' );
-            $this->call( 'geonames:alternate-name', [ '--country' => $this->option( 'country' ) ] );
-            $this->call( 'geonames:geoname' );
+            if($this->option('test')):
+                $this->call( 'geonames:feature-code' );
+            else:
+                $this->call( 'geonames:feature-code' );
+                $this->call( 'geonames:iso-language-code' );
+                $this->call( 'geonames:admin-1-code' );
+                $this->call( 'geonames:admin-2-code' );
+                $this->call( 'geonames:feature-class' );
+                $this->call( 'geonames:alternate-name', [ '--country' => $this->option( 'country' ) ] );
+                $this->call( 'geonames:geoname' );
+            endif;
+
 
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );

@@ -18,7 +18,8 @@
     "curl/curl": "^1.8",
     "michaeldrennen/remote-file": "^1.0",
     "michaeldrennen/local-file": "^1.0",
-    "nesbot/carbon": "^1.22"
+    "nesbot/carbon": "^1.22",
+    "illuminate/routing": "^5.5"
   },
   "require-dev": {
     "phpunit/phpunit": "^6.5",
@@ -35,10 +36,7 @@
     "laravel": {
       "providers": [
         "MichaelDrennen\\Geonames\\GeonamesServiceProvider"
-      ],
-      "aliases": {
-        "Debugbar": "Barryvdh\\Debugbar\\Facade"
-      }
+      ]
     }
   }
 }

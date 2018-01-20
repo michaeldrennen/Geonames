@@ -381,6 +381,7 @@ class GeoSetting extends Model {
      * @param array $fileNames
      *
      * @return array
+     * @throws \Exception
      */
     public static function getAbsoluteLocalStoragePathToFiles( array $fileNames ): array {
         $absolutePaths = [];
