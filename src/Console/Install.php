@@ -72,10 +72,10 @@ class Install extends Command {
         $this->line( "Starting " . $this->signature );
 
         try {
-            if($this->option('test')):
-                $this->call( 'geonames:feature-code' );
+            if ( $this->option( 'test' ) ):
+                $this->call( 'geonames:feature-code', [ '--language' => $this->option( 'language' ) ] );
             else:
-                $this->call( 'geonames:feature-code' );
+                $this->call( 'geonames:feature-code', [ '--language' => $this->option( 'language' ) ] );
                 $this->call( 'geonames:iso-language-code' );
                 $this->call( 'geonames:admin-1-code' );
                 $this->call( 'geonames:admin-2-code' );
