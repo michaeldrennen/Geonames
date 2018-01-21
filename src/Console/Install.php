@@ -17,7 +17,7 @@ class Install extends Command {
         {--country=* : Add the 2 digit code for each country. One per option.}      
         {--language=* : Add the 2 character language code.} 
         {--storage=geonames : The name of the directory, rooted in the storage_dir() path, where we store all downloaded files.}
-        {--test: Call this boolean switch if you want to install just enough records to test the system. Makes it fast.}';
+        {--test : Call this boolean switch if you want to install just enough records to test the system. Makes it fast.}';
 
     /**
      * @var string The console command description.
@@ -73,7 +73,9 @@ class Install extends Command {
 
         try {
             if ( $this->option( 'test' ) ):
-                $this->call( 'geonames:feature-code', [ '--language' => $this->option( 'language' ) ] );
+                $this->call( 'geonames:feature-code', [ '--language' => [ 'en' ] ] );
+                $this->call( 'geonames:iso-language-code' );
+                $this->call( 'geonames:admin-1-code' );
             else:
                 $this->call( 'geonames:feature-code', [ '--language' => $this->option( 'language' ) ] );
                 $this->call( 'geonames:iso-language-code' );

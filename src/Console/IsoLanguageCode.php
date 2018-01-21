@@ -11,6 +11,7 @@ use MichaelDrennen\Geonames\Models\Log;
 
 /**
  * Class IsoLanguageCodes
+ *
  * @package MichaelDrennen\Geonames\Console
  */
 class IsoLanguageCode extends Command {
@@ -47,17 +48,19 @@ class IsoLanguageCode extends Command {
     /**
      * Initialize constructor.
      */
-    public function __construct () {
+    public function __construct() {
         parent::__construct();
     }
 
 
     /**
      * Execute the console command.
-     * I don't worry about creating a temp/working table here, because it runs so fast. We're
-     * only inserting a couple rows.
+     * I don't worry about creating a temp/working table here, because it runs so fast.
+     * I'm only inserting a couple rows.
+     *
+     * @throws \Exception
      */
-    public function handle () {
+    public function handle() {
         ini_set( 'memory_limit', -1 );
         $this->startTimer();
         GeoSetting::init();
@@ -66,7 +69,7 @@ class IsoLanguageCode extends Command {
 
         $absoluteLocalFilePathOfIsoLanguageCodesFile = self::downloadFile( $this, $remotePath );
 
-        if ( !file_exists( $absoluteLocalFilePathOfIsoLanguageCodesFile ) ) {
+        if ( ! file_exists( $absoluteLocalFilePathOfIsoLanguageCodesFile ) ) {
             throw new Exception( "We were unable to download the file at: " . $absoluteLocalFilePathOfIsoLanguageCodesFile );
         }
 
@@ -78,9 +81,10 @@ class IsoLanguageCode extends Command {
 
     /**
      * @param $localFilePath
+     *
      * @throws \Exception
      */
-    protected function insertIsoLanguageCodesWithLoadDataInfile ( $localFilePath ) {
+    protected function insertIsoLanguageCodesWithLoadDataInfile( $localFilePath ) {
         ini_set( 'memory_limit', -1 );
         $this->line( "Inserting via LOAD DATA INFILE: " . $localFilePath );
 
@@ -102,7 +106,9 @@ class IsoLanguageCode extends Command {
         $rowsInserted = DB::connection()->getpdo()->exec( $query );
         if ( $rowsInserted === false ) {
             Log::error( '', "Unable to load data infile for iso language names.", 'database' );
-            throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()->getpdo()->errorInfo(), true ) );
+            throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
+                                                                                               ->getpdo()
+                                                                                               ->errorInfo(), true ) );
         }
 
         $this->enableKeys( self::TABLE_WORKING );
