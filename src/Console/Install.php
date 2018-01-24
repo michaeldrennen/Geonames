@@ -76,6 +76,9 @@ class Install extends Command {
                 $this->call( 'geonames:feature-code', [ '--language' => [ 'en' ] ] );
                 $this->call( 'geonames:iso-language-code' );
                 $this->call( 'geonames:admin-1-code' );
+                $this->call( 'geonames:admin-2-code', [ '--test' ] );
+                $this->call( 'geonames:feature-class', [ '--test' ] );
+                $this->call( 'geonames:alternate-name', [ '--country' => [ 'YU' ] ] );
             else:
                 $this->call( 'geonames:feature-code', [ '--language' => $this->option( 'language' ) ] );
                 $this->call( 'geonames:iso-language-code' );

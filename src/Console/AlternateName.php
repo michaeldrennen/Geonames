@@ -77,9 +77,9 @@ class AlternateName extends Command {
         $urlsToAlternateNamesZipFiles = $this->getAlternateNameDownloadLinks( $this->option( 'country' ) );
 
         $absoluteLocalFilePathsOfAlternateNamesZipFiles = [];
-        foreach ( $urlsToAlternateNamesZipFiles as $i => $urlsToAlternateNamesZipFile ) {
+        foreach ( $urlsToAlternateNamesZipFiles as $countryCode => $urlsToAlternateNamesZipFile ) {
             try {
-                $absoluteLocalFilePathsOfAlternateNamesZipFiles[] = $this->downloadFile( $this, $urlsToAlternateNamesZipFile );
+                $absoluteLocalFilePathsOfAlternateNamesZipFiles[ $countryCode ] = $this->downloadFile( $this, $urlsToAlternateNamesZipFile );
             } catch ( Exception $e ) {
                 $this->error( $e->getMessage() );
                 Log::error( $urlsToAlternateNamesZipFiles, $e->getMessage(), 'remote' );
@@ -90,7 +90,7 @@ class AlternateName extends Command {
 
         $this->initTable();
 
-        foreach ( $absoluteLocalFilePathsOfAlternateNamesZipFiles as $i => $absoluteLocalFilePathOfAlternateNamesZipFile ) {
+        foreach ( $absoluteLocalFilePathsOfAlternateNamesZipFiles as $countryCode => $absoluteLocalFilePathOfAlternateNamesZipFile ) {
             try {
                 $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile );
             } catch ( Exception $e ) {
@@ -100,10 +100,10 @@ class AlternateName extends Command {
                 return false;
             }
 
-            $absoluteLocalFilePathOfAlternateNamesFile = $this->getLocalAbsolutePathToAlternateNamesTextFile();
+            $absoluteLocalFilePathOfAlternateNamesFile = $this->getLocalAbsolutePathToAlternateNamesTextFile( $countryCode );
 
             if ( ! file_exists( $absoluteLocalFilePathOfAlternateNamesFile ) ) {
-                throw new Exception( "The unzipped alternateNames.txt file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
+                throw new Exception( "The unzipped file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
             }
 
             $this->insertAlternateNamesWithLoadDataInfile( $absoluteLocalFilePathOfAlternateNamesFile );
@@ -121,12 +121,12 @@ class AlternateName extends Command {
      */
     protected function getAlternateNameDownloadLinks( array $countryCodes = [] ): array {
         if ( is_null( $countryCodes ) ):
-            return [ self::$url . self::REMOTE_FILE_NAME_FOR_ALL ];
+            return [ '*' => self::$url . self::REMOTE_FILE_NAME_FOR_ALL ];
         endif;
 
         $alternateNameDownloadLinks = [];
         foreach ( $countryCodes as $i => $countryCode ) {
-            $alternateNameDownloadLinks[] = self::$url . '/alternatenames/' . strtoupper( $countryCode ) . '.zip';
+            $alternateNameDownloadLinks[ $countryCode ] = self::$url . '/alternatenames/' . strtoupper( $countryCode ) . '.zip';
         }
 
         return $alternateNameDownloadLinks;
@@ -152,11 +152,10 @@ class AlternateName extends Command {
      * @throws \Exception
      */
     protected function getLocalAbsolutePathToAlternateNamesTextFile( string $countryCode = null ): string {
-        if ( is_null( $countryCode ) ):
+        if ( '*' == $countryCode || is_null( $countryCode ) ):
             return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL;
         endif;
-        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . '.zip';
-
+        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . '.txt';
     }
 
 
@@ -188,26 +187,35 @@ class AlternateName extends Command {
             throw $exception;
         }
 
-
         foreach ( $localFileSplitPaths as $i => $localFileSplitPath ):
+
+            var_dump( file( $localFileSplitPath ) );
+
             $query = "LOAD DATA LOCAL INFILE '" . $localFileSplitPath . "'
-    INTO TABLE " . self::TABLE_WORKING . "
-        (   alternateNameId, 
-            geonameid,
-            isolanguage, 
-            alternate_name, 
-            isPreferredName, 
-            isShortName, 
-            isColloquial, 
-            isHistoric,              
-            @created_at, 
-            @updated_at)
-    SET created_at=NOW(),updated_at=null";
+                        INTO TABLE " . self::TABLE_WORKING . "
+                            (   alternateNameId, 
+                                geonameid,
+                                isolanguage, 
+                                alternate_name, 
+                                isPreferredName, 
+                                isShortName, 
+                                isColloquial, 
+                                isHistoric,              
+                                @created_at, 
+                                @updated_at)
+                        SET created_at=NOW(),updated_at=null";
 
             $this->line( "Running the LOAD DATA INFILE query. This could take a good long while." );
 
+            /**
+             * @link http://php.net/manual/en/pdo.exec.php
+             * PDO::exec() returns the number of rows that were modified or deleted by the SQL statement you issued.
+             * If no rows were affected, PDO::exec() returns 0.
+             */
             $rowsInserted = DB::connection()->getpdo()->exec( $query );
-            if ( $rowsInserted === false ) {
+
+            var_dump( $rowsInserted );
+            if ( false === $rowsInserted ) {
                 Log::error( '', "Unable to load data infile for alternate names.", 'database' );
                 throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
                                                                                                     ->getpdo()

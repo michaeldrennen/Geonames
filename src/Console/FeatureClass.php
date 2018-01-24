@@ -35,37 +35,42 @@ class FeatureClass extends Command {
      */
     public function handle () {
         $this->startTimer();
+        $progressBar = $this->output->createProgressBar( 9 );
+        $progressBar->setFormat( "Inserting %message% %current%/%max% [%bar%] %percent:3s%%\n" );
+        $progressBar->setMessage( 'feature classes' );
+        $progressBar->advance();
 
         DB::table( self::TABLE )->truncate();
 
 
         DB::table( self::TABLE )->insert( ['id'          => 'A',
                                            'description' => 'country, state, region,...',] );
+        $progressBar->advance();
 
         DB::table( self::TABLE )->insert( ['id'          => 'H',
                                            'description' => 'stream, lake, ...',] );
-
+        $progressBar->advance();
         DB::table( self::TABLE )->insert( ['id'          => 'L',
                                            'description' => 'parks,area, ...',] );
-
+        $progressBar->advance();
         DB::table( self::TABLE )->insert( ['id'          => 'P',
                                            'description' => 'city, village,...',] );
-
+        $progressBar->advance();
         DB::table( self::TABLE )->insert( ['id'          => 'R',
                                            'description' => 'road, railroad',] );
-
+        $progressBar->advance();
         DB::table( self::TABLE )->insert( ['id'          => 'S',
                                            'description' => 'spot, building, farm',] );
-
+        $progressBar->advance();
         DB::table( self::TABLE )->insert( ['id'          => 'T',
                                            'description' => 'mountain,hill,rock,...',] );
-
+        $progressBar->advance();
         DB::table( self::TABLE )->insert( ['id'          => 'U',
                                            'description' => 'undersea',] );
-
+        $progressBar->advance();
         DB::table( self::TABLE )->insert( ['id'          => 'V',
                                            'description' => 'forest,heath,...',] );
-
+        $progressBar->advance();
 
         $this->info( self::TABLE . " table was truncated and refilled in " . $this->getRunTime() . " seconds." );
     }
