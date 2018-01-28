@@ -3,3 +3,4 @@ build/
 .env
 .idea
 composer.lock
+/packages/

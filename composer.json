@@ -17,7 +17,7 @@
     "illuminate/database": "^5.5",
     "curl/curl": "^1.8",
     "michaeldrennen/remote-file": "^1.0",
-    "michaeldrennen/local-file": "^1.0",
+    "michaeldrennen/local-file": "@dev",
     "nesbot/carbon": "^1.22",
     "illuminate/routing": "^5.5"
   },
@@ -38,5 +38,14 @@
         "MichaelDrennen\\Geonames\\GeonamesServiceProvider"
       ]
     }
-  }
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "./packages/MichaelDrennen/LocalFile",
+      "options": {
+        "symlink": true
+      }
+    }
+  ]
 }

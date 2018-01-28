@@ -9,17 +9,40 @@ class AlternateName extends Model {
     protected $table = 'geonames_alternate_names';
     protected $primaryKey = 'alternateNameId';
 
+
     /**
-     * The attributes that should be casted to native types.
+     * The attributes that should be cast to native types.
      *
      * @var array
      */
-    protected $casts = ['isPreferredName' => 'boolean',
-                        'isShortName'     => 'boolean',
-                        'isColloquial'    => 'boolean',
-                        'isHistoric'      => 'boolean',];
+    protected $casts = [
+        'alternateNameId' => 'integer',
+        'geonameid'       => 'integer',
+        'isolanguage'     => 'string',
+        'alternate_name'  => 'string',
+        'isPreferredName' => 'boolean',
+        'isShortName'     => 'boolean',
+        'isColloquial'    => 'boolean',
+        'isHistoric'      => 'boolean',
+    ];
 
-    public function geoname () {
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'alternateNameId',
+        'geonameid',
+        'isolanguage',
+        'alternate_name',
+        'isPreferredName',
+        'isShortName',
+        'isColloquial',
+        'isHistoric',
+    ];
+
+    public function geoname() {
         return $this->belongsTo( Geoname::class, 'geonameid', 'geonameid' );
     }
 }

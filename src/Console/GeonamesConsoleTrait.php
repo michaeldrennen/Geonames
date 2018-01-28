@@ -176,15 +176,15 @@ trait GeonamesConsoleTrait {
         $storage       = GeoSetting::getAbsoluteLocalStoragePath();
         $zip           = new ZipArchive;
         $zipOpenResult = $zip->open( $localFilePath );
-        if ( $zipOpenResult !== true ) {
+        if ( true !== $zipOpenResult ) {
             throw new Exception( "Error [" . $zipOpenResult . "] Unable to unzip the archive at " . $localFilePath );
         }
         $extractResult = $zip->extractTo( $storage );
-        if ( $extractResult === false ) {
+        if ( false === $extractResult ) {
             throw new Exception( "Unable to unzip the file at " . $localFilePath );
         }
         $closeResult = $zip->close();
-        if ( $closeResult === false ) {
+        if ( false === $closeResult ) {
             throw new Exception( "After unzipping unable to close the file at " . $localFilePath );
         }
 
