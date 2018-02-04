@@ -13,7 +13,8 @@ class Install extends Command {
     /**
      * @var string The name and signature of the console command.
      */
-    protected $signature = 'geonames:install 
+    protected $signature = 'geonames:install
+        {--connection=* : If you want to specify the name of the database connection you want used.} 
         {--country=* : Add the 2 digit code for each country. One per option.}      
         {--language=* : Add the 2 character language code.} 
         {--storage=geonames : The name of the directory, rooted in the storage_dir() path, where we store all downloaded files.}
@@ -56,59 +57,60 @@ class Install extends Command {
      */
     public function handle() {
 
+        $this->connectionName = $this->option('connection');
         $this->startTimer();
         GeoSetting::install(
-            [ $this->option( 'country' ) ],
-            [ $this->option( 'language' ) ],
-            $this->option( 'storage' ) );
+            [$this->option('country')],
+            [$this->option('language')],
+            $this->option('storage'));
 
-        GeoSetting::setStatus( GeoSetting::STATUS_INSTALLING );
+        GeoSetting::setStatus(GeoSetting::STATUS_INSTALLING);
 
         $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
-        if ( $emptyDirResult === true ):
-            $this->line( "This storage dir has been emptied: " . GeoSetting::getAbsoluteLocalStoragePath() );
+        if ($emptyDirResult === TRUE):
+            $this->line("This storage dir has been emptied: " . GeoSetting::getAbsoluteLocalStoragePath());
         endif;
 
-        $this->line( "Starting " . $this->signature );
+        $this->line("Starting " . $this->signature);
 
         try {
-            if ( $this->option( 'test' ) ):
-                $this->call( 'geonames:feature-code', [ '--language' => [ 'en' ] ] );
-                $this->call( 'geonames:iso-language-code' );
-                $this->call( 'geonames:admin-1-code' );
-                $this->call( 'geonames:admin-2-code', [ '--test' ] );
-                $this->call( 'geonames:feature-class', [ '--test' ] );
-                $this->call( 'geonames:alternate-name', [ '--country' => [ 'YU' ] ] );
+            if ($this->option('test')):
+                $this->call('geonames:feature-code', ['--language' => ['en']]);
+                $this->call('geonames:iso-language-code');
+                $this->call('geonames:admin-1-code');
+                $this->call('geonames:admin-2-code', ['--test']);
+                $this->call('geonames:feature-class', ['--test']);
+                $this->call('geonames:alternate-name', ['--country' => ['YU']]);
             else:
-                $this->call( 'geonames:feature-code', [ '--language' => $this->option( 'language' ) ] );
-                $this->call( 'geonames:iso-language-code' );
-                $this->call( 'geonames:admin-1-code' );
-                $this->call( 'geonames:admin-2-code' );
-                $this->call( 'geonames:feature-class' );
-                $this->call( 'geonames:alternate-name', [ '--country' => $this->option( 'country' ) ] );
-                $this->call( 'geonames:geoname' );
+                $this->call('geonames:feature-code', ['--language' => $this->option('language')]);
+                $this->call('geonames:iso-language-code');
+                $this->call('geonames:admin-1-code');
+                $this->call('geonames:admin-2-code');
+                $this->call('geonames:feature-class');
+                $this->call('geonames:alternate-name', ['--country' => $this->option('country')]);
+                $this->call('geonames:geoname');
             endif;
 
 
-        } catch ( Exception $e ) {
-            $this->error( $e->getMessage() );
-            $this->error( $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
-            GeoSetting::setStatus( GeoSetting::STATUS_ERROR );
+        } catch (Exception $e) {
+            $this->error($e->getMessage());
+            $this->error($e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString());
+            GeoSetting::setStatus(GeoSetting::STATUS_ERROR);
 
-            return false;
+            return FALSE;
         }
 
         GeoSetting::setInstalledAt();
-        GeoSetting::setStatus( GeoSetting::STATUS_LIVE );
+        GeoSetting::setStatus(GeoSetting::STATUS_LIVE);
         $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
-        if ( $emptyDirResult === true ):
-            $this->line( "Our storage directory has been emptied." );
+        if ($emptyDirResult === TRUE):
+            $this->line("Our storage directory has been emptied.");
         else:
-            $this->error( "We were unable to empty the storage directory." );
+            $this->error("We were unable to empty the storage directory.");
         endif;
-        $this->line( "Finished " . $this->signature );
+        $this->line("Finished " . $this->signature);
 
-        $this->call( 'geonames:status' );
+        $this->call('geonames:status');
     }
 
 

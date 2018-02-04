@@ -320,11 +320,11 @@ SET created_at=NOW(),updated_at=null";
 
         $this->line( "Running the LOAD DATA INFILE query..." );
 
-        $rowsInserted = DB::connection()->getpdo()->exec( $query );
+        $rowsInserted = DB::connection($this->connectionName)->getpdo()->exec($query);
         if ( $rowsInserted === false ) {
-            throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
-                                                                                               ->getpdo()
-                                                                                               ->errorInfo(), true ) );
+            throw new Exception("Unable to execute the load data infile query. " . print_r(DB::connection($this->connectionName)
+                                                                                             ->getpdo()
+                                                                                             ->errorInfo(), true ) );
         }
 
         $this->enableKeys( self::TABLE_WORKING );

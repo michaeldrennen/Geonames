@@ -27,6 +27,9 @@ class CreateGeonamesSettingsTable extends Migration {
             // feature codes file that we pull down. It's the only file that is language dependent.
             $table->text('languages')->nullable();
 
+            // Let the user specify a database connection name for the geonames system. Leave NULL for default.
+            $table->string('connection')->nullable();
+
             // The date and time when this database was first filled with geonames records.
             $table->dateTime('installed_at')->nullable();
 

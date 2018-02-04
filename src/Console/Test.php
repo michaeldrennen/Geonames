@@ -97,12 +97,12 @@ class Test extends Command {
             //$this->line( "Running the LOAD DATA INFILE query. This could take a good long while." );
 
             try {
-                $rowsInserted = DB::connection()->getpdo()->exec( $query );
+                $rowsInserted = DB::connection($this->connectionName)->getpdo()->exec($query);
             } catch ( \Exception $exception ) {
 
-                print_r( DB::connection()
-                           ->getpdo()
-                           ->errorInfo(), true );
+                print_r(DB::connection($this->connectionName)
+                          ->getpdo()
+                          ->errorInfo(), true );
             }
 
 

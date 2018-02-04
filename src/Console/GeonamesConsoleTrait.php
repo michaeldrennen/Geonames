@@ -1,4 +1,5 @@
 <?php
+
 namespace MichaelDrennen\Geonames\Console;
 
 use Curl\Curl;
@@ -20,6 +21,11 @@ trait GeonamesConsoleTrait {
     protected static $url = 'http://download.geonames.org/export/dump/';
 
     /**
+     * @var string If you want to use a specific database connection, pass it in as an option. It gets stored here.
+     */
+    protected $connectionName;
+
+    /**
      * @var float When this command starts.
      */
     protected $startTime;
@@ -38,14 +44,14 @@ trait GeonamesConsoleTrait {
      * Start the timer. Record the start time in startTime()
      */
     protected function startTimer() {
-        $this->startTime = microtime( true );
+        $this->startTime = microtime(TRUE);
     }
 
     /**
      * Stop the timer. Record the end time in endTime, and the time elapsed in runTime.
      */
     protected function stopTimer() {
-        $this->endTime = microtime( true );
+        $this->endTime = microtime(TRUE);
         $this->runTime = $this->endTime - $this->startTime;
     }
 
@@ -56,27 +62,28 @@ trait GeonamesConsoleTrait {
      * @return float    The time elapsed in seconds.
      */
     protected function getRunTime(): float {
-        if ( $this->runTime > 0 ) {
+        if ($this->runTime > 0) {
             return (float)$this->runTime;
         }
 
-        return (float)microtime( true ) - $this->startTime;
+        return (float)microtime(TRUE) - $this->startTime;
     }
 
     /**
      * @return array An array of all the anchor tag href attributes on the given url parameter.
+     * @throws \ErrorException
      */
     public static function getAllLinksOnDownloadPage(): array {
         $curl = new Curl();
 
-        $curl->get( self::$url );
+        $curl->get(self::$url);
         $html = $curl->response;
 
-        $crawler = new Crawler( $html );
+        $crawler = new Crawler($html);
 
-        return $crawler->filter( 'a' )->each( function ( Crawler $node ) {
-            return $node->attr( 'href' );
-        } );
+        return $crawler->filter('a')->each(function (Crawler $node) {
+            return $node->attr('href');
+        });
     }
 
 
@@ -87,10 +94,10 @@ trait GeonamesConsoleTrait {
      * @return array
      * @throws \Exception
      */
-    public static function downloadFiles( Command $command, array $downloadLinks ): array {
+    public static function downloadFiles(Command $command, array $downloadLinks): array {
         $localFilePaths = [];
-        foreach ( $downloadLinks as $link ) {
-            $localFilePaths[] = self::downloadFile( $command, $link );
+        foreach ($downloadLinks as $link) {
+            $localFilePaths[] = self::downloadFile($command, $link);
         }
 
         return $localFilePaths;
@@ -103,43 +110,46 @@ trait GeonamesConsoleTrait {
      * @return string           The absolute local path to the file we just downloaded.
      * @throws Exception
      */
-    public static function downloadFile( Command $command, string $link ): string {
+    public static function downloadFile(Command $command, string $link): string {
         $curl = new Curl();
 
-        $basename      = basename( $link );
+        $basename      = basename($link);
         $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $basename;
 
         // Display a progress bar if we can get the remote file size.
-        $fileSize = RemoteFile::getFileSize( $link );
-        if ( $fileSize > 0 ) {
-            $geonamesBar = $command->output->createProgressBar( $fileSize );
+        $fileSize = RemoteFile::getFileSize($link);
+        if ($fileSize > 0) {
+            $geonamesBar = $command->output->createProgressBar($fileSize);
 
-            $geonamesBar->setFormat( "\nDownloading %message% %current%/%max% [%bar%] %percent:3s%%\n" );
+            $geonamesBar->setFormat("\nDownloading %message% %current%/%max% [%bar%] %percent:3s%%\n");
 
-            $geonamesBar->setMessage( $basename );
+            $geonamesBar->setMessage($basename);
 
             $curl->verbose();
-            $curl->setopt( CURLOPT_NOPROGRESS, false );
-            $curl->setopt( CURLOPT_PROGRESSFUNCTION, function ( $resource, $download_size = 0, $downloaded = 0, $upload_size = 0, $uploaded = 0 ) use ( $geonamesBar ) {
-                $geonamesBar->setProgress( $downloaded );
-            } );
+            $curl->setopt(CURLOPT_NOPROGRESS, FALSE);
+            $curl->setopt(CURLOPT_PROGRESSFUNCTION,
+                function ($resource, $download_size = 0, $downloaded = 0, $upload_size = 0, $uploaded = 0) use ($geonamesBar) {
+                    $geonamesBar->setProgress($downloaded);
+                });
         } else {
-            $command->line( "\nWe were unable to get the file size of $link, so we will not display a progress bar. This could take a while, FYI.\n" );
+            $command->line("\nWe were unable to get the file size of $link, so we will not display a progress bar. This could take a while, FYI.\n");
         }
 
-        $curl->get( $link );
+        $curl->get($link);
 
-        if ( $curl->error ) {
+        if ($curl->error) {
             //$command->error("\n" . $curl->error_code . ':' . $curl->error_message);
-            Log::error( $link, $curl->error_message, $curl->error_code );
-            throw new Exception( "Unable to download the file at [" . $link . "]\n" . $curl->error_message );
+            Log::error($link, $curl->error_message, $curl->error_code);
+            throw new Exception("Unable to download the file at [" . $link . "]\n" . $curl->error_message);
         }
 
         $data         = $curl->response;
-        $bytesWritten = file_put_contents( $localFilePath, $data );
-        if ( $bytesWritten === false ) {
-            Log::error( $link, "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?", 'local' );
-            throw new Exception( "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?" );
+        $bytesWritten = file_put_contents($localFilePath, $data);
+        if ($bytesWritten === FALSE) {
+            Log::error($link,
+                       "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?",
+                       'local');
+            throw new Exception("Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?");
         }
 
         return $localFilePath;
@@ -153,13 +163,13 @@ trait GeonamesConsoleTrait {
      *
      * @return  array     A multi-dimensional made of the data in the csv file.
      */
-    public static function csvFileToArray( string $localFilePath, $delimiter = "\t" ): array {
+    public static function csvFileToArray(string $localFilePath, $delimiter = "\t"): array {
         $rows = [];
-        if ( ( $handle = fopen( $localFilePath, "r" ) ) !== false ) {
-            while ( ( $data = fgetcsv( $handle, 0, $delimiter ) ) !== false ) {
+        if (($handle = fopen($localFilePath, "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
                 $rows[] = $data;
             }
-            fclose( $handle );
+            fclose($handle);
         }
 
         return $rows;
@@ -172,20 +182,20 @@ trait GeonamesConsoleTrait {
      *
      * @throws  Exception
      */
-    public static function unzip( $localFilePath ) {
+    public static function unzip($localFilePath) {
         $storage       = GeoSetting::getAbsoluteLocalStoragePath();
         $zip           = new ZipArchive;
-        $zipOpenResult = $zip->open( $localFilePath );
-        if ( true !== $zipOpenResult ) {
-            throw new Exception( "Error [" . $zipOpenResult . "] Unable to unzip the archive at " . $localFilePath );
+        $zipOpenResult = $zip->open($localFilePath);
+        if (TRUE !== $zipOpenResult) {
+            throw new Exception("Error [" . $zipOpenResult . "] Unable to unzip the archive at " . $localFilePath);
         }
-        $extractResult = $zip->extractTo( $storage );
-        if ( false === $extractResult ) {
-            throw new Exception( "Unable to unzip the file at " . $localFilePath );
+        $extractResult = $zip->extractTo($storage);
+        if (FALSE === $extractResult) {
+            throw new Exception("Unable to unzip the file at " . $localFilePath);
         }
         $closeResult = $zip->close();
-        if ( false === $closeResult ) {
-            throw new Exception( "After unzipping unable to close the file at " . $localFilePath );
+        if (FALSE === $closeResult) {
+            throw new Exception("After unzipping unable to close the file at " . $localFilePath);
         }
 
         return;
@@ -200,26 +210,26 @@ trait GeonamesConsoleTrait {
      *
      * @throws Exception
      */
-    public static function unzipFiles( array $absoluteFilePaths ) {
+    public static function unzipFiles(array $absoluteFilePaths) {
         try {
-            foreach ( $absoluteFilePaths as $absoluteFilePath ) {
-                self::unzip( $absoluteFilePath );
+            foreach ($absoluteFilePaths as $absoluteFilePath) {
+                self::unzip($absoluteFilePath);
             }
-        } catch ( Exception $e ) {
+        } catch (Exception $e) {
             throw $e;
         }
     }
 
-    protected function disableKeys( string $table ): bool {
+    protected function disableKeys(string $table): bool {
         $query = 'ALTER TABLE ' . $table . ' DISABLE KEYS;';
 
-        return DB::connection()->getpdo()->exec( $query );
+        return DB::connection($this->connectionName)->getpdo()->exec($query);
     }
 
-    protected function enableKeys( string $table ): bool {
+    protected function enableKeys(string $table): bool {
         $query = 'ALTER TABLE ' . $table . ' ENABLE KEYS;';
 
-        return DB::connection()->getpdo()->exec( $query );
+        return DB::connection($this->connectionName)->getpdo()->exec($query);
     }
 
 }

@@ -74,52 +74,53 @@ class AlternateName extends Command {
      * @throws Exception
      */
     public function handle() {
-        ini_set( 'memory_limit', -1 );
+        ini_set('memory_limit', -1);
         $this->startTimer();
-        GeoSetting::init( $this->option( 'country' ) );
+        GeoSetting::init($this->option('country'));
 
         $this->initTable();
 
-        $urlsToAlternateNamesZipFiles                   = $this->getAlternateNameDownloadLinks( $this->option( 'country' ) );
+        $urlsToAlternateNamesZipFiles                   = $this->getAlternateNameDownloadLinks($this->option('country'));
         $absoluteLocalFilePathsOfAlternateNamesZipFiles = [];
-        foreach ( $urlsToAlternateNamesZipFiles as $countryCode => $urlsToAlternateNamesZipFile ) {
+        foreach ($urlsToAlternateNamesZipFiles as $countryCode => $urlsToAlternateNamesZipFile) {
             try {
-                $absoluteLocalFilePathsOfAlternateNamesZipFiles[ $countryCode ] = $this->downloadFile( $this, $urlsToAlternateNamesZipFile );
-            } catch ( Exception $e ) {
-                $this->error( $e->getMessage() );
-                Log::error( $urlsToAlternateNamesZipFiles, $e->getMessage(), 'remote' );
+                $absoluteLocalFilePathsOfAlternateNamesZipFiles[$countryCode] = $this->downloadFile($this,
+                                                                                                    $urlsToAlternateNamesZipFile);
+            } catch (Exception $e) {
+                $this->error($e->getMessage());
+                Log::error($urlsToAlternateNamesZipFiles, $e->getMessage(), 'remote');
 
-                return false;
+                return FALSE;
             }
         }
-        $this->comment( "Done downloading alternate zip files." );
+        $this->comment("Done downloading alternate zip files.");
 
-        foreach ( $absoluteLocalFilePathsOfAlternateNamesZipFiles as $countryCode => $absoluteLocalFilePathOfAlternateNamesZipFile ) {
+        foreach ($absoluteLocalFilePathsOfAlternateNamesZipFiles as $countryCode => $absoluteLocalFilePathOfAlternateNamesZipFile) {
             try {
-                $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile );
-                $this->comment( "Unzipped " . $absoluteLocalFilePathOfAlternateNamesZipFile );
-            } catch ( Exception $e ) {
-                $this->error( $e->getMessage() );
-                Log::error( $absoluteLocalFilePathOfAlternateNamesZipFile, $e->getMessage(), 'local' );
+                $this->unzip($absoluteLocalFilePathOfAlternateNamesZipFile);
+                $this->comment("Unzipped " . $absoluteLocalFilePathOfAlternateNamesZipFile);
+            } catch (Exception $e) {
+                $this->error($e->getMessage());
+                Log::error($absoluteLocalFilePathOfAlternateNamesZipFile, $e->getMessage(), 'local');
 
-                return false;
+                return FALSE;
             }
 
-            $absoluteLocalFilePathOfAlternateNamesFile = $this->getLocalAbsolutePathToAlternateNamesTextFile( $countryCode );
+            $absoluteLocalFilePathOfAlternateNamesFile = $this->getLocalAbsolutePathToAlternateNamesTextFile($countryCode);
 
-            if ( ! file_exists( $absoluteLocalFilePathOfAlternateNamesFile ) ) {
-                throw new Exception( "The unzipped file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
+            if (!file_exists($absoluteLocalFilePathOfAlternateNamesFile)) {
+                throw new Exception("The unzipped file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile);
             }
 
             //$this->insertAlternateNamesWithLoadDataInfile( $absoluteLocalFilePathOfAlternateNamesFile );
-            $this->insertAlternateNamesWithEloquent( $absoluteLocalFilePathOfAlternateNamesFile );
+            $this->insertAlternateNamesWithEloquent($absoluteLocalFilePathOfAlternateNamesFile);
             //$this->insertAlternateNamesWithEloquentMassInsert( $absoluteLocalFilePathOfAlternateNamesFile );
             //$this->insertAlternateNamesWithLoadDataInfileFromRecreatedFile( $absoluteLocalFilePathOfAlternateNamesFile );
         }
 
         $this->finalizeTable();
 
-        $this->info( "alternate_names data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
+        $this->info("alternate_names data was downloaded and inserted in " . $this->getRunTime() . " seconds.");
     }
 
     /**
@@ -127,14 +128,14 @@ class AlternateName extends Command {
      *
      * @return array   The absolute paths to the remote alternate names zip files.
      */
-    protected function getAlternateNameDownloadLinks( array $countryCodes = [] ): array {
-        if ( is_null( $countryCodes ) ):
-            return [ '*' => self::$url . self::REMOTE_FILE_NAME_FOR_ALL ];
+    protected function getAlternateNameDownloadLinks(array $countryCodes = []): array {
+        if (is_null($countryCodes)):
+            return ['*' => self::$url . self::REMOTE_FILE_NAME_FOR_ALL];
         endif;
 
         $alternateNameDownloadLinks = [];
-        foreach ( $countryCodes as $i => $countryCode ) {
-            $alternateNameDownloadLinks[ $countryCode ] = self::$url . 'alternatenames/' . strtoupper( $countryCode ) . '.zip';
+        foreach ($countryCodes as $i => $countryCode) {
+            $alternateNameDownloadLinks[$countryCode] = self::$url . 'alternatenames/' . strtoupper($countryCode) . '.zip';
         }
 
         return $alternateNameDownloadLinks;
@@ -159,24 +160,24 @@ class AlternateName extends Command {
      * @return string
      * @throws \Exception
      */
-    protected function getLocalAbsolutePathToAlternateNamesTextFile( string $countryCode = null ): string {
-        if ( '*' == $countryCode || is_null( $countryCode ) ):
+    protected function getLocalAbsolutePathToAlternateNamesTextFile(string $countryCode = NULL): string {
+        if ('*' == $countryCode || is_null($countryCode)):
             return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL;
         endif;
-        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . '.txt';
+        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . strtoupper($countryCode) . '.txt';
     }
 
 
     protected function initTable() {
-        Schema::dropIfExists( self::TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
-        $this->disableKeys( self::TABLE_WORKING );
+        Schema::dropIfExists(self::TABLE_WORKING);
+        DB::statement('CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';');
+        $this->disableKeys(self::TABLE_WORKING);
     }
 
     protected function finalizeTable() {
-        $this->enableKeys( self::TABLE_WORKING );
-        Schema::dropIfExists( self::TABLE );
-        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        $this->enableKeys(self::TABLE_WORKING);
+        Schema::dropIfExists(self::TABLE);
+        Schema::rename(self::TABLE_WORKING, self::TABLE);
     }
 
     /**
@@ -185,17 +186,17 @@ class AlternateName extends Command {
      * @returns int The total number of rows inserted.
      * @throws \Exception
      */
-    protected function insertAlternateNamesWithLoadDataInfile( $localFilePath ): int {
+    protected function insertAlternateNamesWithLoadDataInfile($localFilePath): int {
         $totalRowsInserted = 0;
 
         try {
-            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', null );
-            $numSplitFiles       = count( $localFileSplitPaths );
-        } catch ( Exception $exception ) {
+            $localFileSplitPaths = LocalFile::split($localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL);
+            $numSplitFiles       = count($localFileSplitPaths);
+        } catch (Exception $exception) {
             throw $exception;
         }
 
-        foreach ( $localFileSplitPaths as $i => $localFileSplitPath ):
+        foreach ($localFileSplitPaths as $i => $localFileSplitPath):
             $query = "LOAD DATA LOCAL INFILE '" . $localFileSplitPath . "'
             
                         INTO TABLE " . self::TABLE_WORKING . "
@@ -212,7 +213,7 @@ class AlternateName extends Command {
                         SET created_at=NOW(),updated_at=null
                         ";
 
-            $this->line( "Running the LOAD DATA INFILE query. This could take a good long while." );
+            $this->line("Running the LOAD DATA INFILE query. This could take a good long while.");
 
             /**
              * @link http://php.net/manual/en/pdo.exec.php
@@ -221,21 +222,22 @@ class AlternateName extends Command {
              */
 
             try {
-                $rowsInserted = DB::connection()->getpdo()->exec( $query );
-            } catch ( Exception $exception ) {
-                throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
-                                                                                                    ->getpdo()
-                                                                                                    ->errorInfo(), true ) . " QUERY: " . $query );
+                $rowsInserted = DB::connection($this->connectionName)->getpdo()->exec($query);
+            } catch (Exception $exception) {
+                throw new \Exception("Unable to execute the load data infile query. " . print_r(DB::connection($this->connectionName)
+                                                                                                  ->getpdo()
+                                                                                                  ->errorInfo(),
+                                                                                                TRUE) . " QUERY: " . $query);
             }
 
 
-            if ( false === $rowsInserted ) {
-                Log::error( '', "Unable to load data infile for alternate names.", 'database' );
-                throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
-                                                                                                    ->getpdo()
-                                                                                                    ->errorInfo(), true ) );
+            if (FALSE === $rowsInserted) {
+                Log::error('', "Unable to load data infile for alternate names.", 'database');
+                throw new \Exception("Unable to execute the load data infile query. " . print_r(DB::connection($this->connectionName)
+                                                                                                  ->getpdo()
+                                                                                                  ->errorInfo(), TRUE));
             }
-            $this->info( "Inserted file " . ( $i + 1 ) . " of " . $numSplitFiles );
+            $this->info("Inserted file " . ($i + 1) . " of " . $numSplitFiles);
             $totalRowsInserted += $rowsInserted;
         endforeach;
 
@@ -243,54 +245,54 @@ class AlternateName extends Command {
     }
 
 
-    protected function insertAlternateNamesWithLoadDataInfileFromRecreatedFile( $localFilePath ): int {
+    protected function insertAlternateNamesWithLoadDataInfileFromRecreatedFile($localFilePath): int {
         try {
-            $this->comment( "Inserting alternate names using insertAlternateNamesWithLoadDataInfileFromRecreatedFile()" );
-            $totalLinesInOriginalFile = LocalFile::lineCount( $localFilePath );
-            $this->comment( "Splitting " . $localFilePath );
-            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', null );
-            $numSplitFiles       = count( $localFileSplitPaths );
-            $this->comment( "$localFilePath was split into $numSplitFiles files." );
-        } catch ( Exception $exception ) {
+            $this->comment("Inserting alternate names using insertAlternateNamesWithLoadDataInfileFromRecreatedFile()");
+            $totalLinesInOriginalFile = LocalFile::lineCount($localFilePath);
+            $this->comment("Splitting " . $localFilePath);
+            $localFileSplitPaths = LocalFile::split($localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL);
+            $numSplitFiles       = count($localFileSplitPaths);
+            $this->comment("$localFilePath was split into $numSplitFiles files.");
+        } catch (Exception $exception) {
             throw $exception;
         }
 
-        $geonamesBar = $this->output->createProgressBar( $totalLinesInOriginalFile );
-        $geonamesBar->setFormat( "Recreating %message% %current%/%max% [%bar%] %percent:3s%%\n" );
+        $geonamesBar = $this->output->createProgressBar($totalLinesInOriginalFile);
+        $geonamesBar->setFormat("Recreating %message% %current%/%max% [%bar%] %percent:3s%%\n");
 
 
         $totalRowsRecreated  = 0;
         $pathToRecreatedFile = './recreatedFile.txt';
-        $recreatedFileHandle = fopen( $pathToRecreatedFile, 'w' );
-        foreach ( $localFileSplitPaths as $i => $localFileSplitPath ):
-            $geonamesBar->setMessage( "file #" . ( $i + 1 ) . " of " . $numSplitFiles );
-            $rows = file( $localFileSplitPath );
+        $recreatedFileHandle = fopen($pathToRecreatedFile, 'w');
+        foreach ($localFileSplitPaths as $i => $localFileSplitPath):
+            $geonamesBar->setMessage("file #" . ($i + 1) . " of " . $numSplitFiles);
+            $rows = file($localFileSplitPath);
             //$numRowsInSplitFile = count( $rows );
 
-            foreach ( $rows as $j => $row ):
+            foreach ($rows as $j => $row):
                 $recreatedFields   = [];
-                $fields            = explode( "\t", $row );
-                $fields            = array_map( 'trim', $fields );
-                $recreatedFields[] = $fields[ 0 ];
-                $recreatedFields[] = $fields[ 1 ];
-                $recreatedFields[] = empty( $fields[ 2 ] ) ? '' : $fields[ 2 ];
-                $recreatedFields[] = empty( $fields[ 3 ] ) ? '' : $fields[ 3 ];
-                $recreatedFields[] = empty( $fields[ 4 ] ) ? false : $fields[ 4 ];
-                $recreatedFields[] = empty( $fields[ 5 ] ) ? false : $fields[ 5 ];
-                $recreatedFields[] = empty( $fields[ 6 ] ) ? false : $fields[ 6 ];
-                $recreatedFields[] = empty( $fields[ 7 ] ) ? false : $fields[ 7 ];
+                $fields            = explode("\t", $row);
+                $fields            = array_map('trim', $fields);
+                $recreatedFields[] = $fields[0];
+                $recreatedFields[] = $fields[1];
+                $recreatedFields[] = empty($fields[2]) ? '' : $fields[2];
+                $recreatedFields[] = empty($fields[3]) ? '' : $fields[3];
+                $recreatedFields[] = empty($fields[4]) ? FALSE : $fields[4];
+                $recreatedFields[] = empty($fields[5]) ? FALSE : $fields[5];
+                $recreatedFields[] = empty($fields[6]) ? FALSE : $fields[6];
+                $recreatedFields[] = empty($fields[7]) ? FALSE : $fields[7];
 
-                fwrite( $recreatedFileHandle, implode( "\t", $recreatedFields ) . "\n" );
+                fwrite($recreatedFileHandle, implode("\t", $recreatedFields) . "\n");
                 $totalRowsRecreated++;
                 $geonamesBar->advance();
             endforeach;
         endforeach;
 
-        fclose( $recreatedFileHandle );
+        fclose($recreatedFileHandle);
 
         $geonamesBar->finish();
 
-        $this->comment( "Running LOAD DATA INFILE." );
+        $this->comment("Running LOAD DATA INFILE.");
 
         $query = "LOAD DATA LOCAL INFILE '" . $pathToRecreatedFile . "'
             
@@ -308,7 +310,7 @@ class AlternateName extends Command {
                         SET created_at=NOW(),updated_at=null
                         ";
 
-        $this->line( "Running the LOAD DATA INFILE query. This could take a good long while." );
+        $this->line("Running the LOAD DATA INFILE query. This could take a good long while.");
 
         /**
          * @link http://php.net/manual/en/pdo.exec.php
@@ -317,22 +319,23 @@ class AlternateName extends Command {
          */
 
         try {
-            $rowsInserted = DB::connection()->getpdo()->exec( $query );
-        } catch ( Exception $exception ) {
-            throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
-                                                                                                ->getpdo()
-                                                                                                ->errorInfo(), true ) . " QUERY: " . $query );
+            $rowsInserted = DB::connection($this->connectionName)->getpdo()->exec($query);
+        } catch (Exception $exception) {
+            throw new \Exception("Unable to execute the load data infile query. " . print_r(DB::connection($this->connectionName)
+                                                                                              ->getpdo()
+                                                                                              ->errorInfo(),
+                                                                                            TRUE) . " QUERY: " . $query);
         }
 
 
-        if ( false === $rowsInserted ) {
-            Log::error( '', "Unable to load data infile for alternate names.", 'database' );
-            throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
-                                                                                                ->getpdo()
-                                                                                                ->errorInfo(), true ) );
+        if (FALSE === $rowsInserted) {
+            Log::error('', "Unable to load data infile for alternate names.", 'database');
+            throw new \Exception("Unable to execute the load data infile query. " . print_r(DB::connection($this->connectionName)
+                                                                                              ->getpdo()
+                                                                                              ->errorInfo(), TRUE));
         }
 
-        unlink( $pathToRecreatedFile );
+        unlink($pathToRecreatedFile);
 
         return $totalRowsRecreated;
     }
@@ -346,29 +349,30 @@ class AlternateName extends Command {
      * @return int
      * @throws \Exception
      */
-    protected function insertAlternateNamesWithEloquent( $localFilePath ): int {
-        $numLines = LocalFile::lineCount( $localFilePath );
+    protected function insertAlternateNamesWithEloquent($localFilePath): int {
+        DB::enableQueryLog();
+        $numLines = LocalFile::lineCount($localFilePath);
 
-        $this->disableKeys( self::TABLE );
+        $this->disableKeys(self::TABLE);
 
         try {
-            $this->comment( "Splitting " . $localFilePath );
-            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', null );
-            $numSplitFiles       = count( $localFileSplitPaths );
-            $this->comment( "I split $localFilePath into $numSplitFiles split files." );
-        } catch ( Exception $exception ) {
+            $this->comment("Splitting " . $localFilePath);
+            $localFileSplitPaths = LocalFile::split($localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL);
+            $numSplitFiles       = count($localFileSplitPaths);
+            $this->comment("I split $localFilePath into $numSplitFiles split files.");
+        } catch (Exception $exception) {
             throw $exception;
         }
 
         $totalRowsInserted = 0;
-        foreach ( $localFileSplitPaths as $i => $localFileSplitPath ):
-            $rows               = file( $localFileSplitPath );
-            $numRowsInSplitFile = count( $rows );
-            $this->comment( "Split file #" . ( $i + 1 ) . " has $numRowsInSplitFile rows." );
+        foreach ($localFileSplitPaths as $i => $localFileSplitPath):
+            $rows               = file($localFileSplitPath);
+            $numRowsInSplitFile = count($rows);
+            $this->comment("Split file #" . ($i + 1) . " of " . $numSplitFiles . " has $numRowsInSplitFile rows.");
 
-            //$geonamesBar = $this->output->createProgressBar( $numRowsInSplitFile );
-            //$geonamesBar->setFormat( "Inserting %message% %current%/%max% [%bar%] %percent:3s%%\n" );
-            //$geonamesBar->setMessage( 'alternate names' );
+            $geonamesBar = $this->output->createProgressBar($numRowsInSplitFile);
+            $geonamesBar->setFormat("Inserting %message% %current%/%max% [%bar%] %percent:3s%%\n");
+            $geonamesBar->setMessage('alternate names');
             /**
              * alternateNameId   : the id of this alternate name, int
              * geonameid         : geonameId referring to id in table 'geoname', int
@@ -379,20 +383,21 @@ class AlternateName extends Command {
              * isColloquial      : '1', if this alternate name is a colloquial or slang term. Example: 'Big Apple' for 'New York'.
              * isHistoric        : '1', if this alternate name is historic and was used in the past. Example 'Bombay' for 'Mumbai'.
              */
-            foreach ( $rows as $j => $row ) {
-                $fields          = explode( "\t", $row );
-                $fields          = array_map( 'trim', $fields );
-                $alternateNameId = $fields[ 0 ];
-                $geonameid       = $fields[ 1 ];
-                $isolanguage     = empty( $fields[ 2 ] ) ? '' : $fields[ 2 ];
-                $alternate_name  = empty( $fields[ 3 ] ) ? '' : $fields[ 3 ];
-                $isPreferredName = empty( $fields[ 4 ] ) ? false : $fields[ 4 ];
-                $isShortName     = empty( $fields[ 5 ] ) ? false : $fields[ 5 ];
-                $isColloquial    = empty( $fields[ 6 ] ) ? false : $fields[ 6 ];
-                $isHistoric      = empty( $fields[ 7 ] ) ? false : $fields[ 7 ];
+            foreach ($rows as $j => $row) {
+                $fields = explode("\t", $row);
+                $fields = array_map('trim', $fields);
 
-                \MichaelDrennen\Geonames\Models\AlternateName::firstOrCreate(
-                    [ 'alternateNameId' => $alternateNameId ],
+                $alternateNameId = $fields[0];
+                $geonameid       = $fields[1];
+                $isolanguage     = empty($fields[2]) ? '' : $fields[2];
+                $alternate_name  = empty($fields[3]) ? '' : $fields[3];
+                $isPreferredName = empty($fields[4]) ? FALSE : $fields[4];
+                $isShortName     = empty($fields[5]) ? FALSE : $fields[5];
+                $isColloquial    = empty($fields[6]) ? FALSE : $fields[6];
+                $isHistoric      = empty($fields[7]) ? FALSE : $fields[7];
+
+                $alternateName = \MichaelDrennen\Geonames\Models\AlternateNamesWorking::firstOrCreate(
+                    ['alternateNameId' => $alternateNameId],
                     [
                         'geonameid'       => $geonameid,
                         'isolanguage'     => $isolanguage,
@@ -404,13 +409,13 @@ class AlternateName extends Command {
                     ]
                 );
 
-                //$geonamesBar->advance();
+                $geonamesBar->advance();
                 $totalRowsInserted++;
             }
-            //$geonamesBar->finish();
+            $geonamesBar->finish();
         endforeach;
 
-        $this->enableKeys( self::TABLE );
+        $this->enableKeys(self::TABLE);
 
         return $totalRowsInserted;
     }
@@ -424,29 +429,29 @@ class AlternateName extends Command {
      * @return int
      * @throws \Exception
      */
-    protected function insertAlternateNamesWithEloquentMassInsert( $localFilePath ): int {
-        $numLines = LocalFile::lineCount( $localFilePath );
+    protected function insertAlternateNamesWithEloquentMassInsert($localFilePath): int {
+        $numLines = LocalFile::lineCount($localFilePath);
 
-        $this->disableKeys( self::TABLE );
+        $this->disableKeys(self::TABLE);
 
         try {
-            $this->comment( "Splitting " . $localFilePath );
-            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', null );
-            $numSplitFiles       = count( $localFileSplitPaths );
-            $this->comment( "I split $localFilePath into $numSplitFiles split files." );
-        } catch ( Exception $exception ) {
+            $this->comment("Splitting " . $localFilePath);
+            $localFileSplitPaths = LocalFile::split($localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL);
+            $numSplitFiles       = count($localFileSplitPaths);
+            $this->comment("I split $localFilePath into $numSplitFiles split files.");
+        } catch (Exception $exception) {
             throw $exception;
         }
 
         $totalRowsInserted = 0;
-        foreach ( $localFileSplitPaths as $i => $localFileSplitPath ):
-            $rows               = file( $localFileSplitPath );
-            $numRowsInSplitFile = count( $rows );
-            $this->comment( "Split file #" . ( $i + 1 ) . " has $numRowsInSplitFile rows." );
+        foreach ($localFileSplitPaths as $i => $localFileSplitPath):
+            $rows               = file($localFileSplitPath);
+            $numRowsInSplitFile = count($rows);
+            $this->comment("Split file #" . ($i + 1) . " of " . $numSplitFiles . " has $numRowsInSplitFile rows.");
 
-            $geonamesBar = $this->output->createProgressBar( $numRowsInSplitFile );
-            $geonamesBar->setFormat( "Inserting %message% %current%/%max% [%bar%] %percent:3s%%\n" );
-            $geonamesBar->setMessage( 'alternate names' );
+            $geonamesBar = $this->output->createProgressBar($numRowsInSplitFile);
+            $geonamesBar->setFormat("Inserting %message% %current%/%max% [%bar%] %percent:3s%%\n");
+            $geonamesBar->setMessage('alternate names');
             $splitRowsToInsert = [];
             /**
              * alternateNameId   : the id of this alternate name, int
@@ -458,17 +463,17 @@ class AlternateName extends Command {
              * isColloquial      : '1', if this alternate name is a colloquial or slang term. Example: 'Big Apple' for 'New York'.
              * isHistoric        : '1', if this alternate name is historic and was used in the past. Example 'Bombay' for 'Mumbai'.
              */
-            foreach ( $rows as $j => $row ) {
-                $fields          = explode( "\t", $row );
-                $fields          = array_map( 'trim', $fields );
-                $alternateNameId = $fields[ 0 ];
-                $geonameid       = $fields[ 1 ];
-                $isolanguage     = empty( $fields[ 2 ] ) ? '' : $fields[ 2 ];
-                $alternate_name  = empty( $fields[ 3 ] ) ? '' : $fields[ 3 ];
-                $isPreferredName = empty( $fields[ 4 ] ) ? false : $fields[ 4 ];
-                $isShortName     = empty( $fields[ 5 ] ) ? false : $fields[ 5 ];
-                $isColloquial    = empty( $fields[ 6 ] ) ? false : $fields[ 6 ];
-                $isHistoric      = empty( $fields[ 7 ] ) ? false : $fields[ 7 ];
+            foreach ($rows as $j => $row) {
+                $fields = explode("\t", $row);
+                //$fields          = array_map( 'trim', $fields );
+                $alternateNameId = $fields[0];
+                $geonameid       = $fields[1];
+                $isolanguage     = empty($fields[2]) ? '' : $fields[2];
+                $alternate_name  = empty($fields[3]) ? '' : $fields[3];
+                $isPreferredName = empty($fields[4]) ? FALSE : $fields[4];
+                $isShortName     = empty($fields[5]) ? FALSE : $fields[5];
+                $isColloquial    = empty($fields[6]) ? FALSE : $fields[6];
+                $isHistoric      = empty($fields[7]) ? FALSE : $fields[7];
 
                 $splitRowsToInsert[] = [
                     'alternateNameId' => $alternateNameId,
@@ -486,8 +491,8 @@ class AlternateName extends Command {
                 $geonamesBar->advance();
                 $totalRowsInserted++;
             }
-            $this->comment( "Inserting $numRowsInSplitFile rows from split file..." );
-            AlternateNamesWorking::insert( $splitRowsToInsert );
+            $this->comment("Inserting $numRowsInSplitFile rows from split file...");
+            AlternateNamesWorking::insert($splitRowsToInsert);
 
             $geonamesBar->finish();
         endforeach;

@@ -103,12 +103,12 @@ class IsoLanguageCode extends Command {
             @updated_at)
     SET created_at=NOW(),updated_at=null";
 
-        $rowsInserted = DB::connection()->getpdo()->exec( $query );
+        $rowsInserted = DB::connection($this->connectionName)->getpdo()->exec($query);
         if ( $rowsInserted === false ) {
             Log::error( '', "Unable to load data infile for iso language names.", 'database' );
-            throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()
-                                                                                               ->getpdo()
-                                                                                               ->errorInfo(), true ) );
+            throw new Exception("Unable to execute the load data infile query. " . print_r(DB::connection($this->connectionName)
+                                                                                             ->getpdo()
+                                                                                             ->errorInfo(), true ) );
         }
 
         $this->enableKeys( self::TABLE_WORKING );

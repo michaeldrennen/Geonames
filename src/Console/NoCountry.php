@@ -145,10 +145,12 @@ SET created_at=NOW(),updated_at=null";
 
         $this->line( "Running the LOAD DATA INFILE query. This could take a good long while." );
 
-        $rowsInserted = DB::connection()->getpdo()->exec( $query );
+        $rowsInserted = DB::connection($this->connectionName)->getpdo()->exec($query);
         if ( $rowsInserted === false ) {
             Log::error( '', "Unable to load data infile for no-country.", 'database' );
-            throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection()->getpdo()->errorInfo(), true ) );
+            throw new Exception("Unable to execute the load data infile query. " . print_r(DB::connection($this->connectionName)
+                                                                                             ->getpdo()->errorInfo(),
+                                                                                           TRUE));
         }
 
         $this->info( "Inserted text file into: " . InsertGeonames::TABLE );

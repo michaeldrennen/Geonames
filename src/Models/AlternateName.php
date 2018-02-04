@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AlternateName extends Model {
 
-    protected $table = 'geonames_alternate_names';
+    protected $table      = 'geonames_alternate_names';
     protected $primaryKey = 'alternateNameId';
 
 
@@ -42,7 +42,8 @@ class AlternateName extends Model {
         'isHistoric',
     ];
 
+
     public function geoname() {
-        return $this->belongsTo( Geoname::class, 'geonameid', 'geonameid' );
+        return $this->belongsTo(Geoname::class, 'geonameid', 'geonameid');
     }
 }
