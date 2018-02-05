@@ -14,7 +14,7 @@ class Install extends Command {
      * @var string The name and signature of the console command.
      */
     protected $signature = 'geonames:install
-        {--connection=* : If you want to specify the name of the database connection you want used.} 
+        {--connection= : If you want to specify the name of the database connection you want used.} 
         {--country=* : Add the 2 digit code for each country. One per option.}      
         {--language=* : Add the 2 character language code.} 
         {--storage=geonames : The name of the directory, rooted in the storage_dir() path, where we store all downloaded files.}
@@ -62,7 +62,9 @@ class Install extends Command {
         GeoSetting::install(
             [$this->option('country')],
             [$this->option('language')],
-            $this->option('storage'));
+            $this->option( 'storage' ),
+            $this->option( 'connection' )
+        );
 
         GeoSetting::setStatus(GeoSetting::STATUS_INSTALLING);
 

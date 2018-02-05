@@ -22,7 +22,9 @@ class FeatureCode extends Command {
      * @var string  The name and signature of the console command.
      */
     protected $signature = 'geonames:feature-code
-    {--language=* : Add the 2 character language code(s).}';
+    {--language=* : Add the 2 character language code(s).}
+    {--connection= : If you want to specify the name of the database connection you want used.}
+    ';
 
     /**
      * @var string  The console command description.
@@ -54,20 +56,43 @@ class FeatureCode extends Command {
      */
     public function handle() {
         $this->startTimer();
+        $this->connectionName = $this->option( 'connection' );
 
-        GeoSetting::init();
+        try {
+            $this->checkDatabase();
+            $this->info( "Confirmed database connection set up correctly." );
+        } catch ( \Exception $exception ) {
+            $this->error( $exception->getMessage() );
+            $this->stopTimer();
+            return FALSE;
+        }
+
+
+        try {
+            GeoSetting::init(
+                GeoSetting::DEFAULT_COUNTRIES_TO_BE_ADDED,
+                $this->option( 'language' ),
+                GeoSetting::DEFAULT_STORAGE_SUBDIR,
+                $this->connectionName );
+        } catch ( \Exception $exception ) {
+            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            $this->stopTimer();
+            return FALSE;
+        }
+
 
         // Get all of the feature code lines from the geonames.org download page, or an array that you specify.
         $featureCodeFileDownloadLinks = $this->getFeatureCodeFileDownloadLinks(
-            array_filter($this->option( 'language' ))
+            array_filter( $this->option( 'language' ) )
         );
 
         // Download each of the files that we found.
         $localPathsToFeatureCodeFiles = self::downloadFiles( $this, $featureCodeFileDownloadLinks );
 
         // Run each of those files through LOAD DATA INFILE.
-        Schema::dropIfExists( self::TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
+        DB::connection( $this->connectionName )
+          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
 
         // Now that we have all of the feature code files stored locally, we need to prepare
         // the data to be inserted into our database. Convert each tab delimited row into a php
@@ -79,13 +104,14 @@ class FeatureCode extends Command {
         // Now that we have our rows, let's insert them into our working table.
         $allRowsInserted = $this->insertValidRows( $validRows );
 
-        if ( $allRowsInserted === true ) {
-            Schema::drop( self::TABLE );
-            Schema::rename( self::TABLE_WORKING, self::TABLE );
+        if ( $allRowsInserted === TRUE ) {
+            Schema::connection( $this->connectionName )->drop( self::TABLE );
+            Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
             $this->info( self::TABLE . " table was truncated and refilled in " . $this->getRunTime() . " seconds." );
         } else {
             Log::error( '', "Failed to insert all of the " . self::TABLE . " rows.", 'database' );
         }
+        $this->stopTimer();
     }
 
 
@@ -93,10 +119,9 @@ class FeatureCode extends Command {
      * There are feature code files on geonames.org for a few different languages. The file names
      * all start with 'featureCodes_', so we get all of the links from the page, and only return
      * ones that start with that string.
-     *
      * @param array $languageCodes A list of the language codes you want to get links for. Really only used for testing.
-     *
      * @return array A list of all of the featureCode files from the geonames.org site.
+     * @throws \ErrorException
      */
     protected function getFeatureCodeFileDownloadLinks( array $languageCodes = [] ): array {
         $links = $this->getAllLinksOnDownloadPage();
@@ -152,17 +177,19 @@ class FeatureCode extends Command {
      * H.CNL    canal    an artificial watercourse
      * ...and by the time we run this function, we may have already appended the language code
      * to the end of the row. But in this function, we only check the value in the first field.
+     * @param array $row
+     * @return boolean
      */
-    protected function isValidRow( array $row ) {
+    protected function isValidRow( array $row ): bool {
         $classAndCode = explode( '.', $row[ 0 ] );
         if ( count( $classAndCode ) != 2 ) {
-            return false;
+            return FALSE;
         }
         if ( empty( $classAndCode[ 0 ] ) || empty( $classAndCode[ 1 ] ) ) {
-            return false;
+            return FALSE;
         }
 
-        return true;
+        return TRUE;
     }
 
     /**
@@ -233,9 +260,10 @@ class FeatureCode extends Command {
 
         foreach ( $validRows as $rowNumber => $row ) {
 
-            $insertResult = DB::table( self::TABLE_WORKING )->insert( $this->makeRowInsertable( $row ) );
+            $insertResult = DB::connection( $this->connectionName )->table( self::TABLE_WORKING )
+                              ->insert( $this->makeRowInsertable( $row ) );
 
-            if ( $insertResult === true ) {
+            if ( $insertResult === TRUE ) {
                 $numRowsInserted++;
             } else {
                 $numRowsNotInserted++;
@@ -247,10 +275,9 @@ class FeatureCode extends Command {
         $this->enableKeys( self::TABLE_WORKING );
 
         if ( $numRowsInserted != $numRowsToBeInserted ) {
-            return false;
+            return FALSE;
         }
-        return true;
+        return TRUE;
     }
-
 
 }
