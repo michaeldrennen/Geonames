@@ -49,8 +49,33 @@ trait GeonamesConsoleTrait {
     }
 
     /**
+     * This function will set the connection to be used for the remainder of the artisan command. It will first check
+     * to see if a connection name was passed in as an option to the command. If the user does not pass in a connection
+     * name, then this command will try to set the connection name to the default value from the .env file. Failing
+     * that, this method will throw an exception. The user needs to get their database in order before continuing.
+     * @return string The name of the connection used.
+     * @throws Exception Thrown if no connection was passed into the artisan command and no default is set up in the
+     *                   .env file.
+     */
+    protected function setDatabaseConnectionName(): string {
+        $connectionNameOption = $this->option( 'connection' );//...
+        if ( empty( $connectionNameOption ) ):
+            $defaultEnvironmentConnectionName = env( 'DB_CONNECTION' );
+            if ( empty( $defaultEnvironmentConnectionName ) ) {
+                throw new Exception( "setDatabaseConnectionName() failed: There was no connection name passed into the artisan command, and I couldn't find the default connection name from the .env file. You need to have one or the other." );
+            }
+            $this->connectionName = $defaultEnvironmentConnectionName;
+        else:
+            $this->connectionName = $connectionNameOption;
+        endif;
+        return $this->connectionName;
+    }
+
+    /**
      * Perform some quick checks to make sure the database connection is set up correctly, including the ability to
-     * run LOAD DATA queries.
+     * run LOAD DATA queries. This method is meant to stop execution of the artisan command if there is going to be an
+     * issue inserting records into the database. It'd be frustrating to have the script run for an hour downloading
+     * files, only to fail when inserting the first record.
      * @return bool
      * @throws Exception
      */

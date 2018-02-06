@@ -23,6 +23,7 @@ class Admin2Code extends Command {
      * @var string The name and signature of the console command.
      */
     protected $signature = 'geonames:admin-2-code
+        {--connection= : If you want to specify the name of the database connection you want used.}
         {--test : Call this boolean switch if you want to install just enough records to test the system. Makes it fast.}';
 
     /**
@@ -63,8 +64,35 @@ class Admin2Code extends Command {
      */
     public function handle() {
         ini_set( 'memory_limit', -1 );
+
         $this->startTimer();
-        GeoSetting::init();
+
+        $this->connectionName = $this->option( 'connection' );
+
+        try {
+            $this->setDatabaseConnectionName();
+            $this->info( "The database connection name was set to: " . $this->connectionName );
+            $this->comment( "Testing database connection..." );
+            $this->checkDatabase();
+            $this->info( "Confirmed database connection set up correctly." );
+        } catch ( \Exception $exception ) {
+            $this->error( $exception->getMessage() );
+            $this->stopTimer();
+            return FALSE;
+        }
+
+        try {
+            GeoSetting::init(
+                GeoSetting::DEFAULT_COUNTRIES_TO_BE_ADDED,
+                GeoSetting::DEFAULT_LANGUAGES,
+                GeoSetting::DEFAULT_STORAGE_SUBDIR,
+                $this->connectionName );
+        } catch ( \Exception $exception ) {
+            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            $this->stopTimer();
+            return FALSE;
+        }
+
         $remoteUrl = GeoSetting::getDownloadUrlForFile( self::REMOTE_FILE_NAME );
 
         DB::table( self::TABLE )->truncate();
@@ -75,7 +103,7 @@ class Admin2Code extends Command {
             $this->error( $e->getMessage() );
             Log::error( $remoteUrl, $e->getMessage(), 'remote' );
 
-            return false;
+            return FALSE;
         }
 
         $this->insertWithEloquent( $absoluteLocalPath );
@@ -97,28 +125,31 @@ class Admin2Code extends Command {
     protected function insertWithEloquent( string $localFilePath ) {
         $numLines = LocalFile::lineCount( $localFilePath );
 
-        $geonamesBar = $this->output->createProgressBar( $numLines );
-        $geonamesBar->setFormat( "Inserting %message% %current%/%max% [%bar%] %percent:3s%%\n" );
-        $geonamesBar->setMessage( 'admin 2 codes' );
-        $geonamesBar->advance();
+
 
         $this->disableKeys( self::TABLE );
         $rows = file( $localFilePath );
 
-        if ( $this->option( 'test' ) ) {
-            $rows = array_slice( $rows, 0, 100 );
-        }
+        if ( $this->option( 'test' ) ):
+            $this->comment( "The 'test' option was passed in, so I am only going to insert 100 rows." );
+            $rows     = array_slice( $rows, 0, 100 );
+            $numLines = count( $rows ); // Set the progress bar to 100.
+        endif;
+
+        $geonamesBar = $this->output->createProgressBar( $numLines );
+        $geonamesBar->setFormat( "Inserting %message% %current%/%max% [%bar%] %percent:3s%%\n" );
+        $geonamesBar->setMessage( 'admin 2 codes' );
 
         foreach ( $rows as $i => $row ) {
             $fields                = explode( "\t", $row );            // US.CO.107	Routt County	Routt County	5581553
-            $countryAndAdmin2      = $fields[ 0 ] ?? null;     // US.CO.107
+            $countryAndAdmin2      = $fields[ 0 ] ?? NULL;     // US.CO.107
             $countryAndAdmin2Parts = explode( '.', $countryAndAdmin2 ); // US.CO.107
-            $countryCode           = $countryAndAdmin2Parts[ 0 ] ?? null;   // US
-            $admin1Code            = $countryAndAdmin2Parts[ 1 ] ?? null;    // CO
-            $admin2Code            = $countryAndAdmin2Parts[ 2 ] ?? null;    // 107
-            $name                  = $fields[ 1 ] ?? null;                         // Routt County
-            $asciiName             = $fields[ 2 ] ?? null;                    // Routt County
-            $geonameId             = $fields[ 3 ] ?? null;                    // 5581553
+            $countryCode           = $countryAndAdmin2Parts[ 0 ] ?? NULL;   // US
+            $admin1Code            = $countryAndAdmin2Parts[ 1 ] ?? NULL;    // CO
+            $admin2Code            = $countryAndAdmin2Parts[ 2 ] ?? NULL;    // 107
+            $name                  = $fields[ 1 ] ?? NULL;                         // Routt County
+            $asciiName             = $fields[ 2 ] ?? NULL;                    // Routt County
+            $geonameId             = $fields[ 3 ] ?? NULL;                    // 5581553
 
             Admin2CodeModel::create( [ 'geonameid'    => $geonameId,
                                        'country_code' => $countryCode,

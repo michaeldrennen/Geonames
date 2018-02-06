@@ -21,7 +21,8 @@ class IsoLanguageCode extends Command {
     /**
      * @var string The name and signature of the console command.
      */
-    protected $signature = 'geonames:iso-language-code';
+    protected $signature = 'geonames:iso-language-code
+    {--connection= : If you want to specify the name of the database connection you want used.}';
 
     /**
      * @var string The console command description.
@@ -63,7 +64,32 @@ class IsoLanguageCode extends Command {
     public function handle() {
         ini_set( 'memory_limit', -1 );
         $this->startTimer();
-        GeoSetting::init();
+
+        $this->connectionName = $this->option( 'connection' );
+
+        try {
+            $this->setDatabaseConnectionName();
+            $this->info( "The database connection name was set to: " . $this->connectionName );
+            $this->comment( "Testing database connection..." );
+            $this->checkDatabase();
+            $this->info( "Confirmed database connection set up correctly." );
+        } catch ( \Exception $exception ) {
+            $this->error( $exception->getMessage() );
+            $this->stopTimer();
+            return FALSE;
+        }
+
+        try {
+            GeoSetting::init(
+                GeoSetting::DEFAULT_COUNTRIES_TO_BE_ADDED,
+                GeoSetting::DEFAULT_LANGUAGES,
+                GeoSetting::DEFAULT_STORAGE_SUBDIR,
+                $this->connectionName );
+        } catch ( \Exception $exception ) {
+            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            $this->stopTimer();
+            return FALSE;
+        }
 
         $remotePath = self::$url . self::LANGUAGE_CODES_FILE_NAME;
 
@@ -103,12 +129,12 @@ class IsoLanguageCode extends Command {
             @updated_at)
     SET created_at=NOW(),updated_at=null";
 
-        $rowsInserted = DB::connection($this->connectionName)->getpdo()->exec($query);
-        if ( $rowsInserted === false ) {
+        $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
+        if ( $rowsInserted === FALSE ) {
             Log::error( '', "Unable to load data infile for iso language names.", 'database' );
-            throw new Exception("Unable to execute the load data infile query. " . print_r(DB::connection($this->connectionName)
-                                                                                             ->getpdo()
-                                                                                             ->errorInfo(), true ) );
+            throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
+                                                                                               ->getpdo()
+                                                                                               ->errorInfo(), TRUE ) );
         }
 
         $this->enableKeys( self::TABLE_WORKING );

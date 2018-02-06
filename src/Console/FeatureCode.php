@@ -59,6 +59,9 @@ class FeatureCode extends Command {
         $this->connectionName = $this->option( 'connection' );
 
         try {
+            $this->setDatabaseConnectionName();
+            $this->info( "The database connection name was set to: " . $this->connectionName );
+            $this->comment( "Testing database connection..." );
             $this->checkDatabase();
             $this->info( "Confirmed database connection set up correctly." );
         } catch ( \Exception $exception ) {
@@ -69,13 +72,18 @@ class FeatureCode extends Command {
 
 
         try {
+            if ( empty( $this->option( 'language' ) ) ):
+                $languages = GeoSetting::DEFAULT_LANGUAGES;
+            else:
+                $languages = $this->option( 'language' );
+            endif;
             GeoSetting::init(
                 GeoSetting::DEFAULT_COUNTRIES_TO_BE_ADDED,
-                $this->option( 'language' ),
+                $languages,
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            Log::error( '', "Unable to initialize the GeoSetting record.", 'init' );
             $this->stopTimer();
             return FALSE;
         }

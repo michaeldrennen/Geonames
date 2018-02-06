@@ -70,7 +70,7 @@ class GeoSetting extends Model {
     /**
      * If you wanted multiple specific languages: "'en','ru'";
      */
-    const DEFAULT_LANGUAGES = "en";
+    const DEFAULT_LANGUAGES = [ "en" ];
 
     /**
      * This library makes use of the Laravel storage_dir() as the root. This const defines the name of the child
@@ -148,7 +148,7 @@ class GeoSetting extends Model {
         // parameters (above) will come in as empty arrays. Hence the default values up there won't get called.
         // So we take care of that right here.
         $countriesToBeAdded = empty( $countriesToBeAdded ) ? [ self::DEFAULT_COUNTRIES_TO_BE_ADDED ] : $countriesToBeAdded;
-        $languages          = empty( $languages ) ? [ self::DEFAULT_LANGUAGES ] : $languages;
+        $languages          = empty( $languages ) ? self::DEFAULT_LANGUAGES : $languages;
         $storageSubDir      = empty( $storageSubDir ) ? [ self::DEFAULT_STORAGE_SUBDIR ] : $storageSubDir;
 
         if ( $settings = self::find( self::ID ) ) {
