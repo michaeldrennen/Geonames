@@ -142,18 +142,18 @@ class GeoSetting extends Model {
      * @return bool
      * @throws Exception
      */
-    public static function install( array $countriesToBeAdded = [ self::DEFAULT_COUNTRIES_TO_BE_ADDED ], array $languages = [ self::DEFAULT_LANGUAGES ], string $storageSubDir = self::DEFAULT_STORAGE_SUBDIR, string $connection = NULL ): bool {
+    public static function install( array $countriesToBeAdded = self::DEFAULT_COUNTRIES_TO_BE_ADDED, array $languages = self::DEFAULT_LANGUAGES, string $storageSubDir = self::DEFAULT_STORAGE_SUBDIR, string $connection = NULL ): bool {
 
         // Establish defaults. If the user of the Install script did not call any options when running the script, these
         // parameters (above) will come in as empty arrays. Hence the default values up there won't get called.
         // So we take care of that right here.
-        $countriesToBeAdded = empty( $countriesToBeAdded ) ? [ self::DEFAULT_COUNTRIES_TO_BE_ADDED ] : $countriesToBeAdded;
+        $countriesToBeAdded = empty( $countriesToBeAdded ) ? self::DEFAULT_COUNTRIES_TO_BE_ADDED : $countriesToBeAdded;
         $languages          = empty( $languages ) ? self::DEFAULT_LANGUAGES : $languages;
-        $storageSubDir      = empty( $storageSubDir ) ? [ self::DEFAULT_STORAGE_SUBDIR ] : $storageSubDir;
+        $storageSubDir      = empty( $storageSubDir ) ? self::DEFAULT_STORAGE_SUBDIR : $storageSubDir;
 
         if ( $settings = self::find( self::ID ) ) {
             $settings->{self::DB_COLUMN_COUNTRIES_TO_BE_ADDED} = $countriesToBeAdded;
-            $settings->{self::DB_COLUMN_COUNTRIES}             = [];
+            $settings->{self::DB_COLUMN_COUNTRIES}             = '';
             $settings->{self::DB_COLUMN_LANGUAGES}             = $languages;
             $settings->{self::DB_COLUMN_STORAGE_SUBDIR}        = $storageSubDir;
             $settings->{self::DB_COLUMN_INSTALLED_AT}          = NULL;

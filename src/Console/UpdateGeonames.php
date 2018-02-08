@@ -2,6 +2,7 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
+use Carbon\Carbon;
 use Symfony\Component\DomCrawler\Crawler;
 use Curl\Curl;
 use Goutte\Client;
@@ -22,7 +23,8 @@ class UpdateGeonames extends Command {
      *
      * @var string
      */
-    protected $signature = 'geonames:update-geonames';
+    protected $signature = 'geonames:update-geonames
+    {--connection= : If you want to specify the name of the database connection you want used.}';
 
     /**
      * The console command description.
@@ -44,6 +46,7 @@ class UpdateGeonames extends Command {
      * @var string
      */
     protected $modificationsTxtFileName;
+    protected $deletesTxtFileName;
 
     /**
      * @var Curl
@@ -104,10 +107,23 @@ class UpdateGeonames extends Command {
      * @throws \Exception
      */
     public function handle() {
+
+        try {
+            $this->setDatabaseConnectionName();
+            $this->info( "The database connection name was set to: " . $this->connectionName );
+            $this->comment( "Testing database connection..." );
+            $this->checkDatabase();
+            $this->info( "Confirmed database connection set up correctly." );
+        } catch ( \Exception $exception ) {
+            $this->error( $exception->getMessage() );
+            $this->stopTimer();
+            return FALSE;
+        }
+
         GeoSetting::init();
         $this->storageDir = GeoSetting::getStorage();
         GeoSetting::setStatus( GeoSetting::STATUS_UPDATING );
-        $this->startTime = (float)microtime( true );
+        $this->startTime = (float)microtime( TRUE );
         $this->line( "Starting " . $this->signature );
 
 
@@ -167,18 +183,23 @@ class UpdateGeonames extends Command {
                 }
 
             } catch ( \Exception $e ) {
-                Log::error( '', $e->getMessage() . " Unable to save the geoname record with id: [" . $obj->geonameid . "]", 'database' );
+                Log::error( '',
+                            $e->getMessage() . " Unable to save the geoname record with id: [" . $obj->geonameid . "]",
+                            'database' );
                 $bar->advance();
             }
         endforeach;
 
-        $this->endTime = (float)microtime( true );
+
+        $this->processDeletedRows();
+
+        $this->endTime = (float)microtime( TRUE );
         $this->runTime = $this->endTime - $this->startTime;
         Log::info( '', "Finished updates in " . $localFilePath . " in " . $this->runTime . " seconds.", 'update' );
         $this->line( "Finished " . $this->signature );
         GeoSetting::setStatus( GeoSetting::STATUS_LIVE );
 
-        return true;
+        return TRUE;
     }
 
     /**
@@ -207,8 +228,8 @@ class UpdateGeonames extends Command {
 
             // The lat and long fields are decimal (nullable), so if the value in the modifications file is blank, we
             // want the value to be null instead of 0 (zero).
-            $object->latitude  = empty( $array[ 4 ] ) ? null : number_format( (float)$array[ 4 ], 8 );
-            $object->longitude = empty( $array[ 5 ] ) ? null : number_format( (float)$array[ 5 ], 8 );
+            $object->latitude  = empty( $array[ 4 ] ) ? NULL : number_format( (float)$array[ 4 ], 8 );
+            $object->longitude = empty( $array[ 5 ] ) ? NULL : number_format( (float)$array[ 5 ], 8 );
 
             $object->feature_class = $array[ 6 ];
             $object->feature_code  = $array[ 7 ];
@@ -221,8 +242,8 @@ class UpdateGeonames extends Command {
             $object->population    = $array[ 14 ];
 
             // Null is different than zero, which was getting entered when the field was blank.
-            $object->elevation = empty( $array[ 15 ] ) ? null : $array[ 15 ];
-            $object->dem       = empty( $array[ 16 ] ) ? null : $array[ 16 ];
+            $object->elevation = empty( $array[ 15 ] ) ? NULL : $array[ 15 ];
+            $object->dem       = empty( $array[ 16 ] ) ? NULL : $array[ 16 ];
 
             $object->timezone          = $array[ 17 ];
             $object->modification_date = $array[ 18 ];
@@ -263,8 +284,10 @@ class UpdateGeonames extends Command {
         // Save it locally
         $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $this->modificationsTxtFileName;
         $bytesWritten  = file_put_contents( $localFilePath, $data );
-        if ( $bytesWritten === false ) {
-            Log::error( $absoluteUrlToModificationsFile, "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?", 'local' );
+        if ( $bytesWritten === FALSE ) {
+            Log::error( $absoluteUrlToModificationsFile,
+                        "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?",
+                        'local' );
             throw new \Exception( "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?" );
         }
         $this->info( "Saved modification file to: " . $localFilePath );
@@ -305,4 +328,143 @@ class UpdateGeonames extends Command {
         }
         throw new \Exception( "We were unable to find the modifications file on the geonames site. This is very unusual." );
     }
+
+
+    protected function processDeletedRows() {
+        $this->comment( "Processing deleted rows." );
+        // Download the file from geonames.org and save it on local storage.
+        $localFilePath = $this->saveRemoteDeletesFile();
+        $dateOfFile    = $this->getDateFromDeletesFileName( $localFilePath );
+        $deletionRows  = $this->prepareRowsToRecordDeletes( $localFilePath );
+
+        $bar = $this->output->createProgressBar( count( $deletionRows ) );
+
+        foreach ( $deletionRows as $obj ):
+
+            try {
+//                $geoname = Geoname::firstOrNew( [ 'geonameid' => $obj->geonameid ] );
+//
+//                $geoname->name              = $obj->name;
+//                $geoname->asciiname         = $obj->asciiname;
+//                $geoname->alternatenames    = $obj->alternatenames;
+//                $geoname->latitude          = $obj->latitude;
+//                $geoname->longitude         = $obj->longitude;
+//                $geoname->feature_class     = $obj->feature_class;
+//                $geoname->feature_code      = $obj->feature_code;
+//                $geoname->country_code      = $obj->country_code;
+//                $geoname->cc2               = $obj->cc2;
+//                $geoname->admin1_code       = $obj->admin1_code;
+//                $geoname->admin2_code       = $obj->admin2_code;
+//                $geoname->admin3_code       = $obj->admin3_code;
+//                $geoname->admin4_code       = $obj->admin4_code;
+//                $geoname->population        = $obj->population;
+//                $geoname->elevation         = $obj->elevation;
+//                $geoname->dem               = $obj->dem;
+//                $geoname->timezone          = $obj->timezone;
+//                $geoname->modification_date = $obj->modification_date;
+//
+//                if ( ! $geoname->isDirty() ) {
+//                    //$this->info("Geoname record " . $obj->geonameid . " does not need to be updated.");
+//                    $bar->advance();
+//                    continue;
+//                }
+//
+//                $saveResult = $geoname->save();
+//
+//                if ( $saveResult ) {
+//
+//                    if ( $geoname->wasRecentlyCreated ) {
+//                        Log::insert( '', "Geoname record " . $obj->geonameid . " was inserted.", "create" );
+//                    } else {
+//                        Log::modification( '', "Geoname record " . $obj->geonameid . " was updated.", "update" );
+//                    }
+//                    $bar->advance();
+//
+//                } else {
+//                    Log::error( '', "Unable to updateOrCreate geoname record: [" . $obj->geonameid . "]" );
+//                    $bar->advance();
+//                    continue;
+//                }
+
+            } catch ( \Exception $e ) {
+                Log::error( '',
+                            $e->getMessage() . " Unable to save the geoname record with id: [" . $obj->geonameid . "]",
+                            'database' );
+                $bar->advance();
+            }
+        endforeach;
+
+        $this->comment( "Done processing deleted rows." );
+
+    }
+
+    protected function filterDeletesLink( array $links ): string {
+        foreach ( $links as $link ) {
+            if ( preg_match( '/^deletes-/', $link ) === 1 ) {
+                return $link;
+            }
+        }
+        throw new \Exception( "We were unable to find the modifications file on the geonames site. This is very unusual." );
+    }
+
+    protected function saveRemoteDeletesFile() {
+        $this->line( "Downloading the deletes file from geonames.org" );
+
+        // Grab the remote file.
+        $this->linksOnDownloadPage = $this->getAllLinksOnDownloadPage();
+        $this->deletesTxtFileName  = $this->filterDeletesLink( $this->linksOnDownloadPage );
+        $absoluteUrlToDeletesFile  = $this->urlForDownloadList . '/' . $this->deletesTxtFileName;
+        $this->curl->get( $absoluteUrlToDeletesFile );
+
+
+        if ( $this->curl->error ) {
+            $this->error( $this->curl->error_code . ':' . $this->curl->error_message );
+            Log::error( $absoluteUrlToDeletesFile, $this->curl->error_message, $this->curl->error_code );
+            throw new \Exception( "Unable to download the file at '" . $absoluteUrlToDeletesFile . "', " . $this->curl->error_message );
+        }
+
+        $data = $this->curl->response;
+        $this->info( "Downloaded " . $absoluteUrlToDeletesFile );
+
+
+        // Save it locally
+        $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $this->deletesTxtFileName;
+        $bytesWritten  = file_put_contents( $localFilePath, $data );
+        if ( $bytesWritten === FALSE ) {
+            Log::error( $absoluteUrlToDeletesFile,
+                        "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?",
+                        'local' );
+            throw new \Exception( "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?" );
+        }
+        $this->info( "Saved deletes file to: " . $localFilePath );
+
+        return $localFilePath;
+    }
+
+    protected function prepareRowsToRecordDeletes( string $absoluteLocalFilePath ): array {
+        $deletionRows = file( $absoluteLocalFilePath );
+
+        // An array of StdClass objects to be passed to the Laravel model.
+        $deleteRecords = [];
+        foreach ( $deletionRows as $row ):
+
+            $array = explode( "\t", $row );
+            $array = array_map( 'trim', $array );
+
+            $object            = new StdClass;
+            $object->geonameid = $array[ 0 ];
+            $object->name      = $array[ 1 ];
+            $object->reason    = $array[ 2 ];
+            $object->date      =
+
+            $deleteRecords[] = $object;
+        endforeach;
+
+        return $deleteRecords;
+    }
+
+    protected function getDateFromDeletesFileName( string $fileNameOfDeletesFile ): Carbon {
+
+    }
+
 }

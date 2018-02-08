@@ -164,7 +164,7 @@ class AlternateName extends Command {
      * @return array   The absolute paths to the remote alternate names zip files.
      */
     protected function getAlternateNameDownloadLinks( array $countryCodes = [] ): array {
-        if ( is_null( $countryCodes ) ):
+        if ( empty( $countryCodes ) ):
             return [ '*' => self::$url . self::REMOTE_FILE_NAME_FOR_ALL ];
         endif;
 

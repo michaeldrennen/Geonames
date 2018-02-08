@@ -14,7 +14,9 @@ class Geoname extends Command {
      *
      * @var string
      */
-    protected $signature = 'geonames:geoname';
+    protected $signature = 'geonames:geoname
+        {--connection= : If you want to specify the name of the database connection you want used.}
+        {--test : If you want to test the command on a small countries data set.}';
 
     /**
      * The console command description.
@@ -32,14 +34,23 @@ class Geoname extends Command {
     /**
      * Download constructor.
      */
-    public function __construct () {
+    public function __construct() {
         parent::__construct();
     }
 
 
-    public function handle () {
-        $this->call( 'geonames:download-geonames' );
-        $this->call( 'geonames:insert-geonames' );
+    public function handle() {
+
+        if ( $this->option( 'test' ) ):
+            $this->comment( "Running the geonames:geoname artisan command in test mode." );
+            $this->call( 'geonames:download-geonames', [ '--test' => TRUE ] );
+            $this->call( 'geonames:insert-geonames', [ '--test', '--connection' => $this->option( 'connection' ) ] );
+        else:
+            $this->call( 'geonames:download-geonames', [] );
+            $this->call( 'geonames:insert-geonames', [ '--connection' => $this->option( 'connection' ) ] );
+        endif;
+
+
     }
 
 

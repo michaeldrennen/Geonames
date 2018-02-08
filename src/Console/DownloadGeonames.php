@@ -17,7 +17,8 @@ class DownloadGeonames extends Command {
      *
      * @var string
      */
-    protected $signature = 'geonames:download-geonames';
+    protected $signature = 'geonames:download-geonames
+        {--test : If you want to test the command on a small countries data set.}';
 
     /**
      * The console command description.
@@ -25,7 +26,6 @@ class DownloadGeonames extends Command {
      * @var string
      */
     protected $description = "This command downloads the files you want from geonames.org and saves them locally.";
-
 
 
     /**
@@ -36,7 +36,7 @@ class DownloadGeonames extends Command {
     /**
      * Download constructor.
      */
-    public function __construct () {
+    public function __construct() {
         parent::__construct();
     }
 
@@ -46,14 +46,20 @@ class DownloadGeonames extends Command {
      * @return mixed
      */
     public function handle() {
-        ini_set('memory_limit', -1);
+        ini_set( 'memory_limit', -1 );
 
         try {
-            $countries = GeoSetting::getCountriesToBeAdded();
+            if ( $this->option( 'test' ) ):
+                $this->comment( "geonames:download-geonames running in test mode. I will only download the file for YU. It's small." );
+                $countries = [ 'YU' ];
+            else:
+                $countries = GeoSetting::getCountriesToBeAdded();
+            endif;
+
         } catch ( \Exception $e ) {
-            $this->error($e->getMessage());
+            $this->error( $e->getMessage() );
             Log::error( '', $e->getMessage(), 'database' );
-            return false;
+            return FALSE;
         }
 
         $remoteFilePaths = $this->getRemoteFilePathsToDownloadForGeonamesTable( $countries );
@@ -64,10 +70,10 @@ class DownloadGeonames extends Command {
             $this->error( $e->getMessage() );
             Log::error( '', $e->getMessage(), 'remote' );
 
-            return false;
+            return FALSE;
         }
 
-        return true;
+        return TRUE;
     }
 
 
@@ -76,14 +82,14 @@ class DownloadGeonames extends Command {
      * @param array $countries The value from GeoSetting countries_to_be_added
      * @return array
      */
-    protected function getRemoteFilePathsToDownloadForGeonamesTable ( array $countries ): array {
+    protected function getRemoteFilePathsToDownloadForGeonamesTable( array $countries ): array {
         // If the config setting for countries has the wildcard symbol "*", then the user wants data for all countries.
-        if (array_search("*", $countries) !== false) {
-            return [self::$url . 'allCountries.zip'];
+        if ( array_search( "*", $countries ) !== FALSE ) {
+            return [ self::$url . 'allCountries.zip' ];
         }
 
         $files = [];
-        foreach ($countries as $country) {
+        foreach ( $countries as $country ) {
             $files[] = self::$url . $country . '.zip';
         }
         return $files;

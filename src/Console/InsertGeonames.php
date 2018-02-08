@@ -1,4 +1,5 @@
 <?php
+
 namespace MichaelDrennen\Geonames\Console;
 
 use Exception;
@@ -19,7 +20,9 @@ class InsertGeonames extends Command {
      *
      * @var string
      */
-    protected $signature = 'geonames:insert-geonames';
+    protected $signature = 'geonames:insert-geonames
+        {--connection= : If you want to specify the name of the database connection you want used.}
+        {--test : If you want to test the command on a small countries data set.}';
 
     /**
      * The console command description.
@@ -72,6 +75,27 @@ class InsertGeonames extends Command {
      */
     public function handle() {
         ini_set( 'memory_limit', -1 );
+        $this->startTimer();
+        $this->comment( "Running geonames:insert-geonames now." );
+
+        $this->connectionName = $this->option( 'connection' );
+
+        try {
+            $this->setDatabaseConnectionName();
+            $this->info( "The database connection name was set to: " . $this->connectionName );
+            $this->comment( "Testing database connection..." );
+            $this->checkDatabase();
+            $this->info( "Confirmed database connection set up correctly." );
+        } catch ( \Exception $exception ) {
+            $this->error( $exception->getMessage() );
+            $this->stopTimer();
+            return FALSE;
+        }
+
+        if ( $this->option( 'test' ) ):
+            $this->comment( "Running in test mode. Will insert records for YU." );
+            GeoSetting::install( [ 'YU' ], [ 'en' ], GeoSetting::DEFAULT_STORAGE_SUBDIR, $this->connectionName );
+        endif;
 
         $zipFileNames = $this->getLocalCountryZipFileNames();
 
@@ -96,6 +120,7 @@ class InsertGeonames extends Command {
             Log::error( '', $e->getMessage(), 'database' );
         }
 
+        $this->stopTimer();
         $this->line( "Finished " . $this->signature );
     }
 
@@ -165,14 +190,14 @@ class InsertGeonames extends Command {
     private function isCountryZipFile( string $fileName ): bool {
         // If the file name passed in is the file with every country's geonames data, then true.
         if ( $fileName === $this->allCountriesZipFileName ) {
-            return true;
+            return TRUE;
         }
 
         // A regex here checks for a two character country code and a .zip file extension.
         if ( preg_match( '/^[A-Z]{2}\.zip$/', $fileName ) === 1 ) {
-            return true;
+            return TRUE;
         }
-        return false;
+        return FALSE;
     }
 
     /**
@@ -184,12 +209,12 @@ class InsertGeonames extends Command {
      */
     private function isCountryTxtFile( string $fileName ): bool {
         if ( $fileName === $this->allCountriesTxtFileName ) {
-            return true;
+            return TRUE;
         }
         if ( preg_match( '/^[A-Z]{2}\.txt$/', $fileName ) === 1 ) {
-            return true;
+            return TRUE;
         }
-        return false;
+        return FALSE;
     }
 
 
@@ -207,8 +232,9 @@ class InsertGeonames extends Command {
         if ( $this->allCountriesInLocalTxtFiles( $textFileNames ) ) {
 
             $absolutePathToAllCountriesTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->allCountriesTxtFileName );
-            $renameResult                      = rename( $absolutePathToAllCountriesTxtFile, $absolutePathToMasterTxtFile );
-            if ( $renameResult === false ) {
+            $renameResult                      = rename( $absolutePathToAllCountriesTxtFile,
+                                                         $absolutePathToMasterTxtFile );
+            if ( $renameResult === FALSE ) {
                 throw new Exception( "We were unable to rename the allCountries to the master file." );
             }
 
@@ -231,7 +257,7 @@ class InsertGeonames extends Command {
 
             $inputResource = @fopen( $absolutePathToTextFile, 'r' );
 
-            if ( $inputResource === false ) {
+            if ( $inputResource === FALSE ) {
                 throw new Exception( "Unable to open this file in read mode " . $absolutePathToTextFile );
             }
 
@@ -241,9 +267,9 @@ class InsertGeonames extends Command {
 
             $bar->setMessage( $textFile );
 
-            while ( ( $buffer = fgets( $inputResource ) ) !== false ) {
+            while ( ( $buffer = fgets( $inputResource ) ) !== FALSE ) {
                 $bytesWritten = fwrite( $masterResource, $buffer );
-                if ( $bytesWritten === false ) {
+                if ( $bytesWritten === FALSE ) {
                     throw new Exception( "Unable to write " . strlen( $buffer ) . " characters from " . $absolutePathToTextFile . " to the master file." );
                 }
                 $this->numLinesInMasterFile++;
@@ -256,7 +282,7 @@ class InsertGeonames extends Command {
 
         }
         $closeResult = fclose( $masterResource );
-        if ( $closeResult === false ) {
+        if ( $closeResult === FALSE ) {
             throw new Exception( "Unable to close the master file at " . $absolutePathToMasterTxtFile );
         }
 
@@ -320,11 +346,11 @@ SET created_at=NOW(),updated_at=null";
 
         $this->line( "Running the LOAD DATA INFILE query..." );
 
-        $rowsInserted = DB::connection($this->connectionName)->getpdo()->exec($query);
-        if ( $rowsInserted === false ) {
-            throw new Exception("Unable to execute the load data infile query. " . print_r(DB::connection($this->connectionName)
-                                                                                             ->getpdo()
-                                                                                             ->errorInfo(), true ) );
+        $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
+        if ( $rowsInserted === FALSE ) {
+            throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
+                                                                                               ->getpdo()
+                                                                                               ->errorInfo(), TRUE ) );
         }
 
         $this->enableKeys( self::TABLE_WORKING );
@@ -351,10 +377,10 @@ SET created_at=NOW(),updated_at=null";
      */
     private function allCountriesInLocalTxtFiles( array $txtFiles ): bool {
         if ( in_array( $this->allCountriesTxtFileName, $txtFiles ) ) {
-            return true;
+            return TRUE;
         }
 
-        return false;
+        return FALSE;
     }
 
 

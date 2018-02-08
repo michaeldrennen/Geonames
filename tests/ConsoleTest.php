@@ -12,21 +12,19 @@ class ConsoleTest extends \PHPUnit\Framework\TestCase {
 
     use RefreshDatabase;
 
-    protected $dbIsSetUp = false;
+    protected $dbIsSetUp = FALSE;
 
     /**
      * Setup the test environment.
      */
     public function setUp() {
         parent::setUp();
-        if ( false == $this->dbIsSetUp ) {
-            var_dump( "asdf" );
+        if ( FALSE == $this->dbIsSetUp ) {
             Artisan::call( 'migrate', [
                 '--database' => 'dev',
             ] );
 
-            var_dump( "ahslfhalh" );
-            $this->dbIsSetUp = true;
+            $this->dbIsSetUp = TRUE;
         } else {
             echo "asdfasdf>>>>>>>>>>>>>>>>>>";
         }
@@ -42,7 +40,7 @@ class ConsoleTest extends \PHPUnit\Framework\TestCase {
      * @group test
      */
     public function testTest() {
-        $this->assertFalse( false );
+        $this->assertFalse( FALSE );
     }
 
     /**
