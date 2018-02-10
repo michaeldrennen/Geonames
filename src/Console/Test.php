@@ -7,6 +7,7 @@ use MichaelDrennen\Geonames\Models\BaseTrait;
 use MichaelDrennen\Geonames\Models\GeoSetting;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use MichaelDrennen\Geonames\Models\Log;
 
 class Test extends Command {
 
@@ -44,10 +45,19 @@ class Test extends Command {
     }
 
 
+    public function handle() {
+        Log::error( 'a', 'b', 'c' );
+        Log::info( 'd', 'e', 'f' );
+        Log::modification( 'g', 'h', 'i' );
+        Log::insert( 'j', 'k', 'l' );
+
+
+    }
+
     /**
      * Execute the console command.
      */
-    public function handle() {
+    public function handle_2() {
         $this->line( "Starting " . $this->signature );
 
         $directory = '/Users/employee/Documents/GitHub/workbench/storage/geonames/splits';
@@ -97,12 +107,12 @@ class Test extends Command {
             //$this->line( "Running the LOAD DATA INFILE query. This could take a good long while." );
 
             try {
-                $rowsInserted = DB::connection($this->connectionName)->getpdo()->exec($query);
+                $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
             } catch ( \Exception $exception ) {
 
-                print_r(DB::connection($this->connectionName)
-                          ->getpdo()
-                          ->errorInfo(), true );
+                print_r( DB::connection( $this->connectionName )
+                           ->getpdo()
+                           ->errorInfo(), TRUE );
             }
 
 

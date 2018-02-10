@@ -2,14 +2,14 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Console\Command;
 use Carbon\Carbon;
-use MichaelDrennen\Geonames\Models\GeonamesDelete;
 use Symfony\Component\DomCrawler\Crawler;
 use Curl\Curl;
 use Goutte\Client;
-use Illuminate\Console\Command;
 use StdClass;
-
+use MichaelDrennen\Geonames\Models\GeonamesDelete;
 use MichaelDrennen\Geonames\Models\Geoname;
 use MichaelDrennen\Geonames\Models\Log;
 use MichaelDrennen\Geonames\Models\GeoSetting;
@@ -109,6 +109,9 @@ class UpdateGeonames extends Command {
      */
     public function handle() {
 
+        DB::enableQueryLog();
+        ini_set( 'memory_limit', -1 );
+
         try {
             $this->setDatabaseConnectionName();
             $this->info( "The database connection name was set to: " . $this->connectionName );
@@ -136,8 +139,7 @@ class UpdateGeonames extends Command {
 
         $bar = $this->output->createProgressBar( count( $modificationRows ) );
 
-        foreach ( $modificationRows as $obj ):
-
+        foreach ( $modificationRows as $i => $obj ):
             try {
                 $geoname = Geoname::firstOrNew( [ 'geonameid' => $obj->geonameid ] );
 
@@ -147,10 +149,10 @@ class UpdateGeonames extends Command {
                 $geoname->latitude          = $obj->latitude;
                 $geoname->longitude         = $obj->longitude;
                 $geoname->feature_class     = $obj->feature_class;
-                $geoname->feature_code      = $obj->feature_code;
-                $geoname->country_code      = $obj->country_code;
-                $geoname->cc2               = $obj->cc2;
-                $geoname->admin1_code       = $obj->admin1_code;
+                $geoname->feature_code = $obj->feature_code;
+                $geoname->country_code = $obj->country_code;
+                $geoname->cc2          = $obj->cc2;
+                $geoname->admin1_code  = $obj->admin1_code;
                 $geoname->admin2_code       = $obj->admin2_code;
                 $geoname->admin3_code       = $obj->admin3_code;
                 $geoname->admin4_code       = $obj->admin4_code;
@@ -161,24 +163,30 @@ class UpdateGeonames extends Command {
                 $geoname->modification_date = $obj->modification_date;
 
                 if ( ! $geoname->isDirty() ) {
-                    //$this->info("Geoname record " . $obj->geonameid . " does not need to be updated.");
+                    //$this->info( "Geoname record " . $obj->geonameid . " does not need to be updated." );
                     $bar->advance();
                     continue;
                 }
 
-                $saveResult = $geoname->save();
+                $saveResult            = $geoname->save();
+                $this->info( $i . " had save() called." );
+                var_dump( $saveResult );
 
                 if ( $saveResult ) {
 
-                    if ( $geoname->wasRecentlyCreated ) {
+                    if ( $geoname->wasRecentlyCreated ):
+                        $this->comment( "About to call Log::insert()" );
                         Log::insert( '',
                                      "Geoname record " . $obj->geonameid . " was inserted.",
                                      "create" );
-                    } else {
+                    else:
+                        $this->comment( "About to call Log::modification()" );
                         Log::modification( '',
-                                           "Geoname record " . $obj->geonameid . " was updated.",
+                                           "Geoname record [" . $obj->geonameid . "] was updated.",
                                            "update" );
-                    }
+                        $this->info( "exited modification without throwing an exception" );
+                    endif;
+
                     $bar->advance();
 
                 } else {
@@ -186,25 +194,27 @@ class UpdateGeonames extends Command {
                                 "Unable to updateOrCreate geoname record: [" . $obj->geonameid . "]",
                                 'database' );
                     $bar->advance();
-                    continue;
                 }
 
             } catch ( \Exception $e ) {
-                $this->error( $e->getMessage() );
                 Log::error( '',
-                            $e->getMessage() . " Unable to save the geoname record with id: [" . $obj->geonameid . "]",
+                            "{" . $e->getMessage() . "} Unable to save the geoname record with id: [" . $obj->geonameid . "]",
                             'database' );
                 $bar->advance();
             }
         endforeach;
+        $bar->finish();
 
 
         $this->processDeletedRows();
 
         $this->endTime = (float)microtime( TRUE );
         $this->runTime = $this->endTime - $this->startTime;
-        Log::info( '', "Finished updates in " . $localFilePath . " in " . $this->runTime . " seconds.", 'update' );
-        $this->line( "Finished " . $this->signature );
+        Log::info(
+            '',
+            "Finished updates in " . $localFilePath . " in " . $this->runTime . " seconds.",
+            'update' );
+        $this->line( "\nFinished " . $this->signature );
         GeoSetting::setStatus( GeoSetting::STATUS_LIVE );
 
         return TRUE;
@@ -339,7 +349,8 @@ class UpdateGeonames extends Command {
 
 
     protected function processDeletedRows() {
-        $this->comment( "Processing deleted rows." );
+
+        $this->comment( "\nProcessing deleted rows." );
         // Download the file from geonames.org and save it on local storage.
         $localFilePath    = $this->saveRemoteDeletesFile();
         $dateFromFileName = $this->getDateFromDeletesFileName( $localFilePath );
@@ -360,7 +371,7 @@ class UpdateGeonames extends Command {
 
 
                 if ( ! $geonamesDelete->isDirty() ) {
-                    $this->info( "GeonamesDelete record " . $obj->geonameid . " does not need to be updated." );
+                    //$this->info( "GeonamesDelete record " . $obj->geonameid . " does not need to be updated." );
                     $bar->advance();
                     continue;
                 }
@@ -370,14 +381,23 @@ class UpdateGeonames extends Command {
                 if ( $saveResult ) {
 
                     if ( $geonamesDelete->wasRecentlyCreated ) {
-                        Log::insert( '', "GeonamesDelete record " . $obj->geonameid . " was inserted.", "create" );
+                        Log::insert(
+                            '',
+                            "GeonamesDelete record " . $obj->geonameid . " was inserted.",
+                            "create" );
                     } else {
-                        Log::modification( '', "GeonamesDelete record " . $obj->geonameid . " was updated.", "update" );
+                        Log::modification(
+                            '',
+                            "GeonamesDelete record " . $obj->geonameid . " was updated.",
+                            "update" );
                     }
                     $bar->advance();
 
                 } else {
-                    Log::error( '', "Unable to updateOrCreate GeonamesDelete record: [" . $obj->geonameid . "]" );
+                    Log::error(
+                        '',
+                        "Unable to updateOrCreate GeonamesDelete record: [" . $obj->geonameid . "]",
+                        'database' );
                     $bar->advance();
                     continue;
                 }
@@ -390,7 +410,7 @@ class UpdateGeonames extends Command {
             }
         endforeach;
 
-        $this->comment( "Done processing deleted rows." );
+        //$this->comment( "Done processing deleted rows." );
 
     }
 
@@ -424,7 +444,7 @@ class UpdateGeonames extends Command {
 
 
         // Save it locally
-        $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $this->deletesTxtFileName;
+        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $this->deletesTxtFileName;
         $bytesWritten  = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === FALSE ) {
             Log::error( $absoluteUrlToDeletesFile,
@@ -437,7 +457,12 @@ class UpdateGeonames extends Command {
         return $localFilePath;
     }
 
-    protected function prepareRowsToRecordDeletes( string $absoluteLocalFilePath, string $dateFromFileName ): array {
+    /**
+     * @param string $absoluteLocalFilePath
+     * @param Carbon $dateFromFileName
+     * @return array
+     */
+    protected function prepareRowsToRecordDeletes( string $absoluteLocalFilePath, Carbon $dateFromFileName ): array {
         $deletionRows = file( $absoluteLocalFilePath );
 
         // An array of StdClass objects to be passed to the Laravel model.
@@ -451,7 +476,7 @@ class UpdateGeonames extends Command {
             $object->geonameid = $array[ 0 ];
             $object->name      = $array[ 1 ];
             $object->reason    = $array[ 2 ];
-            $object->date      = $dateFromFileName;
+            $object->date      = $dateFromFileName->toDateString();
 
             $deleteRecords[] = $object;
         endforeach;
@@ -467,7 +492,7 @@ class UpdateGeonames extends Command {
      */
     protected function getDateFromDeletesFileName( string $fileNameOfDeletesFile ): Carbon {
         $matches = [];
-        $pattern = '/^deletes-(\d{4}-\d{2}-\d{2})\.txt$/';
+        $pattern = '/deletes-(\d{4}-\d{2}-\d{2})\.txt$/';
         $result  = preg_match( $pattern, $fileNameOfDeletesFile, $matches );
         if ( FALSE === $result ) {
             throw new \Exception( "There was an error running preg_match() in getDateFromDeletesFileName() on the string [" . $fileNameOfDeletesFile . "]" );
@@ -475,7 +500,7 @@ class UpdateGeonames extends Command {
             throw new \Exception( "A date couldn't be found by preg_match() in getDateFromDeletesFileName() on the string [" . $fileNameOfDeletesFile . "]" );
         }
         // $matches[1] will have the text that matched the first captured parenthesized subpattern
-        return $matches[ 1 ];
+        return Carbon::parse( $matches[ 1 ] );
     }
 
 }

@@ -18,10 +18,18 @@ class Log extends Model {
     const INSERT       = 'insert';
     const INFO         = 'info';
 
-    protected $url;
-    protected $message;
-    protected $tag;
-    protected $type;
+    const url     = 'url';
+    const message = 'message';
+    const tag     = 'tag';
+    const type    = 'type';
+
+    public $fillable = [
+        Log::url,
+        Log::message,
+        Log::tag,
+        Log::type,
+    ];
+
 
     /**
      * @param string $url     The URL (if relevant) that was the source of this error.
@@ -31,52 +39,60 @@ class Log extends Model {
      * @return bool
      */
     public static function error( $url = '', $message = '', $tag = '' ) {
-        $log          = new self();
-        $log->url     = $url;
-        $log->message = $message;
-        $log->tag     = $tag;
-        $log->type    = self::ERROR;
-        return $log->save();
+
+        return Log::create( [
+                                Log::url     => $url,
+                                Log::message => $message,
+                                Log::tag     => $tag,
+                                Log::type    => Log::ERROR,
+                            ] );
+
+
     }
 
     /**
      * @param string $url
      * @param string $message
      * @param string $tag
-     *
      * @return bool
      */
     public static function modification( $url = '', $message = '', $tag = '' ) {
-        $log          = new Log();
-        $log->url     = $url;
-        $log->message = $message;
-        $log->tag     = $tag;
-        $log->type    = self::MODIFICATION;
-        return $log->save();
+        return Log::create( [
+                                Log::url     => $url,
+                                Log::message => $message,
+                                Log::tag     => $tag,
+                                Log::type    => Log::MODIFICATION,
+                            ] );
     }
 
     /**
      * @param string $url
      * @param string $message
      * @param string $tag
-     *
      * @return bool
      */
     public static function insert( $url = '', $message = '', $tag = '' ) {
-        $log          = new Log();
-        $log->url     = $url;
-        $log->message = $message;
-        $log->tag     = $tag;
-        $log->type    = self::INSERT;
-        return $log->save();
+        return Log::create( [
+                                Log::url     => $url,
+                                Log::message => $message,
+                                Log::tag     => $tag,
+                                Log::type    => Log::INSERT,
+                            ] );
     }
 
+
+    /**
+     * @param string $url
+     * @param string $message
+     * @param string $tag
+     * @return mixed
+     */
     public static function info( $url = '', $message = '', $tag = '' ) {
-        $log          = new Log();
-        $log->url     = $url;
-        $log->message = $message;
-        $log->tag     = $tag;
-        $log->type    = self::INFO;
-        return $log->save();
+        return Log::create( [
+                                Log::url     => $url,
+                                Log::message => $message,
+                                Log::tag     => $tag,
+                                Log::type    => Log::INFO,
+                            ] );
     }
 }

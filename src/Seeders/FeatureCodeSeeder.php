@@ -9,6 +9,10 @@ use MichaelDrennen\Geonames\Models\Log;
 class FeatureCodeSeeder extends Seeder {
 
     protected $featureCodeRemoteFileName = '';
+
+    /**
+     * @var string $featureCodeRemoteFilePath
+     */
     protected $featureCodeRemoteFilePath = '';
     protected $featureCodeLocalFilePath = '';
 
@@ -39,7 +43,10 @@ class FeatureCodeSeeder extends Seeder {
 
         if ($curl->error) {
 
-            Log::error($this->featureCodeRemoteFilePath, $curl->error_message, $curl->error_code);
+            Log::error(
+                $this->featureCodeRemoteFilePath,
+                $curl->error_message,
+                $curl->error_code );
             throw new \Exception("Unable to download the file at '" . $this->featureCodeRemoteFilePath . "', " . $curl->error_message);
         }
 
@@ -47,7 +54,10 @@ class FeatureCodeSeeder extends Seeder {
         $data = $curl->response;
         $bytesWritten = file_put_contents($this->featureCodeLocalFilePath, $data);
         if ($bytesWritten === false) {
-            Log::error($this->featureCodeRemoteFilePath, "Unable to create the local file at '" . $this->featureCodeLocalFilePath . "', file_put_contents() returned false. Disk full? Permission problem?", 'local');
+            Log::error(
+                $this->featureCodeRemoteFilePath,
+                "Unable to create the local file at '" . $this->featureCodeLocalFilePath . "', file_put_contents() returned false. Disk full? Permission problem?",
+                'local' );
             throw new \Exception("Unable to create the local file at '" . $this->featureCodeLocalFilePath . "', file_put_contents() returned false. Disk full? Permission problem?");
         }
     }
