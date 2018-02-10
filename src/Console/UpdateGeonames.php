@@ -3,6 +3,7 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Carbon\Carbon;
+use MichaelDrennen\Geonames\Models\GeonamesDelete;
 use Symfony\Component\DomCrawler\Crawler;
 use Curl\Curl;
 use Goutte\Client;
@@ -170,19 +171,26 @@ class UpdateGeonames extends Command {
                 if ( $saveResult ) {
 
                     if ( $geoname->wasRecentlyCreated ) {
-                        Log::insert( '', "Geoname record " . $obj->geonameid . " was inserted.", "create" );
+                        Log::insert( '',
+                                     "Geoname record " . $obj->geonameid . " was inserted.",
+                                     "create" );
                     } else {
-                        Log::modification( '', "Geoname record " . $obj->geonameid . " was updated.", "update" );
+                        Log::modification( '',
+                                           "Geoname record " . $obj->geonameid . " was updated.",
+                                           "update" );
                     }
                     $bar->advance();
 
                 } else {
-                    Log::error( '', "Unable to updateOrCreate geoname record: [" . $obj->geonameid . "]" );
+                    Log::error( '',
+                                "Unable to updateOrCreate geoname record: [" . $obj->geonameid . "]",
+                                'database' );
                     $bar->advance();
                     continue;
                 }
 
             } catch ( \Exception $e ) {
+                $this->error( $e->getMessage() );
                 Log::error( '',
                             $e->getMessage() . " Unable to save the geoname record with id: [" . $obj->geonameid . "]",
                             'database' );
@@ -282,7 +290,7 @@ class UpdateGeonames extends Command {
 
 
         // Save it locally
-        $localFilePath = $this->storageDir . DIRECTORY_SEPARATOR . $this->modificationsTxtFileName;
+        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $this->modificationsTxtFileName;
         $bytesWritten  = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === FALSE ) {
             Log::error( $absoluteUrlToModificationsFile,
@@ -333,62 +341,50 @@ class UpdateGeonames extends Command {
     protected function processDeletedRows() {
         $this->comment( "Processing deleted rows." );
         // Download the file from geonames.org and save it on local storage.
-        $localFilePath = $this->saveRemoteDeletesFile();
-        $dateOfFile    = $this->getDateFromDeletesFileName( $localFilePath );
-        $deletionRows  = $this->prepareRowsToRecordDeletes( $localFilePath );
+        $localFilePath    = $this->saveRemoteDeletesFile();
+        $dateFromFileName = $this->getDateFromDeletesFileName( $localFilePath );
+        $deletionRows     = $this->prepareRowsToRecordDeletes( $localFilePath, $dateFromFileName );
 
         $bar = $this->output->createProgressBar( count( $deletionRows ) );
 
         foreach ( $deletionRows as $obj ):
 
             try {
-//                $geoname = Geoname::firstOrNew( [ 'geonameid' => $obj->geonameid ] );
-//
-//                $geoname->name              = $obj->name;
-//                $geoname->asciiname         = $obj->asciiname;
-//                $geoname->alternatenames    = $obj->alternatenames;
-//                $geoname->latitude          = $obj->latitude;
-//                $geoname->longitude         = $obj->longitude;
-//                $geoname->feature_class     = $obj->feature_class;
-//                $geoname->feature_code      = $obj->feature_code;
-//                $geoname->country_code      = $obj->country_code;
-//                $geoname->cc2               = $obj->cc2;
-//                $geoname->admin1_code       = $obj->admin1_code;
-//                $geoname->admin2_code       = $obj->admin2_code;
-//                $geoname->admin3_code       = $obj->admin3_code;
-//                $geoname->admin4_code       = $obj->admin4_code;
-//                $geoname->population        = $obj->population;
-//                $geoname->elevation         = $obj->elevation;
-//                $geoname->dem               = $obj->dem;
-//                $geoname->timezone          = $obj->timezone;
-//                $geoname->modification_date = $obj->modification_date;
-//
-//                if ( ! $geoname->isDirty() ) {
-//                    //$this->info("Geoname record " . $obj->geonameid . " does not need to be updated.");
-//                    $bar->advance();
-//                    continue;
-//                }
-//
-//                $saveResult = $geoname->save();
-//
-//                if ( $saveResult ) {
-//
-//                    if ( $geoname->wasRecentlyCreated ) {
-//                        Log::insert( '', "Geoname record " . $obj->geonameid . " was inserted.", "create" );
-//                    } else {
-//                        Log::modification( '', "Geoname record " . $obj->geonameid . " was updated.", "update" );
-//                    }
-//                    $bar->advance();
-//
-//                } else {
-//                    Log::error( '', "Unable to updateOrCreate geoname record: [" . $obj->geonameid . "]" );
-//                    $bar->advance();
-//                    continue;
-//                }
+                $geonamesDelete = GeonamesDelete::firstOrNew( [
+                                                                  'geonameid' => $obj->geonameid,
+                                                                  'date'      => $dateFromFileName, ] );
+
+                $geonamesDelete->date   = $obj->date;
+                $geonamesDelete->name   = $obj->name;
+                $geonamesDelete->reason = $obj->reason;
+
+
+                if ( ! $geonamesDelete->isDirty() ) {
+                    $this->info( "GeonamesDelete record " . $obj->geonameid . " does not need to be updated." );
+                    $bar->advance();
+                    continue;
+                }
+
+                $saveResult = $geonamesDelete->save();
+
+                if ( $saveResult ) {
+
+                    if ( $geonamesDelete->wasRecentlyCreated ) {
+                        Log::insert( '', "GeonamesDelete record " . $obj->geonameid . " was inserted.", "create" );
+                    } else {
+                        Log::modification( '', "GeonamesDelete record " . $obj->geonameid . " was updated.", "update" );
+                    }
+                    $bar->advance();
+
+                } else {
+                    Log::error( '', "Unable to updateOrCreate GeonamesDelete record: [" . $obj->geonameid . "]" );
+                    $bar->advance();
+                    continue;
+                }
 
             } catch ( \Exception $e ) {
                 Log::error( '',
-                            $e->getMessage() . " Unable to save the geoname record with id: [" . $obj->geonameid . "]",
+                            $e->getMessage() . " Unable to save the GeonamesDelete record with id: [" . $obj->geonameid . "]",
                             'database' );
                 $bar->advance();
             }
@@ -441,7 +437,7 @@ class UpdateGeonames extends Command {
         return $localFilePath;
     }
 
-    protected function prepareRowsToRecordDeletes( string $absoluteLocalFilePath ): array {
+    protected function prepareRowsToRecordDeletes( string $absoluteLocalFilePath, string $dateFromFileName ): array {
         $deletionRows = file( $absoluteLocalFilePath );
 
         // An array of StdClass objects to be passed to the Laravel model.
@@ -455,7 +451,7 @@ class UpdateGeonames extends Command {
             $object->geonameid = $array[ 0 ];
             $object->name      = $array[ 1 ];
             $object->reason    = $array[ 2 ];
-            $object->date      =
+            $object->date      = $dateFromFileName;
 
             $deleteRecords[] = $object;
         endforeach;
@@ -463,8 +459,23 @@ class UpdateGeonames extends Command {
         return $deleteRecords;
     }
 
+    /**
+     * @param string $fileNameOfDeletesFile
+     * @return Carbon
+     * @throws \Exception
+     * @link http://php.net/manual/en/function.preg-match.php
+     */
     protected function getDateFromDeletesFileName( string $fileNameOfDeletesFile ): Carbon {
-
+        $matches = [];
+        $pattern = '/^deletes-(\d{4}-\d{2}-\d{2})\.txt$/';
+        $result  = preg_match( $pattern, $fileNameOfDeletesFile, $matches );
+        if ( FALSE === $result ) {
+            throw new \Exception( "There was an error running preg_match() in getDateFromDeletesFileName() on the string [" . $fileNameOfDeletesFile . "]" );
+        } elseif ( 0 === $result ) {
+            throw new \Exception( "A date couldn't be found by preg_match() in getDateFromDeletesFileName() on the string [" . $fileNameOfDeletesFile . "]" );
+        }
+        // $matches[1] will have the text that matched the first captured parenthesized subpattern
+        return $matches[ 1 ];
     }
 
 }

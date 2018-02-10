@@ -1,0 +1,131 @@
+11812485	Montery Bay Aquarium	duplicata
+6729352	Emāmzādeh Shāh ‘Abdollāh	ufi 10136892 deleted.
+1889376	Kujŏng	ufi 103233 deleted.
+8621245	Akhsaniyat No‘ar Bet Minkhen	ufi 11817757 deleted.
+8621465	Qolno‘a Esther	ufi 11819187 deleted.
+8624131	Bet Qeren HaYesod	ufi 11836255 deleted.
+8717750	Bet Sefer Tikhon Bet Malka	ufi 11936497 deleted.
+9079009	Bet Dizengoff Muze’on Tel Aviv	ufi 12065079 deleted.
+9079977	Bet H̱olim Assuta	ufi 12068850 deleted.
+9101835	Bet Sefer Miqẕo‘i LeBanot	ufi 12103126 deleted.
+11033760	Yangjia Zhangzi	ufi 13537977 deleted.
+3560799	Jagüey	ufi -1621406 deleted.
+3557202	Hato Arriba	ufi -1625014 deleted.
+3556501	Jagua Uno	ufi -1625717 deleted.
+3551630	La Sacra	ufi -1630602 deleted.
+3546116	Nazareno	ufi -1636133 deleted.
+3536898	Santa Rufina	ufi -1645373 deleted.
+393381	Sha‘īb Shi‘lah	ufi 187064 deleted.
+393519	Al Bushūk	ufi 187717 deleted.
+393543	Khabb Juraydhī	ufi 187745 deleted.
+393700	Sha‘īb aḑ Ḑab‘ah	ufi 188133 deleted.
+393801	Qulbān Muţribah	ufi 188485 deleted.
+393829	Ḩayrā’ Fayḩān	ufi 188581 deleted.
+393934	Fayḑat al Gharb al Janūbī	ufi 188812 deleted.
+393947	Fayḑat al Mu‘ayqilī	ufi 188825 deleted.
+394021	Fayḑat Umm ‘Amārah	ufi 189193 deleted.
+394984	As Sāqiyah	ufi 193799 deleted.
+394996	Al ‘Idwah	ufi 193811 deleted.
+629959	Svorotva	ufi -1941505 deleted.
+395282	Mazāri‘ Sharqāt	ufi 194327 deleted.
+395301	Mazāri‘ aţ Ţawqī	ufi 194349 deleted.
+395330	Mazāri‘ Sahlah	ufi 194381 deleted.
+395344	Zibārat al Batrā’	ufi 194553 deleted.
+395345	Zibārat A‘firīyah	ufi 194554 deleted.
+395424	Nāziyat aţ Ţulū‘	ufi 194637 deleted.
+395480	Jifin	ufi 194697 deleted.
+395510	Ḑil‘ Jayb Ghurāb	ufi 194944 deleted.
+396048	Zibārat ar Ruwaykib	ufi 196674 deleted.
+396086	Ad Damthī	ufi 196719 deleted.
+396792	Jibāl Salmá	ufi 199525 deleted.
+396944	‘Iblat al Badā’i‘	ufi 200494 deleted.
+397063	Ābār az̧ Z̧āhirīyah	ufi 200639 deleted.
+397197	Sha‘īb Abū ‘Ādhir	ufi 201395 deleted.
+397424	‘Ayn aş Şuwayni‘	ufi 201985 deleted.
+397485	Al Ghurābah	ufi 202048 deleted.
+397505	Jabal ‘Ubayd al Qullah	ufi 202070 deleted.
+397659	Ar Rawḑah	ufi 202283 deleted.
+397727	Mazāri‘ ‘Ishayrah	ufi 202579 deleted.
+397793	Sha‘īb Rubayq	ufi 202657 deleted.
+397816	Al ‘Adān	ufi 202685 deleted.
+397873	Rawḑat Muţribah	ufi 202863 deleted.
+397879	Nufūd al Muwāşil	ufi 202870 deleted.
+397934	Nufūd al Malḩā’	ufi 202933 deleted.
+397938	Nufūd ath Thuwayrāt	ufi 202938 deleted.
+397955	Ar Rawḑah	ufi 202956 deleted.
+397999	Zibārat al Batrā’	ufi 203007 deleted.
+398076	Ash Shifallaḩīyah	ufi 203156 deleted.
+398081	Şafrā’ al Mistawī	ufi 203170 deleted.
+398084	Barqān ash Shuqayyiqah	ufi 203173 deleted.
+398610	Makman ‘Udhayfā’	ufi 205093 deleted.
+398669	Shabah Umm ar Rīlān	ufi 205158 deleted.
+398753	Jubū al Jibāt	ufi 205494 deleted.
+398850	Khabb ‘Atīq	ufi 205861 deleted.
+398852	Nāziyat al Muşallá	ufi 205864 deleted.
+398867	Khabb ad Ḑabb	ufi 205886 deleted.
+398941	Rijm Hazzā’	ufi 205974 deleted.
+398976	Qurayyat Umm Nusūq	ufi 206016 deleted.
+399131	Qūr ‘Urufah	ufi 206449 deleted.
+399152	Fayḑat al Jandalī	ufi 206479 deleted.
+399288	Al ‘Adām	ufi 207156 deleted.
+190793	Koinyanga	ufi -2251992 deleted.
+188822	Losai Peak	ufi -2253984 deleted.
+179754	Sulet	ufi -2263096 deleted.
+1757665	Lepu Wei	ufi -2380304 deleted.
+1735675	Gunung Gaharu	ufi -2402487 deleted.
+1735636	Bukit Niat	ufi -2402526 deleted.
+1727744	Baluk River	ufi -2411559 deleted.
+1708552	Kolasi	ufi -2430931 deleted.
+1648009	Sungai Buan	ufi -2674165 deleted.
+383006	Jibāl Ḑuraybīnāt	ufi 27950 deleted.
+3738101	La Resistencia	ufi 28048 deleted.
+383052	Nāziyat ‘Uţayrā’	ufi 28079 deleted.
+383057	Bi’r al Jafr	ufi 28084 deleted.
+383062	Al Ḩafā’ir	ufi 28090 deleted.
+383073	Khabb Muwājih	ufi 28122 deleted.
+383084	Ţi‘s al Barāzī	ufi 28143 deleted.
+383095	Ţu‘ūs al ‘Iqāb	ufi 28186 deleted.
+383100	Ţi‘s Abū Ḩajrah	ufi 28205 deleted.
+383157	Ţi‘s aḑ Ḑulal	ufi 28312 deleted.
+383217	Nāziyat al Waqqādīyah	ufi 28410 deleted.
+383286	Nuwāzī Zibadānāt	ufi 28583 deleted.
+3259315	Rausekkene	ufi 286343 deleted.
+407649	Sha‘īb Umm ‘Amārah	ufi 296948 deleted.
+407651	Sha‘īb ad Dahhān	ufi 296954 deleted.
+407660	Thamā’il Na‘jah	ufi 296980 deleted.
+407661	Sha‘īb Muţţibah	ufi 296982 deleted.
+407672	Sha‘īb al Khumaysīyah	ufi 297314 deleted.
+110545	Abū Jişşah	ufi -3090860 deleted.
+108071	As Sirr	ufi -3093352 deleted.
+107808	Rujm Azraq	ufi -3093617 deleted.
+107700	Balādīn as Sakrān	ufi -3093727 deleted.
+107399	Birkah	ufi -3094029 deleted.
+105923	Jāl al Haylā’	ufi -3095519 deleted.
+103978	Muḩayyiḑah	ufi -3097487 deleted.
+103255	Qaşr Ḩillīyah	ufi -3098215 deleted.
+103244	Qaşr Zārah	ufi -3098226 deleted.
+103075	Quşūr Ḩajnāwī	ufi -3098398 deleted.
+102597	Şafrā’ al Mustawī	ufi -3098878 deleted.
+102595	Şafrā’ ar Ruwaykibah	ufi -3098880 deleted.
+102149	Rujm Sharbathah	ufi -3099332 deleted.
+101634	Jabal Ţābah	ufi -3099852 deleted.
+101608	Khabrat Ţalḩah	ufi -3099878 deleted.
+101332	Rujm Tukhail	ufi -3100156 deleted.
+100483	Al Wubālīyah	ufi -3101013 deleted.
+409464	Ramlat aş Şafāwīyah	ufi 335828 deleted.
+409473	Jaww Baţḩā’	ufi 335905 deleted.
+409612	Jabal al Ḩumr	ufi 336663 deleted.
+409629	Ra’sīyah	ufi 336804 deleted.
+409646	Jabal Mudaydīb al ‘Ayjah	ufi 336835 deleted.
+409649	Jazīrat Thukhayr	ufi 336838 deleted.
+433374	Qoubba	ufi 6064183 deleted.
+2053645	Mutou Yingzi	ufi 6065131 deleted.
+291488	Sabkhat al Mashākhīl	ufi -783580 deleted.
+289326	Al Bayḑā’	ufi -785925 deleted.
+289298	Al Ghubar	ufi -785955 deleted.
+288794	Bārik	ufi -786466 deleted.
+287661	Khabbayn	ufi -787607 deleted.
+280818	Ed Dahr	ufi -797477 deleted.
+273199	‘Arīḑ al Jubb	ufi -805166 deleted.
+268738	Râchaïya	ufi -809669 deleted.
+1979202	Mount Talayan Range	ufi 9164298 deleted.
