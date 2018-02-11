@@ -1,4 +1,5 @@
 <?php
+
 namespace MichaelDrennen\Geonames\Repositories;
 
 use Illuminate\Database\Eloquent\Collection;
@@ -14,36 +15,35 @@ class GeonameRepository {
      * codes that could be assigned to what is considered a school. This array groups them for you.
      * @var array
      */
-    protected $featureCodes = ['schools' => ['SCH',
-                                             'SCHA',
-                                             'SCHL',
-                                             'SCHM',
-                                             'SCHN',
-                                             'SCHT',
-                                             'UNIP']];
+    protected $featureCodes = [ 'schools' => [ 'SCH',
+                                               'SCHA',
+                                               'SCHL',
+                                               'SCHM',
+                                               'SCHN',
+                                               'SCHT',
+                                               'UNIP' ] ];
 
     /**
      * This class does a lot of querying on the geonames table. Most of the time we're going to want the same set of
      * fields. No need to duplicate the code all over.
      * @var array
      */
-    protected $defaultGeonamesFields = ['geonameid',
-                                        'asciiname',
-                                        'country_code',
-                                        'admin1_code',
-                                        'admin2_code',];
+    protected $defaultGeonamesFields = [ 'geonameid',
+                                         'asciiname',
+                                         'country_code',
+                                         'admin1_code',
+                                         'admin2_code', ];
 
     /**
      * @param string $term A few characters of a location's name that would appear in the asciiname column.
      * @return Collection   An Eloquent Collection of every geoname record that starts with the characters in $term.
      */
-    public function getPlacesStartingWithTerm ( $term ) {
+    public function getPlacesStartingWithTerm( $term ) {
         $collection = Geoname::select( $this->defaultGeonamesFields )
                              ->where( 'asciiname', 'LIKE', $term . '%' )
                              ->orderBy( 'country_code' )
                              ->orderBy( 'admin1_code' )
                              ->orderBy( 'admin2_code' )
-
                              ->get();
 
         return $collection;
@@ -54,7 +54,7 @@ class GeonameRepository {
      * @param string $asciinameTerm
      * @return Collection
      */
-    public function getCitiesFromCountryStartingWithTerm ( $countryCode = '', $asciinameTerm = '' ) {
+    public function getCitiesFromCountryStartingWithTerm( $countryCode = '', $asciinameTerm = '' ): Collection {
 
         $collection = Geoname::select( $this->defaultGeonamesFields )
                              ->where( 'feature_class', 'P' )
@@ -68,15 +68,9 @@ class GeonameRepository {
     /**
      * @param string $countryCode
      * @param string $asciinameTerm
-     * @return mixed
+     * @return Collection
      */
-    public function getCitiesNotFromCountryStartingWithTerm ( $countryCode = '', $asciinameTerm = '' ) {
-
-        DB::listen( function ( $sql ) {
-            print_r( $sql->sql );
-            print_r( $sql->bindings );
-        } );
-
+    public function getCitiesNotFromCountryStartingWithTerm( $countryCode = '', $asciinameTerm = '' ): Collection {
         $collection = Geoname::select( $this->defaultGeonamesFields )
                              ->where( 'feature_class', 'P' )
                              ->where( 'country_code', '<>', $countryCode )
@@ -93,9 +87,9 @@ class GeonameRepository {
      * @param string $asciinameTerm
      * @return Collection
      */
-    public function getSchoolsFromCountryStartingWithTerm ( $countryCode = '', $asciinameTerm = '' ) {
+    public function getSchoolsFromCountryStartingWithTerm( $countryCode = '', $asciinameTerm = '' ): Collection {
         $collection = Geoname::select( $this->defaultGeonamesFields )
-                             ->whereIn( 'feature_code', $this->featureCodes['schools'] )
+                             ->whereIn( 'feature_code', $this->featureCodes[ 'schools' ] )
                              ->where( 'country_code', $countryCode )
                              ->where( 'asciiname', 'LIKE', $asciinameTerm . '%' )
                              ->get();
@@ -109,11 +103,11 @@ class GeonameRepository {
      * that use each of those conventions. It would be frustrating for the user to have to try both variations to find
      * the place they are looking for. This method accepts a query object and the term, and adds the appropriate where
      * clauses before returning the query object.
-     * @param $query
+     * @param        $query
      * @param string $term
      * @return mixed
      */
-    protected function addWhereName ( $query, string $term ) {
+    protected function addWhereName( $query, string $term ) {
 
         if ( $this->termHasAbbreviation( $term ) ) {
             $queryStrings = [];
@@ -124,7 +118,6 @@ class GeonameRepository {
         }
 
 
-
         return $query;
     }
 
@@ -133,25 +126,25 @@ class GeonameRepository {
      * @param string $term
      * @return bool
      */
-    protected function termHasAbbreviation ( string $term ): bool {
+    protected function termHasAbbreviation( string $term ): bool {
         $term = strtolower( $term );
         if ( stripos( $term, 'st.' ) ) {
-            return true;
+            return TRUE;
         }
 
         if ( stripos( $term, 'st ' ) ) {
-            return true;
+            return TRUE;
         }
 
         if ( stripos( $term, 'ft.' ) ) {
-            return true;
+            return TRUE;
         }
 
         if ( stripos( $term, 'ft ' ) ) {
-            return true;
+            return TRUE;
         }
 
-        return false;
+        return FALSE;
     }
 
 
