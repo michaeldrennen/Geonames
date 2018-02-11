@@ -149,10 +149,10 @@ class UpdateGeonames extends Command {
                 $geoname->latitude          = $obj->latitude;
                 $geoname->longitude         = $obj->longitude;
                 $geoname->feature_class     = $obj->feature_class;
-                $geoname->feature_code = $obj->feature_code;
-                $geoname->country_code = $obj->country_code;
-                $geoname->cc2          = $obj->cc2;
-                $geoname->admin1_code  = $obj->admin1_code;
+                $geoname->feature_code      = $obj->feature_code;
+                $geoname->country_code      = $obj->country_code;
+                $geoname->cc2               = $obj->cc2;
+                $geoname->admin1_code       = $obj->admin1_code;
                 $geoname->admin2_code       = $obj->admin2_code;
                 $geoname->admin3_code       = $obj->admin3_code;
                 $geoname->admin4_code       = $obj->admin4_code;
@@ -168,7 +168,7 @@ class UpdateGeonames extends Command {
                     continue;
                 }
 
-                $saveResult            = $geoname->save();
+                $saveResult = $geoname->save();
                 $this->info( $i . " had save() called." );
                 var_dump( $saveResult );
 
@@ -206,6 +206,9 @@ class UpdateGeonames extends Command {
         $bar->finish();
 
 
+        /**
+         *
+         */
         $this->processDeletedRows();
 
         $this->endTime = (float)microtime( TRUE );
@@ -378,7 +381,7 @@ class UpdateGeonames extends Command {
 
                 $saveResult = $geonamesDelete->save();
 
-                if ( $saveResult ) {
+                if ( $saveResult ):
 
                     if ( $geonamesDelete->wasRecentlyCreated ) {
                         Log::insert(
@@ -393,14 +396,23 @@ class UpdateGeonames extends Command {
                     }
                     $bar->advance();
 
-                } else {
+
+                    $numRecordsDeleted = $this->deleteGeonameRecord( $geonamesDelete->{GeonamesDelete::geonameid} );
+                    if ( 1 > $numRecordsDeleted ):
+                        $this->info( "Geoname: " . $geonamesDelete->{GeonamesDelete::geonameid} . " was deleted." );
+                    else:
+                        $this->comment( "Geoname: " . $geonamesDelete->{GeonamesDelete::geonameid} . " has already been deleted." );
+                    endif;
+
+
+                else:
                     Log::error(
                         '',
                         "Unable to updateOrCreate GeonamesDelete record: [" . $obj->geonameid . "]",
                         'database' );
                     $bar->advance();
                     continue;
-                }
+                endif;
 
             } catch ( \Exception $e ) {
                 Log::error( '',
@@ -410,8 +422,18 @@ class UpdateGeonames extends Command {
             }
         endforeach;
 
+
         //$this->comment( "Done processing deleted rows." );
 
+    }
+
+    /**
+     * @param int $geonameid
+     * @return int
+     */
+    protected function deleteGeonameRecord( int $geonameid ) {
+        $this->comment( "Deleting geonameid: " . $geonameid );
+        return Geoname::destroy( $geonameid );
     }
 
     protected function filterDeletesLink( array $links ): string {

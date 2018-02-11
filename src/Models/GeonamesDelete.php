@@ -8,6 +8,11 @@ use MichaelDrennen\Geonames\Events\GeonameDeleted;
 class GeonamesDelete extends Model {
     protected $table = 'geonames_deletes';
 
+    const date      = 'date';
+    const geonameid = 'geonameid';
+    const name      = 'name';
+    const reason    = 'reason';
+
     /**
      * @var array An empty array, because I want all of the fields mass assignable.
      */
