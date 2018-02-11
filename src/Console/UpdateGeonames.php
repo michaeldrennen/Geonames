@@ -169,18 +169,14 @@ class UpdateGeonames extends Command {
                 }
 
                 $saveResult = $geoname->save();
-                $this->info( $i . " had save() called." );
-                var_dump( $saveResult );
 
                 if ( $saveResult ) {
 
                     if ( $geoname->wasRecentlyCreated ):
-                        $this->comment( "About to call Log::insert()" );
                         Log::insert( '',
                                      "Geoname record " . $obj->geonameid . " was inserted.",
                                      "create" );
                     else:
-                        $this->comment( "About to call Log::modification()" );
                         Log::modification( '',
                                            "Geoname record [" . $obj->geonameid . "] was updated.",
                                            "update" );
@@ -209,7 +205,7 @@ class UpdateGeonames extends Command {
         /**
          *
          */
-        $this->comment( "Starting to delete rows found in the 'deletes' file." );
+        $this->comment( "\nStarting to delete rows found in the 'deletes' file." );
         $this->processDeletedRows();
         $this->comment( "\nDone deleting rows found in the 'deletes' file." );
 
@@ -290,7 +286,7 @@ class UpdateGeonames extends Command {
         // Grab the remote file.
         $this->linksOnDownloadPage      = $this->getAllLinksOnDownloadPage();
         $this->modificationsTxtFileName = $this->filterModificationsLink( $this->linksOnDownloadPage );
-        $absoluteUrlToModificationsFile = $this->urlForDownloadList . '/' . $this->modificationsTxtFileName;
+        $absoluteUrlToModificationsFile = $this->urlForDownloadList . $this->modificationsTxtFileName;
         $this->curl->get( $absoluteUrlToModificationsFile );
 
 
@@ -359,8 +355,7 @@ class UpdateGeonames extends Command {
         // Download the file from geonames.org and save it on local storage.
         $localFilePath    = $this->saveRemoteDeletesFile();
         $dateFromFileName = $this->getDateFromDeletesFileName( $localFilePath );
-        $this->comment( "This delete file is from: " . $dateFromFileName );
-        $deletionRows = $this->prepareRowsToRecordDeletes( $localFilePath, $dateFromFileName );
+        $deletionRows     = $this->prepareRowsToRecordDeletes( $localFilePath, $dateFromFileName );
         $this->comment( "There were " . count( $deletionRows ) . " that need to be deleted." );
 
         $bar = $this->output->createProgressBar( count( $deletionRows ) );
@@ -455,7 +450,7 @@ class UpdateGeonames extends Command {
         // Grab the remote file.
         $this->linksOnDownloadPage = $this->getAllLinksOnDownloadPage();
         $this->deletesTxtFileName  = $this->filterDeletesLink( $this->linksOnDownloadPage );
-        $absoluteUrlToDeletesFile  = $this->urlForDownloadList . '/' . $this->deletesTxtFileName;
+        $absoluteUrlToDeletesFile  = $this->urlForDownloadList . $this->deletesTxtFileName;
         $this->curl->get( $absoluteUrlToDeletesFile );
 
 
