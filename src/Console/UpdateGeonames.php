@@ -209,7 +209,9 @@ class UpdateGeonames extends Command {
         /**
          *
          */
+        $this->comment( "Starting to delete rows found in the 'deletes' file." );
         $this->processDeletedRows();
+        $this->comment( "\nDone deleting rows found in the 'deletes' file." );
 
         $this->endTime = (float)microtime( TRUE );
         $this->runTime = $this->endTime - $this->startTime;
@@ -357,7 +359,9 @@ class UpdateGeonames extends Command {
         // Download the file from geonames.org and save it on local storage.
         $localFilePath    = $this->saveRemoteDeletesFile();
         $dateFromFileName = $this->getDateFromDeletesFileName( $localFilePath );
-        $deletionRows     = $this->prepareRowsToRecordDeletes( $localFilePath, $dateFromFileName );
+        $this->comment( "This delete file is from: " . $dateFromFileName );
+        $deletionRows = $this->prepareRowsToRecordDeletes( $localFilePath, $dateFromFileName );
+        $this->comment( "There were " . count( $deletionRows ) . " that need to be deleted." );
 
         $bar = $this->output->createProgressBar( count( $deletionRows ) );
 
