@@ -15,14 +15,13 @@
 
 <div class="container">
     @yield('content')
+
+    <hr>
+    <footer>
+        <p>&copy; Michael Drennen {{date('Y')}}</p>
+    </footer>
 </div>
-
-<hr>
-
-<footer>
-    <p>&copy; Michael Drennen {{date('Y')}}</p>
-</footer>
-</div> <!-- /container -->
+<!-- /container -->
 @yield('scripts')
 </body>
 </html>

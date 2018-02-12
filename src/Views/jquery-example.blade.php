@@ -3,23 +3,29 @@
 @section('title', 'JQuery Element Example')
 
 @section('styles')
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
-          integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 @endsection
 
 
 @section('scripts')
 
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
-            integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+
+    <script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
             crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
-            integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
             crossorigin="anonymous"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script>
 
         console.log("foo");
@@ -75,14 +81,32 @@
 @endsection
 
 @section('content')
+    <div class="row">
+        <div class="col">
+            <h1>Autocomplete Example Using JQuery</h1>
 
+            <form method="GET" action="#" accept-charset="UTF-8" id="geonames_form" autocomplete="off">
+                <div class="form-group">
+                    <label for="geonames-autocomplete-ajax">Start typing the name of a place</label>
 
-    <form method="GET" action="#" accept-charset="UTF-8" id="geonames_form" autocomplete="off">
-        <input placeholder="City" id="geonames-autocomplete-ajax" class="" name="place" type="text">
-        <input id="geonameid" name="geonameid" type="hidden" value="">
-        <input class="alert" id="geonames-search-button" type="submit" value="Search">
-    </form>
+                    <input placeholder="City, hospital, ski resort, etc..."
+                           id="geonames-autocomplete-ajax"
+                           class="form-control"
+                           name="place"
+                           type="text"
+                           aria-describedby="geonamesAutocompleteHelp">
+                    <small id="geonamesAutocompleteHelp" class="form-text text-muted">The results you get in this
+                        example depends on how much of the Geonames database you installed.
+                    </small>
+                    <input id="geonameid"
+                           name="geonameid"
+                           type="hidden"
+                           value="">
+                    {{--<input class="alert" id="geonames-search-button" type="submit" value="Search">--}}
+                </div>
+            </form>
 
-
+        </div>
+    </div>
 @endsection
 
