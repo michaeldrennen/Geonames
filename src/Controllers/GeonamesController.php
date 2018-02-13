@@ -2,12 +2,11 @@
 
 namespace MichaelDrennen\Geonames\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Locale;
 use MichaelDrennen\Geonames\Repositories\GeonameRepository;
 
-class GeonamesController extends Controller {
+class GeonamesController {
 
     protected $geoname;
 
