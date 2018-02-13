@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 
-class ConsoleTest extends \PHPUnit\Framework\TestCase {
+class ConsoleTest extends Orchestra\Testbench\TestCase {
 
     use RefreshDatabase;
 
@@ -19,29 +19,28 @@ class ConsoleTest extends \PHPUnit\Framework\TestCase {
      */
     public function setUp() {
         parent::setUp();
+
+        var_dump( $this->dbIsSetUp );
+
         if ( FALSE == $this->dbIsSetUp ) {
+
+            echo "\nAbout to run the migration\n";
             Artisan::call( 'migrate', [
-                '--database' => 'dev',
+                '--database' => 'testing',
+            ] );
+
+            echo "\nAbout to run the geonames:install\n";
+            Artisan::call( 'geonames:install', [
+                '--test' => TRUE,
             ] );
 
             $this->dbIsSetUp = TRUE;
         } else {
-            echo "asdfasdf>>>>>>>>>>>>>>>>>>";
+            echo "\n+++++++++++++++++++++++++++++++++++++++++++++++++++DATABASE IS ALREADY SET UP\n\n";
         }
 
-        //shell_exec('php artisan geonames:install --country=GR');
-
-        //$this->artisan( 'migrate', [ '--database' => 'testbench' ] );
-        //$this->artisan( 'geonames:install', [ '--country' => 'US' ] );
-
     }
 
-    /**
-     * @group test
-     */
-    public function testTest() {
-        $this->assertFalse( FALSE );
-    }
 
     /**
      * @throws \Exception
