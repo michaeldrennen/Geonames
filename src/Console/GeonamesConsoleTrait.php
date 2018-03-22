@@ -274,13 +274,15 @@ trait GeonamesConsoleTrait {
     }
 
     protected function disableKeys( string $table ): bool {
-        $query = 'ALTER TABLE ' . $table . ' DISABLE KEYS;';
+        $prefix = DB::getTablePrefix();
+        $query = 'ALTER TABLE ' . $prefix . $table . ' DISABLE KEYS;';
 
         return DB::connection( $this->connectionName )->getpdo()->exec( $query );
     }
 
     protected function enableKeys( string $table ): bool {
-        $query = 'ALTER TABLE ' . $table . ' ENABLE KEYS;';
+        $prefix = DB::getTablePrefix();
+        $query = 'ALTER TABLE ' . $prefix . $table . ' ENABLE KEYS;';
 
         return DB::connection( $this->connectionName )->getpdo()->exec( $query );
     }

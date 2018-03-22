@@ -71,7 +71,8 @@ class Test extends Command {
         Schema::dropIfExists( self::TABLE_WORKING );
 
 
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        $prefix = DB::getTablePrefix();
+        DB::statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
 
         $this->enableKeys( self::TABLE_WORKING );
@@ -91,7 +92,7 @@ class Test extends Command {
 
 
             $query = "LOAD DATA LOCAL INFILE '" . $filePath . "'
-    INTO TABLE " . self::TABLE_WORKING . "
+    INTO TABLE " . $prefix . self::TABLE_WORKING . "
         (   alternateNameId, 
             geonameid,
             isolanguage, 

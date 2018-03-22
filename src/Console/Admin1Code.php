@@ -156,10 +156,11 @@ class Admin1Code extends Command {
      */
     protected function insertWithLoadDataInfile( $localFilePath ) {
         Schema::dropIfExists( self::TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        $prefix = DB::getTablePrefix();
+        DB::statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
 
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
-    INTO TABLE " . self::TABLE_WORKING . "
+    INTO TABLE " . $prefix . self::TABLE_WORKING . "
           ( geonameid,
             country_code,
             admin1_code,

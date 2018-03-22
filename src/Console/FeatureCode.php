@@ -99,8 +99,9 @@ class FeatureCode extends Command {
 
         // Run each of those files through LOAD DATA INFILE.
         Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
+        $prefix = DB::getTablePrefix();
         DB::connection( $this->connectionName )
-          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+            ->statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
 
         // Now that we have all of the feature code files stored locally, we need to prepare
         // the data to be inserted into our database. Convert each tab delimited row into a php
@@ -213,12 +214,12 @@ class FeatureCode extends Command {
         list( $feature_class, $feature_code ) = explode( '.', $id );
 
         return [ 'language_code' => $language_code,
-                 'feature_class' => $feature_class,
-                 'feature_code'  => $feature_code,
-                 'name'          => $name,
-                 'description'   => $description,
-                 'created_at'    => Carbon::now(),
-                 'updated_at'    => Carbon::now(),
+            'feature_class' => $feature_class,
+            'feature_code'  => $feature_code,
+            'name'          => $name,
+            'description'   => $description,
+            'created_at'    => Carbon::now(),
+            'updated_at'    => Carbon::now(),
         ];
     }
 
@@ -269,7 +270,7 @@ class FeatureCode extends Command {
         foreach ( $validRows as $rowNumber => $row ) {
 
             $insertResult = DB::connection( $this->connectionName )->table( self::TABLE_WORKING )
-                              ->insert( $this->makeRowInsertable( $row ) );
+                ->insert( $this->makeRowInsertable( $row ) );
 
             if ( $insertResult === TRUE ) {
                 $numRowsInserted++;

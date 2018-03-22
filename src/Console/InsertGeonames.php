@@ -313,14 +313,15 @@ class InsertGeonames extends Command {
         Schema::dropIfExists( self::TABLE_WORKING );
 
         $this->line( "Creating the temp table named " . self::TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . '; ' );
+        $prefix = DB::getTablePrefix();
+        DB::statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . '; ' );
 
 
         $this->disableKeys( self::TABLE_WORKING );
 
-
+        $localFilePath = str_replace('\\', '\\\\', $localFilePath);
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
-    INTO TABLE " . self::TABLE_WORKING . "
+    INTO TABLE " . $prefix . self::TABLE_WORKING . "
         (geonameid, 
              name, 
              asciiname, 

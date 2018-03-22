@@ -205,7 +205,8 @@ class AlternateName extends Command {
 
     protected function initTable() {
         Schema::dropIfExists( self::TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        $prefix = DB::getTablePrefix();
+        DB::statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
     }
 
@@ -231,10 +232,11 @@ class AlternateName extends Command {
             throw $exception;
         }
 
+        $prefix = DB::getTablePrefix();
         foreach ( $localFileSplitPaths as $i => $localFileSplitPath ):
             $query = "LOAD DATA LOCAL INFILE '" . $localFileSplitPath . "'
             
-                        INTO TABLE " . self::TABLE_WORKING . "
+                        INTO TABLE " . $prefix . self::TABLE_WORKING . "
                             (   alternateNameId, 
                                 geonameid,
                                 isolanguage, 
@@ -330,9 +332,10 @@ class AlternateName extends Command {
 
         $this->comment( "Running LOAD DATA INFILE." );
 
+        $prefix = DB::getTablePrefix();
         $query = "LOAD DATA LOCAL INFILE '" . $pathToRecreatedFile . "'
             
-                        INTO TABLE " . self::TABLE_WORKING . "
+                        INTO TABLE " . $prefix . self::TABLE_WORKING . "
                             (   alternateNameId, 
                                 geonameid,
                                 isolanguage, 

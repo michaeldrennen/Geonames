@@ -115,12 +115,15 @@ class IsoLanguageCode extends Command {
         $this->line( "Inserting via LOAD DATA INFILE: " . $localFilePath );
 
         Schema::dropIfExists( self::TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        $prefix = DB::getTablePrefix();
+        DB::statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
 
+
         // This file includes a header row. That is why I skip the first line with the IGNORE 1 LINES statement.
+        $localFilePath = str_replace('\\', '\\\\', $localFilePath);
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
-    INTO TABLE " . self::TABLE_WORKING . " IGNORE 1 LINES
+    INTO TABLE " . $prefix . self::TABLE_WORKING . " IGNORE 1 LINES
         (   iso_639_3, 
             iso_639_2,
             iso_639_1, 
