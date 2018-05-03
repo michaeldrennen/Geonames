@@ -109,7 +109,7 @@ class UpdateGeonames extends Command {
      */
     public function handle() {
 
-        DB::enableQueryLog();
+        //DB::enableQueryLog();
         ini_set( 'memory_limit', -1 );
 
         try {

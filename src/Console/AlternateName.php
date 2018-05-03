@@ -386,7 +386,7 @@ class AlternateName extends Command {
      * @throws \Exception
      */
     protected function insertAlternateNamesWithEloquent( $localFilePath ): int {
-        DB::enableQueryLog();
+        //DB::enableQueryLog();
         $numLines = LocalFile::lineCount( $localFilePath );
 
         $this->disableKeys( self::TABLE );
