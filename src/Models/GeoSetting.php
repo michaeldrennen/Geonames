@@ -419,25 +419,26 @@ class GeoSetting extends Model {
 
     /**
      * @param string $fileName
+     * @param string $connection
      *
      * @return string
      * @throws \Exception
      */
-    public static function getAbsoluteLocalStoragePathToFile( string $fileName ): string {
-        return self::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $fileName;
+    public static function getAbsoluteLocalStoragePathToFile( string $fileName, string $connection = NULL ): string {
+        return self::getAbsoluteLocalStoragePath( $connection ) . DIRECTORY_SEPARATOR . $fileName;
     }
 
 
     /**
-     * @param array $fileNames
-     *
+     * @param array       $fileNames
+     * @param string|NULL $connection
      * @return array
      * @throws \Exception
      */
-    public static function getAbsoluteLocalStoragePathToFiles( array $fileNames ): array {
+    public static function getAbsoluteLocalStoragePathToFiles( array $fileNames, string $connection = NULL ): array {
         $absolutePaths = [];
         foreach ( $fileNames as $fileName ) {
-            $absolutePaths[] = self::getAbsoluteLocalStoragePathToFile( $fileName );
+            $absolutePaths[] = self::getAbsoluteLocalStoragePathToFile( $fileName, $connection );
         }
 
         return $absolutePaths;

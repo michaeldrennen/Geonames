@@ -80,7 +80,8 @@ class AlternateName extends Command {
 
         $this->startTimer();
 
-        $this->connectionName = $this->option( 'connection' );
+        //$this->connectionName = $this->option( 'connection' );
+        $this->setDatabaseConnectionName();
 
         if ( $this->option( 'test' ) ):
             $countries = [ 'YU' ];
@@ -133,7 +134,7 @@ class AlternateName extends Command {
 
         foreach ( $absoluteLocalFilePathsOfAlternateNamesZipFiles as $countryCode => $absoluteLocalFilePathOfAlternateNamesZipFile ) {
             try {
-                $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile );
+                $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile, $this->connectionName );
                 $this->comment( "Unzipped " . $absoluteLocalFilePathOfAlternateNamesZipFile );
             } catch ( Exception $e ) {
                 $this->error( $e->getMessage() );
@@ -188,7 +189,7 @@ class AlternateName extends Command {
      * @throws \Exception
      */
     protected function getLocalAbsolutePathToAlternateNamesZipFile(): string {
-        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::REMOTE_FILE_NAME_FOR_ALL;
+        return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . self::REMOTE_FILE_NAME_FOR_ALL;
     }
 
     /**
@@ -199,9 +200,9 @@ class AlternateName extends Command {
      */
     protected function getLocalAbsolutePathToAlternateNamesTextFile( string $countryCode = NULL ): string {
         if ( '*' == $countryCode || is_null( $countryCode ) ):
-            return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL;
+            return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL;
         endif;
-        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . '.txt';
+        return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . '.txt';
     }
 
 

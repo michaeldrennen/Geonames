@@ -169,7 +169,7 @@ trait GeonamesConsoleTrait {
         $curl = new Curl();
 
         $basename      = basename( $link );
-        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $basename;
+        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath( $connectionName ) . DIRECTORY_SEPARATOR . $basename;
 
         // Display a progress bar if we can get the remote file size.
         $fileSize = RemoteFile::getFileSize( $link );
@@ -235,11 +235,11 @@ trait GeonamesConsoleTrait {
      * Unzips the zip file into our geonames storage dir that is set in GeoSettings.
      *
      * @param   string $localFilePath Absolute local path to the zip archive.
-     *
+     * @param string   $connection
      * @throws  Exception
      */
-    public static function unzip( $localFilePath ) {
-        $storage       = GeoSetting::getAbsoluteLocalStoragePath();
+    public static function unzip( $localFilePath, string $connection = NULL ) {
+        $storage       = GeoSetting::getAbsoluteLocalStoragePath( $connection );
         $zip           = new ZipArchive;
         $zipOpenResult = $zip->open( $localFilePath );
         if ( TRUE !== $zipOpenResult ) {
@@ -262,14 +262,15 @@ trait GeonamesConsoleTrait {
      * Pass in an array of absolute local file paths, and this function will extract
      * them to our geonames storage directory.
      *
-     * @param array $absoluteFilePaths
+     * @param array  $absoluteFilePaths
+     * @param string $connection
      *
      * @throws Exception
      */
-    public static function unzipFiles( array $absoluteFilePaths ) {
+    public static function unzipFiles( array $absoluteFilePaths, string $connection = NULL ) {
         try {
             foreach ( $absoluteFilePaths as $absoluteFilePath ) {
-                self::unzip( $absoluteFilePath );
+                self::unzip( $absoluteFilePath, $connection );
             }
         } catch ( Exception $e ) {
             throw $e;

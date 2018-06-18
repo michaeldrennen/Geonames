@@ -78,7 +78,7 @@ class InsertGeonames extends Command {
         $this->startTimer();
         $this->comment( "Running geonames:insert-geonames now." );
 
-        $this->connectionName = $this->option( 'connection' );
+        //$this->connectionName = $this->option( 'connection' );
 
         try {
             $this->setDatabaseConnectionName();
@@ -99,10 +99,11 @@ class InsertGeonames extends Command {
 
         $zipFileNames = $this->getLocalCountryZipFileNames();
 
-        $absolutePathsToZipFiles = GeoSetting::getAbsoluteLocalStoragePathToFiles( $zipFileNames );
+        $absolutePathsToZipFiles = GeoSetting::getAbsoluteLocalStoragePathToFiles( $zipFileNames,
+                                                                                   $this->connectionName );
 
         try {
-            $this->unzipFiles( $absolutePathsToZipFiles );
+            $this->unzipFiles( $absolutePathsToZipFiles, $this->connectionName );
         } catch ( Exception $e ) {
             $this->error( "Unable to unzip at least one of the country zip files." );
             Log::error( '', "We were unable to unzip at least one of the country zip files.", 'local',
@@ -133,7 +134,7 @@ class InsertGeonames extends Command {
      * @throws \Exception
      */
     private function getLocalFiles(): array {
-        $storagePath = GeoSetting::getAbsoluteLocalStoragePath();
+        $storagePath = GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName );
         $fileNames   = scandir( $storagePath );
         array_shift( $fileNames ); // Remove .
         array_shift( $fileNames ); // Remove ..
@@ -226,13 +227,15 @@ class InsertGeonames extends Command {
      * @throws Exception
      */
     protected function combineTxtFiles(): string {
-        $absolutePathToMasterTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->masterTxtFileName );
+        $absolutePathToMasterTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->masterTxtFileName,
+                                                                                      $this->connectionName );
         $textFileNames               = $this->getLocalCountryTxtFileNames();
 
         // If the all countries zip file was downloaded, there is nothing to combine. Just rename the file to master.
         if ( $this->allCountriesInLocalTxtFiles( $textFileNames ) ) {
 
-            $absolutePathToAllCountriesTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->allCountriesTxtFileName );
+            $absolutePathToAllCountriesTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->allCountriesTxtFileName,
+                                                                                                $this->connectionName );
             $renameResult                      = rename( $absolutePathToAllCountriesTxtFile,
                                                          $absolutePathToMasterTxtFile );
             if ( $renameResult === FALSE ) {
@@ -250,7 +253,7 @@ class InsertGeonames extends Command {
         }
 
         foreach ( $textFileNames as $textFile ) {
-            $absolutePathToTextFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $textFile );
+            $absolutePathToTextFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $textFile, $this->connectionName );
 
             $this->line( "File: " . $absolutePathToTextFile );
 

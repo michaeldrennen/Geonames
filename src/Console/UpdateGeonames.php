@@ -310,7 +310,7 @@ class UpdateGeonames extends Command {
 
 
         // Save it locally
-        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $this->modificationsTxtFileName;
+        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . $this->modificationsTxtFileName;
         $bytesWritten  = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === FALSE ) {
             Log::error( $absoluteUrlToModificationsFile,
@@ -480,7 +480,7 @@ class UpdateGeonames extends Command {
 
 
         // Save it locally
-        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $this->deletesTxtFileName;
+        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . $this->deletesTxtFileName;
         $bytesWritten  = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === FALSE ) {
             Log::error( $absoluteUrlToDeletesFile,

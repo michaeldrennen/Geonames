@@ -77,7 +77,7 @@ class NoCountry extends Command {
 
         try {
             $this->line( "Unzipping " . $localZipFile );
-            $this->unzip( $localZipFile );
+            $this->unzip( $localZipFile, $this->connectionName );
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
             Log::error( $localZipFile, $e->getMessage(), 'local', $this->connectionName );
@@ -85,7 +85,7 @@ class NoCountry extends Command {
             return FALSE;
         }
 
-        $localTextFile = $this->getLocalTextFilePath();
+        $localTextFile = $this->getLocalTextFilePath( $this->connectionName );
 
         if ( ! file_exists( $localTextFile ) ) {
             throw new Exception( "The unzipped file could not be found. We were looking for: " . $localTextFile );
@@ -106,11 +106,12 @@ class NoCountry extends Command {
     }
 
     /**
+     * @param string $connection
      * @return string The absolute local path to the unzipped text file.
      * @throws \Exception
      */
-    protected function getLocalTextFilePath(): string {
-        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_TXT_FILE_NAME;
+    protected function getLocalTextFilePath( string $connection = NULL ): string {
+        return GeoSetting::getAbsoluteLocalStoragePath( $connection ) . DIRECTORY_SEPARATOR . self::LOCAL_TXT_FILE_NAME;
     }
 
 

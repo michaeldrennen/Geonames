@@ -91,7 +91,7 @@ class Install extends Command {
 
         $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
         if ( $emptyDirResult === TRUE ):
-            $this->line( "This storage dir has been emptied: " . GeoSetting::getAbsoluteLocalStoragePath() );
+            $this->line( "This storage dir has been emptied: " . GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) );
         endif;
 
         $this->line( "Starting " . $this->signature );
