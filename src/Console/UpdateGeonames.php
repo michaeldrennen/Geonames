@@ -128,7 +128,7 @@ class UpdateGeonames extends Command {
                           [ GeoSetting::DEFAULT_LANGUAGES ],
                           GeoSetting::DEFAULT_STORAGE_SUBDIR,
                           $this->connectionName );
-        $this->storageDir = GeoSetting::getStorage();
+        $this->storageDir = GeoSetting::getStorage( $this->connectionName );
         GeoSetting::setStatus( GeoSetting::STATUS_UPDATING, $this->connectionName );
         $this->startTime = (float)microtime( TRUE );
         $this->line( "Starting " . $this->signature );
