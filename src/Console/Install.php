@@ -72,6 +72,7 @@ class Install extends Command {
         }
 
         try {
+            $this->info( "GeoSetting::install() called." );
             GeoSetting::install(
                 $this->option( 'country' ),
                 $this->option( 'language' ),
@@ -136,13 +137,13 @@ class Install extends Command {
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
             $this->error( $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
-            GeoSetting::setStatus( GeoSetting::STATUS_ERROR );
+            GeoSetting::setStatus( GeoSetting::STATUS_ERROR, $this->connectionName );
 
             return FALSE;
         }
 
-        GeoSetting::setInstalledAt();
-        GeoSetting::setStatus( GeoSetting::STATUS_LIVE );
+        GeoSetting::setInstalledAt( $this->connectionName );
+        GeoSetting::setStatus( GeoSetting::STATUS_LIVE, $this->connectionName );
         $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
         if ( $emptyDirResult === TRUE ):
             $this->line( "Our storage directory has been emptied." );
@@ -153,6 +154,5 @@ class Install extends Command {
 
         $this->call( 'geonames:status' );
     }
-
 
 }

@@ -124,7 +124,10 @@ class UpdateGeonames extends Command {
             return FALSE;
         }
 
-        GeoSetting::init();
+        GeoSetting::init( [ GeoSetting::DEFAULT_COUNTRIES_TO_BE_ADDED ],
+                          [ GeoSetting::DEFAULT_LANGUAGES ],
+                          GeoSetting::DEFAULT_STORAGE_SUBDIR,
+                          $this->connectionName );
         $this->storageDir = GeoSetting::getStorage();
         GeoSetting::setStatus( GeoSetting::STATUS_UPDATING );
         $this->startTime = (float)microtime( TRUE );
