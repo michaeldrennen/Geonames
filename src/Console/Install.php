@@ -72,7 +72,7 @@ class Install extends Command {
         }
 
         try {
-            $this->info( "GeoSetting::install() called." );
+            $this->info( "GeoSetting::install() called on connection: " . $this->connectionName );
             GeoSetting::install(
                 $this->option( 'country' ),
                 $this->option( 'language' ),
@@ -92,7 +92,7 @@ class Install extends Command {
 
         GeoSetting::setStatus( GeoSetting::STATUS_INSTALLING, $this->connectionName );
 
-        $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
+        $emptyDirResult = GeoSetting::emptyTheStorageDirectory( $this->connectionName );
         if ( $emptyDirResult === TRUE ):
             $this->line( "This storage dir has been emptied: " . GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) );
         endif;

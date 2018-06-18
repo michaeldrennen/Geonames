@@ -531,16 +531,17 @@ class GeoSetting extends Model {
     }
 
     /**
+     * @param string|NULL $connection
      * @return bool
-     * @throws Exception
+     * @throws \Exception
      */
     public
-    static function emptyTheStorageDirectory() {
-        File::cleanDirectory( self::getAbsoluteLocalStoragePath() );
-        $allFiles = File::files( self::getAbsoluteLocalStoragePath() );
+    static function emptyTheStorageDirectory( string $connection = NULL ) {
+        File::cleanDirectory( self::getAbsoluteLocalStoragePath( $connection ) );
+        $allFiles = File::files( self::getAbsoluteLocalStoragePath( $connection ) );
         $numFiles = count( $allFiles );
         if ( $numFiles != 0 ) {
-            throw new Exception( "We were unable to delete all of the files in " . self::getAbsoluteLocalStoragePath() . " Check the permissions." );
+            throw new Exception( "We were unable to delete all of the files in " . self::getAbsoluteLocalStoragePath( $connection ) . " Check the permissions." );
         }
 
         return TRUE;
