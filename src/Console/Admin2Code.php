@@ -97,7 +97,7 @@ class Admin2Code extends Command {
 
         $remoteUrl = GeoSetting::getDownloadUrlForFile( self::REMOTE_FILE_NAME );
 
-        DB::table( self::TABLE )->truncate();
+        DB::connection( $this->connectionName )->table( self::TABLE )->truncate();
 
         try {
             $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl, $this->connectionName );
@@ -153,12 +153,12 @@ class Admin2Code extends Command {
             $asciiName             = $fields[ 2 ] ?? NULL;                    // Routt County
             $geonameId             = $fields[ 3 ] ?? NULL;                    // 5581553
 
-            Admin2CodeModel::create( [ 'geonameid'    => $geonameId,
-                                       'country_code' => $countryCode,
-                                       'admin1_code'  => $admin1Code,
-                                       'admin2_code'  => $admin2Code,
-                                       'name'         => $name,
-                                       'asciiname'    => $asciiName,
+            Admin2CodeModel::on( $this->connectionName )->create( [ 'geonameid'    => $geonameId,
+                                                                    'country_code' => $countryCode,
+                                                                    'admin1_code'  => $admin1Code,
+                                                                    'admin2_code'  => $admin2Code,
+                                                                    'name'         => $name,
+                                                                    'asciiname'    => $asciiName,
                                      ] );
 
             $geonamesBar->advance();

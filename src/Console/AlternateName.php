@@ -207,15 +207,16 @@ class AlternateName extends Command {
 
 
     protected function initTable() {
-        Schema::dropIfExists( self::TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
+        DB::connection( $this->connectionName )
+          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
     }
 
     protected function finalizeTable() {
         $this->enableKeys( self::TABLE_WORKING );
-        Schema::dropIfExists( self::TABLE );
-        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
+        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
     }
 
     /**
@@ -435,7 +436,8 @@ class AlternateName extends Command {
                 $isColloquial    = empty( $fields[ 6 ] ) ? FALSE : $fields[ 6 ];
                 $isHistoric      = empty( $fields[ 7 ] ) ? FALSE : $fields[ 7 ];
 
-                $alternateName = \MichaelDrennen\Geonames\Models\AlternateNamesWorking::firstOrCreate(
+                $alternateName = \MichaelDrennen\Geonames\Models\AlternateNamesWorking::on( $this->connectionName )
+                                                                                      ->firstOrCreate(
                     [ 'alternateNameId' => $alternateNameId ],
                     [
                         'geonameid'       => $geonameid,
@@ -531,7 +533,7 @@ class AlternateName extends Command {
                 $totalRowsInserted++;
             }
             $this->comment( "Inserting $numRowsInSplitFile rows from split file..." );
-            AlternateNamesWorking::insert( $splitRowsToInsert );
+            AlternateNamesWorking::on( $this->connectionName )->insert( $splitRowsToInsert );
 
             $geonamesBar->finish();
         endforeach;

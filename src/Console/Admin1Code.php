@@ -95,7 +95,7 @@ class Admin1Code extends Command {
 
         $remoteUrl = GeoSetting::getDownloadUrlForFile( self::REMOTE_FILE_NAME );
 
-        DB::table( self::TABLE )->truncate();
+        DB::connection( $this->connectionName )->table( self::TABLE )->truncate();
 
         try {
             $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl, $this->connectionName );
@@ -141,11 +141,11 @@ class Admin1Code extends Command {
             $asciiName             = $fields[ 2 ];                    // Colorado
             $geonameId             = $fields[ 3 ];                    // 5417618
 
-            Admin1CodeModel::create( [ 'geonameid'    => $geonameId,
-                                       'country_code' => $countryCode,
-                                       'admin1_code'  => $admin1Code,
-                                       'name'         => $name,
-                                       'asciiname'    => $asciiName ] );
+            Admin1CodeModel::on( $this->connectionName )->create( [ 'geonameid'    => $geonameId,
+                                                                    'country_code' => $countryCode,
+                                                                    'admin1_code'  => $admin1Code,
+                                                                    'name'         => $name,
+                                                                    'asciiname'    => $asciiName ] );
 
             $geonamesBar->advance();
         }
@@ -158,8 +158,9 @@ class Admin1Code extends Command {
      * @throws \Exception
      */
     protected function insertWithLoadDataInfile( $localFilePath ) {
-        Schema::dropIfExists( self::TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
+        DB::connection( $this->connectionName )
+          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
 
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
     INTO TABLE " . self::TABLE_WORKING . "
@@ -181,7 +182,7 @@ class Admin1Code extends Command {
                                                                                                ->errorInfo(), TRUE ) );
         }
 
-        Schema::dropIfExists( self::TABLE );
-        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
+        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
     }
 }
