@@ -80,7 +80,7 @@ class Install extends Command {
             );
 
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to install the GeoSetting record.", NULL, $this->connectionName );
+            Log::error( NULL, "Unable to install the GeoSetting record.", '', $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }

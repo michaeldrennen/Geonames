@@ -85,7 +85,10 @@ class Admin1Code extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record.", NULL, $this->connectionName );
+            Log::error( NULL,
+                        "Unable to initialize the GeoSetting record.",
+                        '',
+                        $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
