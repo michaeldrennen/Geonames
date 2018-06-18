@@ -114,8 +114,9 @@ class IsoLanguageCode extends Command {
         ini_set( 'memory_limit', -1 );
         $this->line( "Inserting via LOAD DATA INFILE: " . $localFilePath );
 
-        Schema::dropIfExists( self::TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
+        DB::connection( $this->connectionName )
+          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
 
         // This file includes a header row. That is why I skip the first line with the IGNORE 1 LINES statement.
@@ -139,7 +140,7 @@ class IsoLanguageCode extends Command {
         }
 
         $this->enableKeys( self::TABLE_WORKING );
-        Schema::dropIfExists( self::TABLE );
-        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
+        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
     }
 }

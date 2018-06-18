@@ -391,7 +391,7 @@ class GeoSetting extends Model {
      */
     public
     static function getStorage( string $connection = NULL ): string {
-        dump( $connection );
+
         $settingRecord = self::on( $connection )->first();
         if ( is_null( $settingRecord ) ) {
             throw new Exception( "The setting record does not exist in the database yet. You need to run geonames:install first." );
