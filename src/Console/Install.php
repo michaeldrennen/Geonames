@@ -90,7 +90,7 @@ class Install extends Command {
         }
 
 
-        GeoSetting::setStatus( GeoSetting::STATUS_INSTALLING );
+        GeoSetting::setStatus( GeoSetting::STATUS_INSTALLING, $this->connectionName );
 
         $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
         if ( $emptyDirResult === TRUE ):
