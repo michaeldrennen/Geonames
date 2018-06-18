@@ -147,7 +147,7 @@ class Install extends Command {
 
         GeoSetting::setInstalledAt( $this->connectionName );
         GeoSetting::setStatus( GeoSetting::STATUS_LIVE, $this->connectionName );
-        $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
+        $emptyDirResult = GeoSetting::emptyTheStorageDirectory( $this->connectionName );
         if ( $emptyDirResult === TRUE ):
             $this->line( "Our storage directory has been emptied." );
         else:

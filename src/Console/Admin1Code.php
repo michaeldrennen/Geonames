@@ -95,8 +95,6 @@ class Admin1Code extends Command {
 
         $remoteUrl = GeoSetting::getDownloadUrlForFile( self::REMOTE_FILE_NAME );
 
-        dump( $this->connectionName );
-
         DB::connection( $this->connectionName )->table( self::TABLE )->truncate();
 
         try {
