@@ -5,6 +5,7 @@ namespace MichaelDrennen\Geonames\Console;
 use Exception;
 use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\Models\GeoSetting;
+use MichaelDrennen\Geonames\Models\Log;
 
 class Install extends Command {
 

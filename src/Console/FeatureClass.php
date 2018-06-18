@@ -5,6 +5,7 @@ namespace MichaelDrennen\Geonames\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use MichaelDrennen\Geonames\Models\GeoSetting;
+use MichaelDrennen\Geonames\Models\Log;
 
 
 class FeatureClass extends Command {
