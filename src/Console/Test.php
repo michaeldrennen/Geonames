@@ -46,10 +46,10 @@ class Test extends Command {
 
 
     public function handle() {
-        Log::error( 'a', 'b', 'c' );
-        Log::info( 'd', 'e', 'f' );
-        Log::modification( 'g', 'h', 'i' );
-        Log::insert( 'j', 'k', 'l' );
+        Log::error( 'a', 'b', 'c', $this->connectionName );
+        Log::info( 'd', 'e', 'f', $this->connectionName );
+        Log::modification( 'g', 'h', 'i', $this->connectionName );
+        Log::insert( 'j', 'k', 'l', $this->connectionName );
 
 
     }

@@ -88,7 +88,7 @@ class Admin2Code extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            Log::error( NULL, "Unable to initialize the GeoSetting record.", NULL, $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
@@ -98,10 +98,10 @@ class Admin2Code extends Command {
         DB::table( self::TABLE )->truncate();
 
         try {
-            $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl );
+            $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl, $this->connectionName );
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( $remoteUrl, $e->getMessage(), 'remote' );
+            Log::error( $remoteUrl, $e->getMessage(), 'remote', $this->connectionName );
 
             return FALSE;
         }

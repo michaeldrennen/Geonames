@@ -83,7 +83,7 @@ class FeatureCode extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( '', "Unable to initialize the GeoSetting record.", 'init' );
+            Log::error( '', "Unable to initialize the GeoSetting record.", 'init', $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
@@ -95,7 +95,8 @@ class FeatureCode extends Command {
         );
 
         // Download each of the files that we found.
-        $localPathsToFeatureCodeFiles = self::downloadFiles( $this, $featureCodeFileDownloadLinks );
+        $localPathsToFeatureCodeFiles = self::downloadFiles( $this, $featureCodeFileDownloadLinks,
+                                                             $this->connectionName );
 
         // Run each of those files through LOAD DATA INFILE.
         Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
@@ -117,7 +118,8 @@ class FeatureCode extends Command {
             Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
             $this->info( self::TABLE . " table was truncated and refilled in " . $this->getRunTime() . " seconds." );
         } else {
-            Log::error( '', "Failed to insert all of the " . self::TABLE . " rows.", 'database' );
+            Log::error( '', "Failed to insert all of the " . self::TABLE . " rows.", 'database',
+                        $this->connectionName );
         }
         $this->stopTimer();
     }

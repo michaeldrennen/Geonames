@@ -32,13 +32,23 @@ class Log extends Model {
 
 
     /**
-     * @param string $url     The URL (if relevant) that was the source of this error.
-     * @param string $message A verbose message that we want to save in the log table.
-     * @param string $tag     A short string that we can use to query/filter types of messages.
+     * @param string $url        The URL (if relevant) that was the source of this error.
+     * @param string $message    A verbose message that we want to save in the log table.
+     * @param string $tag        A short string that we can use to query/filter types of messages.
+     * @param string $connection Passed in by the commands. Necessary if you are installing on a specific db connection.
      *
      * @return bool
      */
-    public static function error( $url = '', $message = '', $tag = '' ) {
+    public static function error( $url = '', $message = '', $tag = '', $connection = NULL ) {
+
+        if ( $connection ):
+            return Log::connection( $connection )->create( [
+                                                               Log::url     => $url,
+                                                               Log::message => $message,
+                                                               Log::tag     => $tag,
+                                                               Log::type    => Log::ERROR,
+                                                           ] );
+        endif;
 
         return Log::create( [
                                 Log::url     => $url,
@@ -51,12 +61,23 @@ class Log extends Model {
     }
 
     /**
-     * @param string $url
-     * @param string $message
-     * @param string $tag
+     * @param string $url        The URL (if relevant) that was the source of this error.
+     * @param string $message    A verbose message that we want to save in the log table.
+     * @param string $tag        A short string that we can use to query/filter types of messages.
+     * @param string $connection Passed in by the commands. Necessary if you are installing on a specific db connection.
      * @return bool
      */
-    public static function modification( $url = '', $message = '', $tag = '' ) {
+    public static function modification( $url = '', $message = '', $tag = '', $connection = NULL ) {
+        if ( $connection ):
+            return Log::connection( $connection )->create( [
+                                                               Log::url     => $url,
+                                                               Log::message => $message,
+                                                               Log::tag     => $tag,
+                                                               Log::type    => Log::MODIFICATION,
+                                                           ] );
+        endif;
+
+
         return Log::create( [
                                 Log::url     => $url,
                                 Log::message => $message,
@@ -66,12 +87,22 @@ class Log extends Model {
     }
 
     /**
-     * @param string $url
-     * @param string $message
-     * @param string $tag
+     * @param string $url        The URL (if relevant) that was the source of this error.
+     * @param string $message    A verbose message that we want to save in the log table.
+     * @param string $tag        A short string that we can use to query/filter types of messages.
+     * @param string $connection Passed in by the commands. Necessary if you are installing on a specific db connection.
      * @return bool
      */
-    public static function insert( $url = '', $message = '', $tag = '' ) {
+    public static function insert( $url = '', $message = '', $tag = '', $connection = NULL ) {
+        if ( $connection ):
+            return Log::connection( $connection )->create( [
+                                                               Log::url     => $url,
+                                                               Log::message => $message,
+                                                               Log::tag     => $tag,
+                                                               Log::type    => Log::INSERT,
+                                                           ] );
+        endif;
+
         return Log::create( [
                                 Log::url     => $url,
                                 Log::message => $message,
@@ -82,12 +113,21 @@ class Log extends Model {
 
 
     /**
-     * @param string $url
-     * @param string $message
-     * @param string $tag
+     * @param string $url        The URL (if relevant) that was the source of this error.
+     * @param string $message    A verbose message that we want to save in the log table.
+     * @param string $tag        A short string that we can use to query/filter types of messages.
+     * @param string $connection Passed in by the commands. Necessary if you are installing on a specific db connection.
      * @return mixed
      */
-    public static function info( $url = '', $message = '', $tag = '' ) {
+    public static function info( $url = '', $message = '', $tag = '', $connection = NULL ) {
+        if ( $connection ):
+            return Log::connection( $connection )->create( [
+                                                               Log::url     => $url,
+                                                               Log::message => $message,
+                                                               Log::tag     => $tag,
+                                                               Log::type    => Log::INFO,
+                                                           ] );
+        endif;
         return Log::create( [
                                 Log::url     => $url,
                                 Log::message => $message,

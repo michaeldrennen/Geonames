@@ -107,7 +107,7 @@ class AlternateName extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            Log::error( NULL, "Unable to initialize the GeoSetting record.", NULL, $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
@@ -120,10 +120,11 @@ class AlternateName extends Command {
         foreach ( $urlsToAlternateNamesZipFiles as $countryCode => $urlsToAlternateNamesZipFile ) {
             try {
                 $absoluteLocalFilePathsOfAlternateNamesZipFiles[ $countryCode ] = $this->downloadFile( $this,
-                                                                                                       $urlsToAlternateNamesZipFile );
+                                                                                                       $urlsToAlternateNamesZipFile,
+                                                                                                       $this->connectionName );
             } catch ( Exception $e ) {
                 $this->error( $e->getMessage() );
-                Log::error( $urlsToAlternateNamesZipFiles, $e->getMessage(), 'remote' );
+                Log::error( $urlsToAlternateNamesZipFiles, $e->getMessage(), 'remote', $this->connectionName );
 
                 return FALSE;
             }
@@ -136,7 +137,8 @@ class AlternateName extends Command {
                 $this->comment( "Unzipped " . $absoluteLocalFilePathOfAlternateNamesZipFile );
             } catch ( Exception $e ) {
                 $this->error( $e->getMessage() );
-                Log::error( $absoluteLocalFilePathOfAlternateNamesZipFile, $e->getMessage(), 'local' );
+                Log::error( $absoluteLocalFilePathOfAlternateNamesZipFile, $e->getMessage(), 'local',
+                            $this->connectionName );
 
                 return FALSE;
             }
@@ -267,7 +269,7 @@ class AlternateName extends Command {
 
 
             if ( FALSE === $rowsInserted ) {
-                Log::error( '', "Unable to load data infile for alternate names.", 'database' );
+                Log::error( '', "Unable to load data infile for alternate names.", 'database', $this->connectionName );
                 throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
                                                                                                     ->getpdo()
                                                                                                     ->errorInfo(),
@@ -365,7 +367,7 @@ class AlternateName extends Command {
 
 
         if ( FALSE === $rowsInserted ) {
-            Log::error( '', "Unable to load data infile for alternate names.", 'database' );
+            Log::error( '', "Unable to load data infile for alternate names.", 'database', $this->connectionName );
             throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
                                                                                                 ->getpdo()
                                                                                                 ->errorInfo(), TRUE ) );

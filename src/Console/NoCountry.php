@@ -64,7 +64,7 @@ class NoCountry extends Command {
             $localZipFile = $this->downloadFile( $this, $downloadLink );
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( $downloadLink, $e->getMessage(), 'remote' );
+            Log::error( $downloadLink, $e->getMessage(), 'remote', $this->connectionName );
 
             return false;
         }
@@ -75,7 +75,7 @@ class NoCountry extends Command {
             $this->unzip( $localZipFile );
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( $localZipFile, $e->getMessage(), 'local' );
+            Log::error( $localZipFile, $e->getMessage(), 'local', $this->connectionName );
 
             return false;
         }
@@ -147,7 +147,7 @@ SET created_at=NOW(),updated_at=null";
 
         $rowsInserted = DB::connection($this->connectionName)->getpdo()->exec($query);
         if ( $rowsInserted === false ) {
-            Log::error( '', "Unable to load data infile for no-country.", 'database' );
+            Log::error( '', "Unable to load data infile for no-country.", 'database', $this->connectionName );
             throw new Exception("Unable to execute the load data infile query. " . print_r(DB::connection($this->connectionName)
                                                                                              ->getpdo()->errorInfo(),
                                                                                            TRUE));

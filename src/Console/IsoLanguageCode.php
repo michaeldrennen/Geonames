@@ -86,14 +86,14 @@ class IsoLanguageCode extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            Log::error( NULL, "Unable to initialize the GeoSetting record.", NULL, $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
 
         $remotePath = self::$url . self::LANGUAGE_CODES_FILE_NAME;
 
-        $absoluteLocalFilePathOfIsoLanguageCodesFile = self::downloadFile( $this, $remotePath );
+        $absoluteLocalFilePathOfIsoLanguageCodesFile = self::downloadFile( $this, $remotePath, $this->connectionName );
 
         if ( ! file_exists( $absoluteLocalFilePathOfIsoLanguageCodesFile ) ) {
             throw new Exception( "We were unable to download the file at: " . $absoluteLocalFilePathOfIsoLanguageCodesFile );
@@ -131,7 +131,8 @@ class IsoLanguageCode extends Command {
 
         $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
         if ( $rowsInserted === FALSE ) {
-            Log::error( '', "Unable to load data infile for iso language names.", 'database' );
+            Log::error( '', "Unable to load data infile for iso language names.",
+                        'database', $this->connectionName );
             throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
                                                                                                ->getpdo()
                                                                                                ->errorInfo(), TRUE ) );

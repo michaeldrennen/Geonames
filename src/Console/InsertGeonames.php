@@ -105,7 +105,8 @@ class InsertGeonames extends Command {
             $this->unzipFiles( $absolutePathsToZipFiles );
         } catch ( Exception $e ) {
             $this->error( "Unable to unzip at least one of the country zip files." );
-            Log::error( '', "We were unable to unzip at least one of the country zip files.", 'local' );
+            Log::error( '', "We were unable to unzip at least one of the country zip files.", 'local',
+                        $this->connectionName );
             throw $e;
         }
 
@@ -117,7 +118,7 @@ class InsertGeonames extends Command {
             $this->insert( $absolutePathToMasterTxtFile );
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( '', $e->getMessage(), 'database' );
+            Log::error( '', $e->getMessage(), 'database', $this->connectionName );
         }
 
         $this->stopTimer();

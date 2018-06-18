@@ -85,7 +85,7 @@ class Admin1Code extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            Log::error( NULL, "Unable to initialize the GeoSetting record.", NULL, $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
@@ -95,10 +95,10 @@ class Admin1Code extends Command {
         DB::table( self::TABLE )->truncate();
 
         try {
-            $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl );
+            $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl, $this->connectionName );
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( $remoteUrl, $e->getMessage(), 'remote' );
+            Log::error( $remoteUrl, $e->getMessage(), 'remote', $this->connectionName );
 
             return FALSE;
         }
@@ -172,7 +172,7 @@ class Admin1Code extends Command {
         $this->line( "Inserting via LOAD DATA INFILE: " . $localFilePath );
         $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
         if ( $rowsInserted === FALSE ) {
-            Log::error( '', "Unable to load data infile for " . self::TABLE, 'database' );
+            Log::error( '', "Unable to load data infile for " . self::TABLE, 'database', $this->connectionName );
             throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
                                                                                                ->getpdo()
                                                                                                ->errorInfo(), TRUE ) );

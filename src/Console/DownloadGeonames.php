@@ -58,17 +58,17 @@ class DownloadGeonames extends Command {
 
         } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( '', $e->getMessage(), 'database' );
+            Log::error( '', $e->getMessage(), 'database', $this->connectionName );
             return FALSE;
         }
 
         $remoteFilePaths = $this->getRemoteFilePathsToDownloadForGeonamesTable( $countries );
 
         try {
-            $this->downloadFiles( $this, $remoteFilePaths );
+            $this->downloadFiles( $this, $remoteFilePaths, $this->connectionName );
         } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( '', $e->getMessage(), 'remote' );
+            Log::error( '', $e->getMessage(), 'remote', $this->connectionName );
 
             return FALSE;
         }
