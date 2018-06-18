@@ -42,7 +42,7 @@ class Log extends Model {
     public static function error( $url = '', $message = '', $tag = '', $connection = NULL ) {
 
         if ( $connection ):
-            return Log::connection( $connection )->create( [
+            return Log::on( $connection )->create( [
                                                                Log::url     => $url,
                                                                Log::message => $message,
                                                                Log::tag     => $tag,
@@ -69,7 +69,7 @@ class Log extends Model {
      */
     public static function modification( $url = '', $message = '', $tag = '', $connection = NULL ) {
         if ( $connection ):
-            return Log::connection( $connection )->create( [
+            return Log::on( $connection )->create( [
                                                                Log::url     => $url,
                                                                Log::message => $message,
                                                                Log::tag     => $tag,
@@ -95,7 +95,7 @@ class Log extends Model {
      */
     public static function insert( $url = '', $message = '', $tag = '', $connection = NULL ) {
         if ( $connection ):
-            return Log::connection( $connection )->create( [
+            return Log::on( $connection )->create( [
                                                                Log::url     => $url,
                                                                Log::message => $message,
                                                                Log::tag     => $tag,
@@ -121,7 +121,7 @@ class Log extends Model {
      */
     public static function info( $url = '', $message = '', $tag = '', $connection = NULL ) {
         if ( $connection ):
-            return Log::connection( $connection )->create( [
+            return Log::on( $connection )->create( [
                                                                Log::url     => $url,
                                                                Log::message => $message,
                                                                Log::tag     => $tag,
