@@ -73,12 +73,23 @@ class Install extends Command {
 
         try {
             $this->info( "GeoSetting::install() called on connection: " . $this->connectionName );
-            GeoSetting::install(
-                $this->option( 'country' ),
-                $this->option( 'language' ),
-                $this->option( 'storage' ),
-                $this->connectionName
-            );
+
+            if ( $this->option( 'test' ) ) {
+                GeoSetting::install(
+                    [ 'YU' ],
+                    [ 'en' ],
+                    $this->option( 'storage' ),
+                    $this->connectionName
+                );
+            } else {
+                GeoSetting::install(
+                    $this->option( 'country' ),
+                    $this->option( 'language' ),
+                    $this->option( 'storage' ),
+                    $this->connectionName
+                );
+            }
+
 
         } catch ( \Exception $exception ) {
             Log::error( NULL,
