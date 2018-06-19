@@ -78,8 +78,6 @@ class InsertGeonames extends Command {
         $this->startTimer();
         $this->comment( "Running geonames:insert-geonames now." );
 
-        //$this->connectionName = $this->option( 'connection' );
-
         try {
             $this->setDatabaseConnectionName();
             $this->info( "The database connection name was set to: " . $this->connectionName );
@@ -362,12 +360,12 @@ SET created_at=NOW(),updated_at=null";
         $this->info( "Inserted text file into " . self::TABLE_WORKING );
 
         $this->line( "Dropping the active " . self::TABLE . " table." );
-        Schema::dropIfExists( self::TABLE );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
 
 
-        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
         $this->info( "Renamed " . self::TABLE_WORKING . " to " . self::TABLE );
-        GeoSetting::setCountriesFromCountriesToBeAdded();
+        GeoSetting::setCountriesFromCountriesToBeAdded( $this->connectionName );
     }
 
 
@@ -386,6 +384,4 @@ SET created_at=NOW(),updated_at=null";
 
         return FALSE;
     }
-
-
 }

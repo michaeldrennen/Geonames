@@ -40,6 +40,7 @@ class Geoname extends Command {
 
 
     public function handle() {
+        $this->setDatabaseConnectionName();
 
         if ( $this->option( 'test' ) ):
             $this->comment( "Running the geonames:geoname artisan command in test mode." );
