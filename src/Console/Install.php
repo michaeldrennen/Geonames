@@ -155,7 +155,8 @@ class Install extends Command {
         endif;
         $this->line( "Finished " . $this->signature );
 
-        $this->call( 'geonames:status' );
+        $this->call( 'geonames:status',
+                     [ '--connection' => $this->option( 'connection' ) ] );
     }
 
 }
