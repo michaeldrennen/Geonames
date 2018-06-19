@@ -12,7 +12,8 @@ class Status extends Command {
     /**
      * @var string The name and signature of the console command.
      */
-    protected $signature = 'geonames:status';
+    protected $signature = 'geonames:status
+        {--connection= : If you want to specify the name of the database connection you want used.}';
 
     /**
      * @var string The console command description.
@@ -32,8 +33,10 @@ class Status extends Command {
      * Execute the console command.
      */
     public function handle() {
+        $this->setDatabaseConnectionName();
         $this->line("Status of this Geonames Installation");
-        $settings = GeoSetting::first();
+        $settings = GeoSetting::on( $this->connectionName )
+                              ->first();
 
         $rows = [];
 
