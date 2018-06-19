@@ -74,21 +74,21 @@ class Install extends Command {
         try {
             $this->info( "GeoSetting::install() called on connection: " . $this->connectionName );
 
-            if ( $this->option( 'test' ) ) {
+            if ( $this->option( 'test' ) ):
                 GeoSetting::install(
                     [ 'YU' ],
                     [ 'en' ],
                     $this->option( 'storage' ),
                     $this->connectionName
                 );
-            } else {
+            else:
                 GeoSetting::install(
                     $this->option( 'country' ),
                     $this->option( 'language' ),
                     $this->option( 'storage' ),
                     $this->connectionName
                 );
-            }
+            endif;
 
 
         } catch ( \Exception $exception ) {
@@ -127,6 +127,9 @@ class Install extends Command {
                                '--connection' => $this->option( 'connection' ) ] );
                 $this->call( 'geonames:alternate-name',
                              [ '--country'    => [ 'YU' ],
+                               '--connection' => $this->option( 'connection' ) ] );
+                $this->call( 'geonames:geoname',
+                             [ '--test',
                                '--connection' => $this->option( 'connection' ) ] );
             else:
                 $this->call( 'geonames:feature-code',
