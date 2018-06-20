@@ -126,8 +126,7 @@ class Install extends Command {
                              [ '--test'       => TRUE,
                                '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:feature-class',
-                             [ '--test'       => TRUE,
-                               '--connection' => $this->connectionName ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:alternate-name',
                              [ '--country'    => [ 'YU' ],
                                '--connection' => $this->connectionName ] );
