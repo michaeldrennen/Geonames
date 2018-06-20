@@ -48,7 +48,8 @@ class Geoname extends Command {
         if ( $this->option( 'test' ) ):
             $this->comment( "Running the geonames:geoname artisan command in test mode." );
             $this->call( 'geonames:download-geonames',
-                         [ '--test' => TRUE ] );
+                         [ '--test'       => TRUE,
+                           '--connection' => $this->connectionName ] );
             $this->call( 'geonames:insert-geonames',
                          [ '--test'       => TRUE,
                            '--connection' => $this->connectionName ] );
