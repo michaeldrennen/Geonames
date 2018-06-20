@@ -312,10 +312,11 @@ class InsertGeonames extends Command {
         }
 
         $this->line( "Dropping the temp table named " . self::TABLE_WORKING . " (if it exists)." );
-        Schema::dropIfExists( self::TABLE_WORKING );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
 
         $this->line( "Creating the temp table named " . self::TABLE_WORKING );
-        DB::statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . '; ' );
+        DB::connection( $this->connectionName )
+          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . '; ' );
 
 
         $this->disableKeys( self::TABLE_WORKING );
