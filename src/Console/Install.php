@@ -113,7 +113,7 @@ class Install extends Command {
         try {
             if ( $this->option( 'test' ) ):
                 $this->call( 'geonames:geoname',
-                             [ '--test',
+                             [ '--test'       => TRUE,
                                '--connection' => $this->option( 'connection' ) ] );
                 $this->call( 'geonames:feature-code',
                              [ '--language'   => [ 'en' ],
@@ -123,16 +123,16 @@ class Install extends Command {
                 $this->call( 'geonames:admin-1-code',
                              [ '--connection' => $this->option( 'connection' ) ] );
                 $this->call( 'geonames:admin-2-code',
-                             [ '--test',
+                             [ '--test'       => TRUE,
                                '--connection' => $this->option( 'connection' ) ] );
                 $this->call( 'geonames:feature-class',
-                             [ '--test',
+                             [ '--test'       => TRUE,
                                '--connection' => $this->option( 'connection' ) ] );
                 $this->call( 'geonames:alternate-name',
                              [ '--country'    => [ 'YU' ],
                                '--connection' => $this->option( 'connection' ) ] );
                 $this->call( 'geonames:geoname',
-                             [ '--test',
+                             [ '--test'       => TRUE,
                                '--connection' => $this->option( 'connection' ) ] );
             else:
                 $this->call( 'geonames:feature-code',
