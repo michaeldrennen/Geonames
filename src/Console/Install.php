@@ -112,9 +112,6 @@ class Install extends Command {
 
         try {
             if ( $this->option( 'test' ) ):
-                $this->call( 'geonames:geoname',
-                             [ '--test'       => TRUE,
-                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:feature-code',
                              [ '--language'   => [ 'en' ],
                                '--connection' => $this->connectionName ] );
