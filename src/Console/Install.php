@@ -114,43 +114,43 @@ class Install extends Command {
             if ( $this->option( 'test' ) ):
                 $this->call( 'geonames:geoname',
                              [ '--test'       => TRUE,
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:feature-code',
                              [ '--language'   => [ 'en' ],
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:iso-language-code',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:admin-1-code',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:admin-2-code',
                              [ '--test'       => TRUE,
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:feature-class',
                              [ '--test'       => TRUE,
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:alternate-name',
                              [ '--country'    => [ 'YU' ],
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:geoname',
                              [ '--test'       => TRUE,
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
             else:
                 $this->call( 'geonames:feature-code',
                              [ '--language'   => $this->option( 'language' ),
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:iso-language-code',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:admin-1-code',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:admin-2-code',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:feature-class',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:alternate-name',
                              [ '--country'    => $this->option( 'country' ),
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:geoname',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
             endif;
 
 
@@ -173,7 +173,7 @@ class Install extends Command {
         $this->line( "Finished " . $this->signature );
 
         $this->call( 'geonames:status',
-                     [ '--connection' => $this->option( 'connection' ) ] );
+                     [ '--connection' => $this->connectionName ] );
     }
 
 }

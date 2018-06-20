@@ -47,9 +47,9 @@ class DownloadGeonames extends Command {
      */
     public function handle() {
         ini_set( 'memory_limit', -1 );
-        $this->comment( "Running geonames:download-geonames on database connection: " . $this->option( 'connection' ) );
-        $this->setDatabaseConnectionName();
 
+        $this->setDatabaseConnectionName();
+        $this->comment( "Running geonames:download-geonames on database connection: " . $this->connectionName );
         try {
             if ( $this->option( 'test' ) ):
                 $this->comment( "geonames:download-geonames running in test mode. I will only download the file for YU. It's small." );

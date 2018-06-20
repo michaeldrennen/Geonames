@@ -51,11 +51,11 @@ class Geoname extends Command {
                          [ '--test' => TRUE ] );
             $this->call( 'geonames:insert-geonames',
                          [ '--test'       => TRUE,
-                           '--connection' => $this->option( 'connection' ) ] );
+                           '--connection' => $this->connectionName ] );
         else:
             $this->comment( "Running the geonames:geoname artisan command in live mode." );
             $this->call( 'geonames:download-geonames', [] );
-            $this->call( 'geonames:insert-geonames', [ '--connection' => $this->option( 'connection' ) ] );
+            $this->call( 'geonames:insert-geonames', [ '--connection' => $this->connectionName ] );
         endif;
 
 
