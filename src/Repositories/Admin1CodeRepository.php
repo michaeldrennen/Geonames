@@ -16,7 +16,8 @@ class Admin1CodeRepository {
      */
     public function getByCompositeKey ( string $countryCode, string $admin1Code ): Admin1Code {
 
-        $admin1CodeModel = Admin1Code::where( 'country_code', $countryCode )
+        $admin1CodeModel = Admin1Code::on( env( 'DB_GEONAMES_CONNECTION' ) )
+                                     ->where( 'country_code', $countryCode )
                                      ->where( 'admin1_code', $admin1Code )
                                      ->first();
 

@@ -15,7 +15,8 @@ class AlternateNameRepository {
      */
     public function getByGeonameId ( int $geonameId ): Collection {
 
-        $collection = AlternateName::where( 'geonameid', $geonameId )
+        $collection = AlternateName::on( env( 'DB_GEONAMES_CONNECTION' ) )
+                                   ->where( 'geonameid', $geonameId )
                                    ->get();
 
         if ( is_null( $collection ) ) {

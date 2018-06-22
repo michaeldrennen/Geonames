@@ -57,6 +57,10 @@ class GeonamesServiceProvider extends \Illuminate\Support\ServiceProvider {
         $this->publishes( [
                               __DIR__ . '/../Migrations/' => database_path( 'migrations' ),
                           ], 'migrations' );
+
+        $this->publishes( [
+                              __DIR__ . '/../Config/geonames.php' => config_path( 'geonames.php' ),
+                          ] );
     }
 
 
