@@ -5,6 +5,7 @@ namespace MichaelDrennen\Geonames\Console;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use MichaelDrennen\Geonames\Models\GeoSetting;
+use MichaelDrennen\Geonames\Models\Log;
 
 
 class FeatureClass extends Command {
@@ -59,7 +60,7 @@ class FeatureClass extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            Log::error( NULL, "Unable to initialize the GeoSetting record.", '', $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
@@ -69,36 +70,36 @@ class FeatureClass extends Command {
         $progressBar->setMessage( 'feature classes' );
         $progressBar->advance();
 
-        DB::table( self::TABLE )->truncate();
+        DB::connection( $this->connectionName )->table( self::TABLE )->truncate();
 
 
-        DB::table( self::TABLE )->insert( ['id'          => 'A',
+        DB::connection( $this->connectionName )->table( self::TABLE )->insert( [ 'id' => 'A',
                                            'description' => 'country, state, region,...',] );
         $progressBar->advance();
 
-        DB::table( self::TABLE )->insert( ['id'          => 'H',
-                                           'description' => 'stream, lake, ...',] );
+        DB::connection( $this->connectionName )->table( self::TABLE )->insert( [ 'id'          => 'H',
+                                                                                 'description' => 'stream, lake, ...',] );
         $progressBar->advance();
-        DB::table( self::TABLE )->insert( ['id'          => 'L',
-                                           'description' => 'parks,area, ...',] );
+        DB::connection( $this->connectionName )->table( self::TABLE )->insert( [ 'id'          => 'L',
+                                                                                 'description' => 'parks,area, ...',] );
         $progressBar->advance();
-        DB::table( self::TABLE )->insert( ['id'          => 'P',
-                                           'description' => 'city, village,...',] );
+        DB::connection( $this->connectionName )->table( self::TABLE )->insert( [ 'id'          => 'P',
+                                                                                 'description' => 'city, village,...',] );
         $progressBar->advance();
-        DB::table( self::TABLE )->insert( ['id'          => 'R',
-                                           'description' => 'road, railroad',] );
+        DB::connection( $this->connectionName )->table( self::TABLE )->insert( [ 'id'          => 'R',
+                                                                                 'description' => 'road, railroad',] );
         $progressBar->advance();
-        DB::table( self::TABLE )->insert( ['id'          => 'S',
-                                           'description' => 'spot, building, farm',] );
+        DB::connection( $this->connectionName )->table( self::TABLE )->insert( [ 'id'          => 'S',
+                                                                                 'description' => 'spot, building, farm',] );
         $progressBar->advance();
-        DB::table( self::TABLE )->insert( ['id'          => 'T',
-                                           'description' => 'mountain,hill,rock,...',] );
+        DB::connection( $this->connectionName )->table( self::TABLE )->insert( [ 'id'          => 'T',
+                                                                                 'description' => 'mountain,hill,rock,...',] );
         $progressBar->advance();
-        DB::table( self::TABLE )->insert( ['id'          => 'U',
-                                           'description' => 'undersea',] );
+        DB::connection( $this->connectionName )->table( self::TABLE )->insert( [ 'id'          => 'U',
+                                                                                 'description' => 'undersea',] );
         $progressBar->advance();
-        DB::table( self::TABLE )->insert( ['id'          => 'V',
-                                           'description' => 'forest,heath,...',] );
+        DB::connection( $this->connectionName )->table( self::TABLE )->insert( [ 'id'          => 'V',
+                                                                                 'description' => 'forest,heath,...',] );
         $progressBar->advance();
 
         $this->info( self::TABLE . " table was truncated and refilled in " . $this->getRunTime() . " seconds." );

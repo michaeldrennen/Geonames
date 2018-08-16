@@ -109,7 +109,7 @@ class UpdateGeonames extends Command {
      */
     public function handle() {
 
-        DB::enableQueryLog();
+        //DB::enableQueryLog();
         ini_set( 'memory_limit', -1 );
 
         try {
@@ -124,9 +124,12 @@ class UpdateGeonames extends Command {
             return FALSE;
         }
 
-        GeoSetting::init();
-        $this->storageDir = GeoSetting::getStorage();
-        GeoSetting::setStatus( GeoSetting::STATUS_UPDATING );
+        GeoSetting::init( [ GeoSetting::DEFAULT_COUNTRIES_TO_BE_ADDED ],
+                          [ GeoSetting::DEFAULT_LANGUAGES ],
+                          GeoSetting::DEFAULT_STORAGE_SUBDIR,
+                          $this->connectionName );
+        $this->storageDir = GeoSetting::getStorage( $this->connectionName );
+        GeoSetting::setStatus( GeoSetting::STATUS_UPDATING, $this->connectionName );
         $this->startTime = (float)microtime( TRUE );
         $this->line( "Starting " . $this->signature );
 
@@ -175,11 +178,13 @@ class UpdateGeonames extends Command {
                     if ( $geoname->wasRecentlyCreated ):
                         Log::insert( '',
                                      "Geoname record " . $obj->geonameid . " was inserted.",
-                                     "create" );
+                                     "create",
+                                     $this->connectionName );
                     else:
                         Log::modification( '',
                                            "Geoname record [" . $obj->geonameid . "] was updated.",
-                                           "update" );
+                                           "update",
+                                           $this->connectionName );
                         $this->info( "exited modification without throwing an exception" );
                     endif;
 
@@ -188,14 +193,16 @@ class UpdateGeonames extends Command {
                 } else {
                     Log::error( '',
                                 "Unable to updateOrCreate geoname record: [" . $obj->geonameid . "]",
-                                'database' );
+                                'database',
+                                $this->connectionName );
                     $bar->advance();
                 }
 
             } catch ( \Exception $e ) {
                 Log::error( '',
                             "{" . $e->getMessage() . "} Unable to save the geoname record with id: [" . $obj->geonameid . "]",
-                            'database' );
+                            'database',
+                            $this->connectionName );
                 $bar->advance();
             }
         endforeach;
@@ -214,9 +221,10 @@ class UpdateGeonames extends Command {
         Log::info(
             '',
             "Finished updates in " . $localFilePath . " in " . $this->runTime . " seconds.",
-            'update' );
+            'update',
+            $this->connectionName );
         $this->line( "\nFinished " . $this->signature );
-        GeoSetting::setStatus( GeoSetting::STATUS_LIVE );
+        GeoSetting::setStatus( GeoSetting::STATUS_LIVE, $this->connectionName );
 
         return TRUE;
     }
@@ -292,7 +300,8 @@ class UpdateGeonames extends Command {
 
         if ( $this->curl->error ) {
             $this->error( $this->curl->error_code . ':' . $this->curl->error_message );
-            Log::error( $absoluteUrlToModificationsFile, $this->curl->error_message, $this->curl->error_code );
+            Log::error( $absoluteUrlToModificationsFile, $this->curl->error_message, $this->curl->error_code,
+                        $this->connectionName );
             throw new \Exception( "Unable to download the file at '" . $absoluteUrlToModificationsFile . "', " . $this->curl->error_message );
         }
 
@@ -301,12 +310,13 @@ class UpdateGeonames extends Command {
 
 
         // Save it locally
-        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $this->modificationsTxtFileName;
+        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . $this->modificationsTxtFileName;
         $bytesWritten  = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === FALSE ) {
             Log::error( $absoluteUrlToModificationsFile,
                         "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?",
-                        'local' );
+                        'local',
+                        $this->connectionName );
             throw new \Exception( "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?" );
         }
         $this->info( "Saved modification file to: " . $localFilePath );
@@ -386,12 +396,14 @@ class UpdateGeonames extends Command {
                         Log::insert(
                             '',
                             "GeonamesDelete record " . $obj->geonameid . " was inserted.",
-                            "create" );
+                            "create",
+                            $this->connectionName );
                     } else {
                         Log::modification(
                             '',
                             "GeonamesDelete record " . $obj->geonameid . " was updated.",
-                            "update" );
+                            "update",
+                            $this->connectionName );
                     }
                     $bar->advance();
 
@@ -408,7 +420,8 @@ class UpdateGeonames extends Command {
                     Log::error(
                         '',
                         "Unable to updateOrCreate GeonamesDelete record: [" . $obj->geonameid . "]",
-                        'database' );
+                        'database',
+                        $this->connectionName );
                     $bar->advance();
                     continue;
                 endif;
@@ -416,7 +429,8 @@ class UpdateGeonames extends Command {
             } catch ( \Exception $e ) {
                 Log::error( '',
                             $e->getMessage() . " Unable to save the GeonamesDelete record with id: [" . $obj->geonameid . "]",
-                            'database' );
+                            'database',
+                            $this->connectionName );
                 $bar->advance();
             }
         endforeach;
@@ -456,7 +470,8 @@ class UpdateGeonames extends Command {
 
         if ( $this->curl->error ) {
             $this->error( $this->curl->error_code . ':' . $this->curl->error_message );
-            Log::error( $absoluteUrlToDeletesFile, $this->curl->error_message, $this->curl->error_code );
+            Log::error( $absoluteUrlToDeletesFile, $this->curl->error_message, $this->curl->error_code,
+                        $this->connectionName );
             throw new \Exception( "Unable to download the file at '" . $absoluteUrlToDeletesFile . "', " . $this->curl->error_message );
         }
 
@@ -465,12 +480,13 @@ class UpdateGeonames extends Command {
 
 
         // Save it locally
-        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $this->deletesTxtFileName;
+        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . $this->deletesTxtFileName;
         $bytesWritten  = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === FALSE ) {
             Log::error( $absoluteUrlToDeletesFile,
                         "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?",
-                        'local' );
+                        'local',
+                        $this->connectionName );
             throw new \Exception( "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?" );
         }
         $this->info( "Saved deletes file to: " . $localFilePath );

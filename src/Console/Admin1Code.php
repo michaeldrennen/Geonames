@@ -85,20 +85,23 @@ class Admin1Code extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            Log::error( NULL,
+                        "Unable to initialize the GeoSetting record.",
+                        '',
+                        $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
 
         $remoteUrl = GeoSetting::getDownloadUrlForFile( self::REMOTE_FILE_NAME );
 
-        DB::table( self::TABLE )->truncate();
+        DB::connection( $this->connectionName )->table( self::TABLE )->truncate();
 
         try {
-            $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl );
+            $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl, $this->connectionName );
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( $remoteUrl, $e->getMessage(), 'remote' );
+            Log::error( $remoteUrl, $e->getMessage(), 'remote', $this->connectionName );
 
             return FALSE;
         }
@@ -138,11 +141,11 @@ class Admin1Code extends Command {
             $asciiName             = $fields[ 2 ];                    // Colorado
             $geonameId             = $fields[ 3 ];                    // 5417618
 
-            Admin1CodeModel::create( [ 'geonameid'    => $geonameId,
-                                       'country_code' => $countryCode,
-                                       'admin1_code'  => $admin1Code,
-                                       'name'         => $name,
-                                       'asciiname'    => $asciiName ] );
+            Admin1CodeModel::on( $this->connectionName )->create( [ 'geonameid'    => $geonameId,
+                                                                    'country_code' => $countryCode,
+                                                                    'admin1_code'  => $admin1Code,
+                                                                    'name'         => $name,
+                                                                    'asciiname'    => $asciiName ] );
 
             $geonamesBar->advance();
         }
@@ -155,9 +158,11 @@ class Admin1Code extends Command {
      * @throws \Exception
      */
     protected function insertWithLoadDataInfile( $localFilePath ) {
-        Schema::dropIfExists( self::TABLE_WORKING );
-        $prefix = DB::getTablePrefix();
-        DB::statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
+        $prefix = DB::connection( $this->connectionName )->getTablePrefix();
+        DB::connection( $this->connectionName )
+            ->statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
+
 
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
     INTO TABLE " . $prefix . self::TABLE_WORKING . "
@@ -173,13 +178,13 @@ class Admin1Code extends Command {
         $this->line( "Inserting via LOAD DATA INFILE: " . $localFilePath );
         $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
         if ( $rowsInserted === FALSE ) {
-            Log::error( '', "Unable to load data infile for " . self::TABLE, 'database' );
+            Log::error( '', "Unable to load data infile for " . self::TABLE, 'database', $this->connectionName );
             throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
                                                                                                ->getpdo()
                                                                                                ->errorInfo(), TRUE ) );
         }
 
-        Schema::dropIfExists( self::TABLE );
-        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
+        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
     }
 }

@@ -78,8 +78,6 @@ class InsertGeonames extends Command {
         $this->startTimer();
         $this->comment( "Running geonames:insert-geonames now." );
 
-        $this->connectionName = $this->option( 'connection' );
-
         try {
             $this->setDatabaseConnectionName();
             $this->info( "The database connection name was set to: " . $this->connectionName );
@@ -99,13 +97,15 @@ class InsertGeonames extends Command {
 
         $zipFileNames = $this->getLocalCountryZipFileNames();
 
-        $absolutePathsToZipFiles = GeoSetting::getAbsoluteLocalStoragePathToFiles( $zipFileNames );
+        $absolutePathsToZipFiles = GeoSetting::getAbsoluteLocalStoragePathToFiles( $zipFileNames,
+                                                                                   $this->connectionName );
 
         try {
-            $this->unzipFiles( $absolutePathsToZipFiles );
+            $this->unzipFiles( $absolutePathsToZipFiles, $this->connectionName );
         } catch ( Exception $e ) {
             $this->error( "Unable to unzip at least one of the country zip files." );
-            Log::error( '', "We were unable to unzip at least one of the country zip files.", 'local' );
+            Log::error( '', "We were unable to unzip at least one of the country zip files.", 'local',
+                        $this->connectionName );
             throw $e;
         }
 
@@ -117,7 +117,7 @@ class InsertGeonames extends Command {
             $this->insert( $absolutePathToMasterTxtFile );
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( '', $e->getMessage(), 'database' );
+            Log::error( '', $e->getMessage(), 'database', $this->connectionName );
         }
 
         $this->stopTimer();
@@ -132,7 +132,7 @@ class InsertGeonames extends Command {
      * @throws \Exception
      */
     private function getLocalFiles(): array {
-        $storagePath = GeoSetting::getAbsoluteLocalStoragePath();
+        $storagePath = GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName );
         $fileNames   = scandir( $storagePath );
         array_shift( $fileNames ); // Remove .
         array_shift( $fileNames ); // Remove ..
@@ -225,13 +225,15 @@ class InsertGeonames extends Command {
      * @throws Exception
      */
     protected function combineTxtFiles(): string {
-        $absolutePathToMasterTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->masterTxtFileName );
+        $absolutePathToMasterTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->masterTxtFileName,
+                                                                                      $this->connectionName );
         $textFileNames               = $this->getLocalCountryTxtFileNames();
 
         // If the all countries zip file was downloaded, there is nothing to combine. Just rename the file to master.
         if ( $this->allCountriesInLocalTxtFiles( $textFileNames ) ) {
 
-            $absolutePathToAllCountriesTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->allCountriesTxtFileName );
+            $absolutePathToAllCountriesTxtFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $this->allCountriesTxtFileName,
+                                                                                                $this->connectionName );
             $renameResult                      = rename( $absolutePathToAllCountriesTxtFile,
                                                          $absolutePathToMasterTxtFile );
             if ( $renameResult === FALSE ) {
@@ -249,7 +251,7 @@ class InsertGeonames extends Command {
         }
 
         foreach ( $textFileNames as $textFile ) {
-            $absolutePathToTextFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $textFile );
+            $absolutePathToTextFile = GeoSetting::getAbsoluteLocalStoragePathToFile( $textFile, $this->connectionName );
 
             $this->line( "File: " . $absolutePathToTextFile );
 
@@ -310,11 +312,12 @@ class InsertGeonames extends Command {
         }
 
         $this->line( "Dropping the temp table named " . self::TABLE_WORKING . " (if it exists)." );
-        Schema::dropIfExists( self::TABLE_WORKING );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
 
         $this->line( "Creating the temp table named " . self::TABLE_WORKING );
-        $prefix = DB::getTablePrefix();
-        DB::statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . '; ' );
+        $prefix = DB::connection( $this->connectionName )->getTablePrefix();
+        DB::connection( $this->connectionName )
+          ->statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . '; ' );
 
 
         $this->disableKeys( self::TABLE_WORKING );
@@ -359,12 +362,12 @@ SET created_at=NOW(),updated_at=null";
         $this->info( "Inserted text file into " . self::TABLE_WORKING );
 
         $this->line( "Dropping the active " . self::TABLE . " table." );
-        Schema::dropIfExists( self::TABLE );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
 
 
-        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
         $this->info( "Renamed " . self::TABLE_WORKING . " to " . self::TABLE );
-        GeoSetting::setCountriesFromCountriesToBeAdded();
+        GeoSetting::setCountriesFromCountriesToBeAdded( $this->connectionName );
     }
 
 
@@ -383,6 +386,4 @@ SET created_at=NOW(),updated_at=null";
 
         return FALSE;
     }
-
-
 }

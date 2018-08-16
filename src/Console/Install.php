@@ -5,6 +5,7 @@ namespace MichaelDrennen\Geonames\Console;
 use Exception;
 use Illuminate\Console\Command;
 use MichaelDrennen\Geonames\Models\GeoSetting;
+use MichaelDrennen\Geonames\Models\Log;
 
 class Install extends Command {
 
@@ -71,25 +72,40 @@ class Install extends Command {
         }
 
         try {
-            GeoSetting::install(
-                $this->option( 'country' ),
-                $this->option( 'language' ),
-                $this->option( 'storage' ),
-                $this->connectionName
-            );
+            $this->info( "GeoSetting::install() called on connection: " . $this->connectionName );
+
+            if ( $this->option( 'test' ) ):
+                GeoSetting::install(
+                    [ 'YU' ],
+                    [ 'en' ],
+                    $this->option( 'storage' ),
+                    $this->connectionName
+                );
+            else:
+                GeoSetting::install(
+                    $this->option( 'country' ),
+                    $this->option( 'language' ),
+                    $this->option( 'storage' ),
+                    $this->connectionName
+                );
+            endif;
+
 
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to install the GeoSetting record." );
+            Log::error( NULL,
+                        "Unable to install the GeoSetting record: " . $exception->getMessage(),
+                        'exception',
+                        $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
 
 
-        GeoSetting::setStatus( GeoSetting::STATUS_INSTALLING );
+        GeoSetting::setStatus( GeoSetting::STATUS_INSTALLING, $this->connectionName );
 
-        $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
+        $emptyDirResult = GeoSetting::emptyTheStorageDirectory( $this->connectionName );
         if ( $emptyDirResult === TRUE ):
-            $this->line( "This storage dir has been emptied: " . GeoSetting::getAbsoluteLocalStoragePath() );
+            $this->line( "This storage dir has been emptied: " . GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) );
         endif;
 
         $this->line( "Starting " . $this->signature );
@@ -98,51 +114,53 @@ class Install extends Command {
             if ( $this->option( 'test' ) ):
                 $this->call( 'geonames:feature-code',
                              [ '--language'   => [ 'en' ],
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:iso-language-code',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:admin-1-code',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:admin-2-code',
-                             [ '--test',
-                               '--connection' => $this->option( 'connection' ) ] );
+                             [ '--test'       => TRUE,
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:feature-class',
-                             [ '--test',
-                               '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:alternate-name',
                              [ '--country'    => [ 'YU' ],
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
+                $this->call( 'geonames:geoname',
+                             [ '--test'       => TRUE,
+                               '--connection' => $this->connectionName ] );
             else:
                 $this->call( 'geonames:feature-code',
                              [ '--language'   => $this->option( 'language' ),
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:iso-language-code',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:admin-1-code',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:admin-2-code',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:feature-class',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:alternate-name',
                              [ '--country'    => $this->option( 'country' ),
-                               '--connection' => $this->option( 'connection' ) ] );
+                               '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:geoname',
-                             [ '--connection' => $this->option( 'connection' ) ] );
+                             [ '--connection' => $this->connectionName ] );
             endif;
 
 
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
             $this->error( $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
-            GeoSetting::setStatus( GeoSetting::STATUS_ERROR );
+            GeoSetting::setStatus( GeoSetting::STATUS_ERROR, $this->connectionName );
 
             return FALSE;
         }
 
-        GeoSetting::setInstalledAt();
-        GeoSetting::setStatus( GeoSetting::STATUS_LIVE );
-        $emptyDirResult = GeoSetting::emptyTheStorageDirectory();
+        GeoSetting::setInstalledAt( $this->connectionName );
+        GeoSetting::setStatus( GeoSetting::STATUS_LIVE, $this->connectionName );
+        $emptyDirResult = GeoSetting::emptyTheStorageDirectory( $this->connectionName );
         if ( $emptyDirResult === TRUE ):
             $this->line( "Our storage directory has been emptied." );
         else:
@@ -150,8 +168,8 @@ class Install extends Command {
         endif;
         $this->line( "Finished " . $this->signature );
 
-        $this->call( 'geonames:status' );
+        $this->call( 'geonames:status',
+                     [ '--connection' => $this->connectionName ] );
     }
-
 
 }

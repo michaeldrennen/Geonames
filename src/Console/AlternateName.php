@@ -80,7 +80,8 @@ class AlternateName extends Command {
 
         $this->startTimer();
 
-        $this->connectionName = $this->option( 'connection' );
+        //$this->connectionName = $this->option( 'connection' );
+        $this->setDatabaseConnectionName();
 
         if ( $this->option( 'test' ) ):
             $countries = [ 'YU' ];
@@ -107,7 +108,7 @@ class AlternateName extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            Log::error( NULL, "Unable to initialize the GeoSetting record.", '', $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
@@ -120,10 +121,11 @@ class AlternateName extends Command {
         foreach ( $urlsToAlternateNamesZipFiles as $countryCode => $urlsToAlternateNamesZipFile ) {
             try {
                 $absoluteLocalFilePathsOfAlternateNamesZipFiles[ $countryCode ] = $this->downloadFile( $this,
-                                                                                                       $urlsToAlternateNamesZipFile );
+                                                                                                       $urlsToAlternateNamesZipFile,
+                                                                                                       $this->connectionName );
             } catch ( Exception $e ) {
                 $this->error( $e->getMessage() );
-                Log::error( $urlsToAlternateNamesZipFiles, $e->getMessage(), 'remote' );
+                Log::error( $urlsToAlternateNamesZipFiles, $e->getMessage(), 'remote', $this->connectionName );
 
                 return FALSE;
             }
@@ -132,11 +134,12 @@ class AlternateName extends Command {
 
         foreach ( $absoluteLocalFilePathsOfAlternateNamesZipFiles as $countryCode => $absoluteLocalFilePathOfAlternateNamesZipFile ) {
             try {
-                $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile );
+                $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile, $this->connectionName );
                 $this->comment( "Unzipped " . $absoluteLocalFilePathOfAlternateNamesZipFile );
             } catch ( Exception $e ) {
                 $this->error( $e->getMessage() );
-                Log::error( $absoluteLocalFilePathOfAlternateNamesZipFile, $e->getMessage(), 'local' );
+                Log::error( $absoluteLocalFilePathOfAlternateNamesZipFile, $e->getMessage(), 'local',
+                            $this->connectionName );
 
                 return FALSE;
             }
@@ -186,7 +189,7 @@ class AlternateName extends Command {
      * @throws \Exception
      */
     protected function getLocalAbsolutePathToAlternateNamesZipFile(): string {
-        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::REMOTE_FILE_NAME_FOR_ALL;
+        return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . self::REMOTE_FILE_NAME_FOR_ALL;
     }
 
     /**
@@ -197,23 +200,24 @@ class AlternateName extends Command {
      */
     protected function getLocalAbsolutePathToAlternateNamesTextFile( string $countryCode = NULL ): string {
         if ( '*' == $countryCode || is_null( $countryCode ) ):
-            return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL;
+            return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL;
         endif;
-        return GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . '.txt';
+        return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . '.txt';
     }
 
 
     protected function initTable() {
-        Schema::dropIfExists( self::TABLE_WORKING );
-        $prefix = DB::getTablePrefix();
-        DB::statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
+        $prefix = DB::connection( $this->connectionName )->getTablePrefix();
+        DB::connection( $this->connectionName )
+            ->statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
     }
 
     protected function finalizeTable() {
         $this->enableKeys( self::TABLE_WORKING );
-        Schema::dropIfExists( self::TABLE );
-        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
+        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
     }
 
     /**
@@ -232,7 +236,7 @@ class AlternateName extends Command {
             throw $exception;
         }
 
-        $prefix = DB::getTablePrefix();
+        $prefix = DB::connection( $this->connectionName )->getTablePrefix();
         foreach ( $localFileSplitPaths as $i => $localFileSplitPath ):
             $query = "LOAD DATA LOCAL INFILE '" . $localFileSplitPath . "'
             
@@ -269,7 +273,7 @@ class AlternateName extends Command {
 
 
             if ( FALSE === $rowsInserted ) {
-                Log::error( '', "Unable to load data infile for alternate names.", 'database' );
+                Log::error( '', "Unable to load data infile for alternate names.", 'database', $this->connectionName );
                 throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
                                                                                                     ->getpdo()
                                                                                                     ->errorInfo(),
@@ -332,7 +336,7 @@ class AlternateName extends Command {
 
         $this->comment( "Running LOAD DATA INFILE." );
 
-        $prefix = DB::getTablePrefix();
+        $prefix = DB::connection( $this->connectionName )->getTablePrefix();
         $query = "LOAD DATA LOCAL INFILE '" . $pathToRecreatedFile . "'
             
                         INTO TABLE " . $prefix . self::TABLE_WORKING . "
@@ -368,7 +372,7 @@ class AlternateName extends Command {
 
 
         if ( FALSE === $rowsInserted ) {
-            Log::error( '', "Unable to load data infile for alternate names.", 'database' );
+            Log::error( '', "Unable to load data infile for alternate names.", 'database', $this->connectionName );
             throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
                                                                                                 ->getpdo()
                                                                                                 ->errorInfo(), TRUE ) );
@@ -389,7 +393,7 @@ class AlternateName extends Command {
      * @throws \Exception
      */
     protected function insertAlternateNamesWithEloquent( $localFilePath ): int {
-        DB::enableQueryLog();
+        //DB::enableQueryLog();
         $numLines = LocalFile::lineCount( $localFilePath );
 
         $this->disableKeys( self::TABLE );
@@ -435,7 +439,8 @@ class AlternateName extends Command {
                 $isColloquial    = empty( $fields[ 6 ] ) ? FALSE : $fields[ 6 ];
                 $isHistoric      = empty( $fields[ 7 ] ) ? FALSE : $fields[ 7 ];
 
-                $alternateName = \MichaelDrennen\Geonames\Models\AlternateNamesWorking::firstOrCreate(
+                $alternateName = \MichaelDrennen\Geonames\Models\AlternateNamesWorking::on( $this->connectionName )
+                                                                                      ->firstOrCreate(
                     [ 'alternateNameId' => $alternateNameId ],
                     [
                         'geonameid'       => $geonameid,
@@ -531,7 +536,7 @@ class AlternateName extends Command {
                 $totalRowsInserted++;
             }
             $this->comment( "Inserting $numRowsInSplitFile rows from split file..." );
-            AlternateNamesWorking::insert( $splitRowsToInsert );
+            AlternateNamesWorking::on( $this->connectionName )->insert( $splitRowsToInsert );
 
             $geonamesBar->finish();
         endforeach;

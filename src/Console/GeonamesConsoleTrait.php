@@ -143,31 +143,33 @@ trait GeonamesConsoleTrait {
     /**
      * @param Command $command
      * @param array   $downloadLinks
+     * @param string  $connectionName Necessary if installing on a specific db connection.
      *
      * @return array
      * @throws \Exception
      */
-    public static function downloadFiles( Command $command, array $downloadLinks ): array {
+    public static function downloadFiles( Command $command, array $downloadLinks, string $connectionName = NULL ): array {
         $localFilePaths = [];
         foreach ( $downloadLinks as $link ) {
-            $localFilePaths[] = self::downloadFile( $command, $link );
+            $localFilePaths[] = self::downloadFile( $command, $link, $connectionName );
         }
 
         return $localFilePaths;
     }
 
     /**
-     * @param Command $command The command instance from the console script.
-     * @param string  $link    The absolute path to the remote file we want to download.
+     * @param Command $command        The command instance from the console script.
+     * @param string  $link           The absolute path to the remote file we want to download.
+     * @param string  $connectionName Necessary if running the install on a specific connection.
      *
      * @return string           The absolute local path to the file we just downloaded.
      * @throws Exception
      */
-    public static function downloadFile( Command $command, string $link ): string {
+    public static function downloadFile( Command $command, string $link, string $connectionName = NULL ): string {
         $curl = new Curl();
 
         $basename      = basename( $link );
-        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath() . DIRECTORY_SEPARATOR . $basename;
+        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath( $connectionName ) . DIRECTORY_SEPARATOR . $basename;
 
         // Display a progress bar if we can get the remote file size.
         $fileSize = RemoteFile::getFileSize( $link );
@@ -192,7 +194,7 @@ trait GeonamesConsoleTrait {
 
         if ( $curl->error ) {
             //$command->error("\n" . $curl->error_code . ':' . $curl->error_message);
-            Log::error( $link, $curl->error_message, $curl->error_code );
+            Log::error( $link, $curl->error_message, $curl->error_code, $connectionName );
             throw new Exception( "Unable to download the file at [" . $link . "]\n" . $curl->error_message );
         }
 
@@ -201,7 +203,8 @@ trait GeonamesConsoleTrait {
         if ( $bytesWritten === FALSE ) {
             Log::error( $link,
                         "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?",
-                        'local' );
+                        'local',
+                        $connectionName );
             throw new Exception( "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?" );
         }
 
@@ -232,11 +235,11 @@ trait GeonamesConsoleTrait {
      * Unzips the zip file into our geonames storage dir that is set in GeoSettings.
      *
      * @param   string $localFilePath Absolute local path to the zip archive.
-     *
+     * @param string   $connection
      * @throws  Exception
      */
-    public static function unzip( $localFilePath ) {
-        $storage       = GeoSetting::getAbsoluteLocalStoragePath();
+    public static function unzip( $localFilePath, string $connection = NULL ) {
+        $storage       = GeoSetting::getAbsoluteLocalStoragePath( $connection );
         $zip           = new ZipArchive;
         $zipOpenResult = $zip->open( $localFilePath );
         if ( TRUE !== $zipOpenResult ) {
@@ -259,14 +262,15 @@ trait GeonamesConsoleTrait {
      * Pass in an array of absolute local file paths, and this function will extract
      * them to our geonames storage directory.
      *
-     * @param array $absoluteFilePaths
+     * @param array  $absoluteFilePaths
+     * @param string $connection
      *
      * @throws Exception
      */
-    public static function unzipFiles( array $absoluteFilePaths ) {
+    public static function unzipFiles( array $absoluteFilePaths, string $connection = NULL ) {
         try {
             foreach ( $absoluteFilePaths as $absoluteFilePath ) {
-                self::unzip( $absoluteFilePath );
+                self::unzip( $absoluteFilePath, $connection );
             }
         } catch ( Exception $e ) {
             throw $e;
@@ -274,14 +278,14 @@ trait GeonamesConsoleTrait {
     }
 
     protected function disableKeys( string $table ): bool {
-        $prefix = DB::getTablePrefix();
+        $prefix = DB::connection( $this->connectionName )->getTablePrefix();;
         $query = 'ALTER TABLE ' . $prefix . $table . ' DISABLE KEYS;';
 
         return DB::connection( $this->connectionName )->getpdo()->exec( $query );
     }
 
     protected function enableKeys( string $table ): bool {
-        $prefix = DB::getTablePrefix();
+        $prefix = DB::connection( $this->connectionName )->getTablePrefix();;
         $query = 'ALTER TABLE ' . $prefix . $table . ' ENABLE KEYS;';
 
         return DB::connection( $this->connectionName )->getpdo()->exec( $query );

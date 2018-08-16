@@ -18,7 +18,8 @@ class DownloadGeonames extends Command {
      * @var string
      */
     protected $signature = 'geonames:download-geonames
-        {--test : If you want to test the command on a small countries data set.}';
+        {--test : If you want to test the command on a small countries data set.}
+        {--connection= : If you want to specify the name of the database connection you want used.}';
 
     /**
      * The console command description.
@@ -41,34 +42,35 @@ class DownloadGeonames extends Command {
     }
 
     /**
-     * Execute the console command.
-     *
-     * @return mixed
+     * @return bool
+     * @throws \Exception
      */
     public function handle() {
         ini_set( 'memory_limit', -1 );
 
+        $this->setDatabaseConnectionName();
+        $this->comment( "Running geonames:download-geonames on database connection: " . $this->connectionName );
         try {
             if ( $this->option( 'test' ) ):
                 $this->comment( "geonames:download-geonames running in test mode. I will only download the file for YU. It's small." );
                 $countries = [ 'YU' ];
             else:
-                $countries = GeoSetting::getCountriesToBeAdded();
+                $countries = GeoSetting::getCountriesToBeAdded( $this->connectionName );
             endif;
 
         } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( '', $e->getMessage(), 'database' );
+            Log::error( '', $e->getMessage(), 'database', $this->connectionName );
             return FALSE;
         }
 
         $remoteFilePaths = $this->getRemoteFilePathsToDownloadForGeonamesTable( $countries );
 
         try {
-            $this->downloadFiles( $this, $remoteFilePaths );
+            $this->downloadFiles( $this, $remoteFilePaths, $this->connectionName );
         } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( '', $e->getMessage(), 'remote' );
+            Log::error( '', $e->getMessage(), 'remote', $this->connectionName );
 
             return FALSE;
         }

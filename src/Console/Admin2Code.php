@@ -88,20 +88,22 @@ class Admin2Code extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            Log::error( NULL,
+                        "Unable to initialize the GeoSetting record.",
+                        '', $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
 
         $remoteUrl = GeoSetting::getDownloadUrlForFile( self::REMOTE_FILE_NAME );
 
-        DB::table( self::TABLE )->truncate();
+        DB::connection( $this->connectionName )->table( self::TABLE )->truncate();
 
         try {
-            $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl );
+            $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl, $this->connectionName );
         } catch ( Exception $e ) {
             $this->error( $e->getMessage() );
-            Log::error( $remoteUrl, $e->getMessage(), 'remote' );
+            Log::error( $remoteUrl, $e->getMessage(), 'remote', $this->connectionName );
 
             return FALSE;
         }
@@ -151,12 +153,12 @@ class Admin2Code extends Command {
             $asciiName             = $fields[ 2 ] ?? NULL;                    // Routt County
             $geonameId             = $fields[ 3 ] ?? NULL;                    // 5581553
 
-            Admin2CodeModel::create( [ 'geonameid'    => $geonameId,
-                                       'country_code' => $countryCode,
-                                       'admin1_code'  => $admin1Code,
-                                       'admin2_code'  => $admin2Code,
-                                       'name'         => $name,
-                                       'asciiname'    => $asciiName,
+            Admin2CodeModel::on( $this->connectionName )->create( [ 'geonameid'    => $geonameId,
+                                                                    'country_code' => $countryCode,
+                                                                    'admin1_code'  => $admin1Code,
+                                                                    'admin2_code'  => $admin2Code,
+                                                                    'name'         => $name,
+                                                                    'asciiname'    => $asciiName,
                                      ] );
 
             $geonamesBar->advance();

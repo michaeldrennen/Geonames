@@ -86,14 +86,14 @@ class IsoLanguageCode extends Command {
                 GeoSetting::DEFAULT_STORAGE_SUBDIR,
                 $this->connectionName );
         } catch ( \Exception $exception ) {
-            Log::error( NULL, "Unable to initialize the GeoSetting record." );
+            Log::error( NULL, "Unable to initialize the GeoSetting record.", '', $this->connectionName );
             $this->stopTimer();
             return FALSE;
         }
 
         $remotePath = self::$url . self::LANGUAGE_CODES_FILE_NAME;
 
-        $absoluteLocalFilePathOfIsoLanguageCodesFile = self::downloadFile( $this, $remotePath );
+        $absoluteLocalFilePathOfIsoLanguageCodesFile = self::downloadFile( $this, $remotePath, $this->connectionName );
 
         if ( ! file_exists( $absoluteLocalFilePathOfIsoLanguageCodesFile ) ) {
             throw new Exception( "We were unable to download the file at: " . $absoluteLocalFilePathOfIsoLanguageCodesFile );
@@ -114,9 +114,11 @@ class IsoLanguageCode extends Command {
         ini_set( 'memory_limit', -1 );
         $this->line( "Inserting via LOAD DATA INFILE: " . $localFilePath );
 
-        Schema::dropIfExists( self::TABLE_WORKING );
-        $prefix = DB::getTablePrefix();
-        DB::statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
+
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
+        $prefix = DB::connection( $this->connectionName )->getTablePrefix();
+        DB::connection( $this->connectionName )
+            ->statement( 'CREATE TABLE ' . $prefix . self::TABLE_WORKING . ' LIKE ' . $prefix . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
 
 
@@ -134,14 +136,15 @@ class IsoLanguageCode extends Command {
 
         $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
         if ( $rowsInserted === FALSE ) {
-            Log::error( '', "Unable to load data infile for iso language names.", 'database' );
+            Log::error( '', "Unable to load data infile for iso language names.",
+                        'database', $this->connectionName );
             throw new Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
                                                                                                ->getpdo()
                                                                                                ->errorInfo(), TRUE ) );
         }
 
         $this->enableKeys( self::TABLE_WORKING );
-        Schema::dropIfExists( self::TABLE );
-        Schema::rename( self::TABLE_WORKING, self::TABLE );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
+        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
     }
 }
