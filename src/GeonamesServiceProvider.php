@@ -55,7 +55,7 @@ class GeonamesServiceProvider extends \Illuminate\Support\ServiceProvider {
         $this->loadRoutesFrom( __DIR__ . '/Routes/web.php' );
 
         $this->publishes( [
-                              __DIR__ . '/../Migrations/' => database_path( 'migrations' ),
+                              __DIR__ . '/Migrations/' => database_path( 'migrations' ),
                           ], 'migrations' );
     }
 
