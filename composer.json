@@ -10,21 +10,16 @@
     }
   ],
   "require": {
-    "php": "^7.1",
+    "php": "^7.3",
     "ext-intl": "*",
     "fabpot/goutte": "^3.2",
-    "illuminate/support": "^5.5",
-    "illuminate/database": "^5.5",
-    "curl/curl": "^1.8",
-    "michaeldrennen/remote-file": "^1.0",
-    "michaeldrennen/local-file": "^1.0",
-    "nesbot/carbon": "^1.22",
-    "illuminate/routing": "^5.5"
+    "illuminate/support": "^5.8",
+    "illuminate/database": "^5.8",
+    "curl/curl": "^2.2",
+    "illuminate/routing": "^5.8"
   },
   "require-dev": {
-    "phpunit/phpunit": "^6.5",
-    "orchestra/testbench": "~3.0",
-    "satooshi/php-coveralls": "^2.0"
+
   },
   "autoload": {
     "psr-4": {
