@@ -17,7 +17,7 @@ class ConsoleTest extends Orchestra\Testbench\TestCase {
     /**
      * Setup the test environment.
      */
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
 
         var_dump( $this->dbIsSetUp );

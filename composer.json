@@ -16,10 +16,12 @@
     "illuminate/support": "^5.8",
     "illuminate/database": "^5.8",
     "curl/curl": "^2.2",
-    "illuminate/routing": "^5.8"
+    "illuminate/routing": "^5.8",
+    "michaeldrennen/remote-file": "^2.0",
+    "michaeldrennen/local-file": "^2.0"
   },
   "require-dev": {
-
+    "orchestra/testbench": "^3.8"
   },
   "autoload": {
     "psr-4": {
