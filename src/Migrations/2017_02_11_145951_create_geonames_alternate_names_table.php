@@ -65,6 +65,7 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             $table->timestamps();
             $table->primary( 'alternateNameId' );
             $table->index( 'geonameid' );
+            $table->index( 'alternate_name' );
         } );
     }
 
