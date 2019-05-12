@@ -20,19 +20,20 @@ class ConsoleTest extends Orchestra\Testbench\TestCase {
     public function setUp(): void {
         parent::setUp();
 
-        var_dump( $this->dbIsSetUp );
+        if ( FALSE === $this->dbIsSetUp ) {
 
-        if ( FALSE == $this->dbIsSetUp ) {
-
-            echo "\nAbout to run the migration\n";
+            echo "\nAbout to run the migration...";
             Artisan::call( 'migrate', [
                 '--database' => 'testing',
             ] );
+            echo "\nMigration complete!";
 
-            echo "\nAbout to run the geonames:install\n";
+            echo "\nAbout to run the geonames:install...";
             Artisan::call( 'geonames:install', [
-                '--test' => TRUE,
+                '--test'       => TRUE,
+                '--connection' => 'testing',
             ] );
+            echo "\nGeonames install complete!";
 
             $this->dbIsSetUp = TRUE;
         } else {
@@ -43,18 +44,17 @@ class ConsoleTest extends Orchestra\Testbench\TestCase {
 
 
     /**
-     * @throws \Exception
      * @group admin1
      */
-    public function testAdmin1Code() {
-
-        //$repo = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
-        //$repo->getByCompositeKey('AD',)
-
-        $admin1Codes = \MichaelDrennen\Geonames\Models\Admin1Code::all();
-        print_r( $admin1Codes );
-
-    }
+//    public function testAdmin1Code() {
+//
+//        //$repo = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
+//        //$repo->getByCompositeKey('AD',)
+//         $admin1Codes = \MichaelDrennen\Geonames\Models\Admin1Code::all();
+//         print_r( $admin1Codes );
+//
+//
+//    }
 
 
     /**
@@ -77,11 +77,12 @@ class ConsoleTest extends Orchestra\Testbench\TestCase {
      */
     protected function getEnvironmentSetUp( $app ) {
         // Setup default database to use sqlite :memory:
-        $app[ 'config' ]->set( 'database.default', 'testbench' );
-        $app[ 'config' ]->set( 'database.connections.testbench', [
+        $app[ 'config' ]->set( 'database.default', 'testing' );
+        $app[ 'config' ]->set( 'database.connections.testing', [
             'driver'   => 'sqlite',
             'database' => ':memory:',
             'prefix'   => '',
+            'options'  => [ \PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE, ]
         ] );
     }
 

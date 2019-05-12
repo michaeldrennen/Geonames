@@ -66,6 +66,7 @@ class Install extends Command {
             $this->checkDatabase();
             $this->info( "Confirmed database connection set up correctly." );
         } catch ( \Exception $exception ) {
+            echo "EXCEPTILSUDHFLSGDFKLSHGDKLFH: " . $exception->getMessage();
             $this->error( $exception->getMessage() );
             $this->stopTimer();
             return FALSE;

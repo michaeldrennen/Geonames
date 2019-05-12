@@ -7,7 +7,7 @@
  * A little scratch pad. Delete from final.
  */
 
-DB::listen( function ( $sql ) {
+\Illuminate\Support\Facades\DB::listen( function ( $sql ) {
     print_r( $sql->sql );
     print_r( $sql->bindings );
 } );

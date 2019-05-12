@@ -14,7 +14,7 @@ class ProtectedUpdateTest extends TestCase {
      */
     public function testGetAllLinksOnDownloadPage() {
 
-        $this->markTestSkipped('Unable to access the config() helper in this test. Wait until a patch is ready.');
+        //$this->markTestSkipped('Unable to access the config() helper in this test. Wait until a patch is ready.');
 
         $methodName = 'getAllLinksOnDownloadPage';
         $args       = [];
@@ -35,7 +35,7 @@ class ProtectedUpdateTest extends TestCase {
      *
      */
     public function testPrepareRowsForUpdate() {
-        $this->markTestSkipped('Unable to access the config() helper in this test. Wait until a patch is ready.');
+//        $this->markTestSkipped('Unable to access the config() helper in this test. Wait until a patch is ready.');
         $filePath = './AD.txt';
         $methodName = 'prepareRowsForUpdate';
         $args = [];
