@@ -90,7 +90,7 @@ class UpdateGeonames extends Command {
     /**
      * UpdateGeonames constructor.
      *
-     * @param \Curl\Curl     $curl
+     * @param \Curl\Curl $curl
      * @param \Goutte\Client $client
      *
      * @throws \Exception
@@ -165,7 +165,7 @@ class UpdateGeonames extends Command {
                 $geoname->timezone          = $obj->timezone;
                 $geoname->modification_date = $obj->modification_date;
 
-                if ( ! $geoname->isDirty() ) {
+                if ( !$geoname->isDirty() ) {
                     //$this->info( "Geoname record " . $obj->geonameid . " does not need to be updated." );
                     $bar->advance();
                     continue;
@@ -229,12 +229,11 @@ class UpdateGeonames extends Command {
         return TRUE;
     }
 
+
     /**
      * Given the local path to the modifications file, pull it into an array, and mung the rows so they are ready
      * to be sent to the Laravel model for updates.
-     *
      * @param string $absoluteLocalFilePath
-     *
      * @return array An array of StdClass objects to be passed to the Laravel model.
      */
     protected function prepareRowsForUpdate( string $absoluteLocalFilePath ): array {
@@ -382,7 +381,7 @@ class UpdateGeonames extends Command {
                 $geonamesDelete->reason = $obj->reason;
 
 
-                if ( ! $geonamesDelete->isDirty() ) {
+                if ( !$geonamesDelete->isDirty() ) {
                     //$this->info( "GeonamesDelete record " . $obj->geonameid . " does not need to be updated." );
                     $bar->advance();
                     continue;
