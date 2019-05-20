@@ -4,3 +4,5 @@ build/
 .idea
 composer.lock
 /packages/
+.phpunit.result.cache
+scratch.php

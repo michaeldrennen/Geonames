@@ -24,7 +24,8 @@
     "laravel/framework": "^5.8"
   },
   "require-dev": {
-    "orchestra/testbench": "^3.8"
+    "orchestra/testbench": "^3.8",
+    "php-coveralls/php-coveralls": "^2.1"
   },
   "autoload": {
     "psr-4": {

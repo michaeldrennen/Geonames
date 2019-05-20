@@ -4,4 +4,5 @@ php:
 install: composer install
 after_success:
     # or enable logging
-    - travis_retry php vendor/bin/coveralls -v
+    #- travis_retry php vendor/bin/coveralls -v
+  - bash <(curl -s https://codecov.io/bash)
