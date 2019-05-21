@@ -20,6 +20,7 @@ abstract class BaseTestCase extends Orchestra\Testbench\TestCase {
     public function setUp(): void {
         parent::setUp();
 
+
         if ( FALSE === $this->dbIsSetUp ) {
 
             echo "\nAbout to run the migration...";
