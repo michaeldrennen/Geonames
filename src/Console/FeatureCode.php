@@ -44,6 +44,13 @@ class FeatureCode extends Command {
     const TABLE_WORKING = 'geonames_feature_codes_working';
 
 
+    const SUCCESS                  = 1;
+    const ERROR_CHECK_DATABASE     = -1;
+    const ERROR_GEOSETTING_INIT    = -2;
+    const ERROR_MAKE_WORKING_TABLE = -3;
+    const ERROR_FAILURE_TO_INSERT  = -4;
+
+
     /**
      * Create a new command instance.
      */
@@ -67,7 +74,7 @@ class FeatureCode extends Command {
         } catch ( \Exception $exception ) {
             $this->error( $exception->getMessage() );
             $this->stopTimer();
-            return FALSE;
+            return self::ERROR_CHECK_DATABASE;
         }
 
 
@@ -85,23 +92,29 @@ class FeatureCode extends Command {
         } catch ( \Exception $exception ) {
             Log::error( '', "Unable to initialize the GeoSetting record.", 'init', $this->connectionName );
             $this->stopTimer();
-            return FALSE;
+            return self::ERROR_GEOSETTING_INIT;
         }
 
 
-        // Get all of the feature code lines from the geonames.org download page, or an array that you specify.
-        $featureCodeFileDownloadLinks = $this->getFeatureCodeFileDownloadLinks(
-            array_filter( $this->option( 'language' ) )
-        );
+        try {
+            // Get all of the feature code lines from the geonames.org download page, or an array that you specify.
+            $featureCodeFileDownloadLinks = $this->getFeatureCodeFileDownloadLinks(
+                array_filter( $this->option( 'language' ) )
+            );
 
-        // Download each of the files that we found.
-        $localPathsToFeatureCodeFiles = self::downloadFiles( $this, $featureCodeFileDownloadLinks,
-                                                             $this->connectionName );
+            // Download each of the files that we found.
+            $localPathsToFeatureCodeFiles = self::downloadFiles( $this, $featureCodeFileDownloadLinks,
+                                                                 $this->connectionName );
 
-        // Run each of those files through LOAD DATA INFILE.
-        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
-        DB::connection( $this->connectionName )
-          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+            $this->makeWorkingTable( self::TABLE, self::TABLE_WORKING );
+        } catch ( \Exception $exception ) {
+            Log::error( '', $exception->getMessage(), 'general',
+                        $this->connectionName );
+            $this->error( $exception->getMessage() );
+            $this->stopTimer();
+            return self::ERROR_MAKE_WORKING_TABLE;
+        }
+
 
         // Now that we have all of the feature code files stored locally, we need to prepare
         // the data to be inserted into our database. Convert each tab delimited row into a php
@@ -110,8 +123,15 @@ class FeatureCode extends Command {
         // isValidRow() for details.
         $validRows = $this->getValidRowsFromFiles( $localPathsToFeatureCodeFiles );
 
+
         // Now that we have our rows, let's insert them into our working table.
-        $allRowsInserted = $this->insertValidRows( $validRows );
+        $allRowsInserted = false;
+        try {
+            $allRowsInserted = $this->insertValidRows( $validRows );
+        } catch ( \Exception $exception ) {
+            // An additional log line to help determine the cause of the failure for the developer.
+            Log::error( '', $exception->getMessage(), 'database', $this->connectionName );
+        }
 
         if ( $allRowsInserted === TRUE ) {
             Schema::connection( $this->connectionName )->drop( self::TABLE );
@@ -120,8 +140,10 @@ class FeatureCode extends Command {
         } else {
             Log::error( '', "Failed to insert all of the " . self::TABLE . " rows.", 'database',
                         $this->connectionName );
+            return self::ERROR_FAILURE_TO_INSERT;
         }
         $this->stopTimer();
+        return self::SUCCESS;
     }
 
 
@@ -135,6 +157,7 @@ class FeatureCode extends Command {
      */
     protected function getFeatureCodeFileDownloadLinks( array $languageCodes = [] ): array {
         $links = $this->getAllLinksOnDownloadPage();
+
 
         $featureCodeFileDownloadLinks = [];
         foreach ( $links as $link ) {

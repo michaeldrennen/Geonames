@@ -66,7 +66,6 @@ class Install extends Command {
             $this->checkDatabase();
             $this->info( "Confirmed database connection set up correctly." );
         } catch ( \Exception $exception ) {
-            echo "EXCEPTILSUDHFLSGDFKLSHGDKLFH: " . $exception->getMessage();
             $this->error( $exception->getMessage() );
             $this->stopTimer();
             return FALSE;
@@ -113,24 +112,68 @@ class Install extends Command {
 
         try {
             if ( $this->option( 'test' ) ):
-                $this->call( 'geonames:feature-code',
-                             [ '--language'   => [ 'en' ],
-                               '--connection' => $this->connectionName ] );
-                $this->call( 'geonames:iso-language-code',
-                             [ '--connection' => $this->connectionName ] );
-                $this->call( 'geonames:admin-1-code',
-                             [ '--connection' => $this->connectionName ] );
-                $this->call( 'geonames:admin-2-code',
-                             [ '--test'       => TRUE,
-                               '--connection' => $this->connectionName ] );
-                $this->call( 'geonames:feature-class',
-                             [ '--connection' => $this->connectionName ] );
-                $this->call( 'geonames:alternate-name',
-                             [ '--country'    => [ 'YU' ],
-                               '--connection' => $this->connectionName ] );
-                $this->call( 'geonames:geoname',
-                             [ '--test'       => TRUE,
-                               '--connection' => $this->connectionName ] );
+
+
+                $featureCodeResult = $this->call( 'geonames:feature-code',
+                                                  [ '--language'   => [ 'en' ],
+                                                    '--connection' => $this->connectionName ] );
+                if ( $featureCodeResult < 0 ):
+                    $this->error( "Check the log. There was an error running geonames:feature-code" );
+                    return $featureCodeResult;
+                endif;
+
+
+                $isoLanguageCodeResult = $this->call( 'geonames:iso-language-code',
+                                                      [ '--connection' => $this->connectionName ] );
+                if ( $isoLanguageCodeResult < 0 ):
+                    $this->error( "Check the log. There was an error running geonames:iso-language-code" );
+                    return $isoLanguageCodeResult;
+                endif;
+
+
+                $admin1CodeResult = $this->call( 'geonames:admin-1-code',
+                                                 [ '--connection' => $this->connectionName ] );
+
+                var_dump($admin1CodeResult); die('admin 1 code result');
+                if ( $admin1CodeResult < 0 ):
+                    $this->error( "Check the log. There was an error running geonames:admin-1-code" );
+                    return $admin1CodeResult;
+                endif;
+
+
+                $admin2CodeResult = $this->call( 'geonames:admin-2-code',
+                                                 [ '--test'       => TRUE,
+                                                   '--connection' => $this->connectionName ] );
+                if ( $admin2CodeResult < 0 ):
+                    $this->error( "Check the log. There was an error running geonames:admin-2-code" );
+                    return $admin2CodeResult;
+                endif;
+
+
+                $featureClassResult = $this->call( 'geonames:feature-class',
+                                                   [ '--connection' => $this->connectionName ] );
+                if ( $featureClassResult < 0 ):
+                    $this->error( "Check the log. There was an error running geonames:feature-class" );
+                    return $featureClassResult;
+                endif;
+
+
+                $alternateNameResult = $this->call( 'geonames:alternate-name',
+                                                    [ '--country'    => [ 'YU' ],
+                                                      '--connection' => $this->connectionName ] );
+                if ( $alternateNameResult < 0 ):
+                    $this->error( "Check the log. There was an error running geonames:alternate-name" );
+                    return $alternateNameResult;
+                endif;
+
+
+                $geonameResult = $this->call( 'geonames:geoname',
+                                              [ '--test'       => TRUE,
+                                                '--connection' => $this->connectionName ] );
+                if ( $geonameResult < 0 ):
+                    $this->error( "Check the log. There was an error running geonames:geoname" );
+                    return $geonameResult;
+                endif;
             else:
                 $this->call( 'geonames:feature-code',
                              [ '--language'   => $this->option( 'language' ),
@@ -156,6 +199,9 @@ class Install extends Command {
             $this->error( $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
             GeoSetting::setStatus( GeoSetting::STATUS_ERROR, $this->connectionName );
 
+
+            var_dump($e->getMessage());
+            flush(); die('master exception');
             return FALSE;
         }
 

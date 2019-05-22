@@ -3,11 +3,6 @@
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-
-use \Illuminate\Container\Container as Container;
-use \Illuminate\Support\Facades\Facade as Facade;
-
-
 abstract class BaseTestCase extends Orchestra\Testbench\TestCase {
 
     use RefreshDatabase;
@@ -30,10 +25,16 @@ abstract class BaseTestCase extends Orchestra\Testbench\TestCase {
             echo "\nMigration complete!";
 
             echo "\nAbout to run the geonames:install...";
-            Artisan::call( 'geonames:install', [
+            $result = Artisan::call( 'geonames:install', [
                 '--test'       => TRUE,
                 '--connection' => 'testing',
             ] );
+
+            if($result < 0):
+                echo "Failure installing Geonames. Check the log.";
+                return;
+            endif;
+
             echo "\nGeonames install complete!";
 
             $this->dbIsSetUp = TRUE;
@@ -90,9 +91,9 @@ abstract class BaseTestCase extends Orchestra\Testbench\TestCase {
     protected
     function getPackageAliases( $app ) {
         return [
-            'Route' => 'Illuminate\Support\Facades\Route',
-//'Sentry'      => 'Cartalyst\Sentry\Facades\Laravel\Sentry',
-//'YourPackage' => 'YourProject\YourPackage\Facades\YourPackage',
+            // 'Route' => 'Illuminate\Support\Facades\Route',
+            //'Sentry'      => 'Cartalyst\Sentry\Facades\Laravel\Sentry',
+            //'YourPackage' => 'YourProject\YourPackage\Facades\YourPackage',
         ];
     }
 

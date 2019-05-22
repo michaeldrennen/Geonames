@@ -1,8 +1,5 @@
 <?php
 
-use Orchestra\Testbench\TestCase;
-
-
 use MichaelDrennen\Geonames\Console\UpdateGeonames;
 use Curl\Curl;
 use Goutte\Client;
@@ -13,9 +10,7 @@ class ProtectedUpdateTest extends BaseTestCase {
      * @test
      */
     public function getAllLinksOnDownloadPage() {
-
         //$this->markTestSkipped('Unable to access the config() helper in this test. Wait until a patch is ready.');
-
         $methodName = 'getAllLinksOnDownloadPage';
         $args       = [];
         $object     = new UpdateGeonames( new Curl(), new Client() );

@@ -4,6 +4,11 @@ namespace MichaelDrennen\Geonames\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Class Log
+ * @package MichaelDrennen\Geonames\Models
+ * TODO perhaps write errors to a flat file as well, incase the error is database related... right?
+ */
 class Log extends Model {
 
     /**
@@ -37,7 +42,7 @@ class Log extends Model {
      * @param string $tag        A short string that we can use to query/filter types of messages.
      * @param string $connection Passed in by the commands. Necessary if you are installing on a specific db connection.
      *
-     * @return bool
+     * @return Log|Model
      */
     public static function error( $url = '', $message = '', $tag = '', $connection = NULL ) {
 

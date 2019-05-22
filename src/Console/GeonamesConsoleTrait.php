@@ -6,6 +6,7 @@ use Curl\Curl;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use MichaelDrennen\Geonames\Models\GeoSetting;
 use MichaelDrennen\Geonames\Models\Log;
 use MichaelDrennen\RemoteFile\RemoteFile;
@@ -278,15 +279,84 @@ trait GeonamesConsoleTrait {
     }
 
     protected function disableKeys( string $table ): bool {
+        if(false === $this->isRobustDriver()):
+            return true;
+        endif;
+
         $query = 'ALTER TABLE ' . $table . ' DISABLE KEYS;';
 
         return DB::connection( $this->connectionName )->getpdo()->exec( $query );
     }
 
     protected function enableKeys( string $table ): bool {
+        if(false === $this->isRobustDriver()):
+            return true;
+        endif;
+
         $query = 'ALTER TABLE ' . $table . ' ENABLE KEYS;';
 
         return DB::connection( $this->connectionName )->getpdo()->exec( $query );
+    }
+
+    protected function getDriver(){
+        return config( "database.connections.{$this->connectionName}.driver" );
+    }
+
+    /**
+     * SQLITE doesn't support a lot of the functionality that MySQL supports.
+     * @return bool
+     */
+    protected function isRobustDriver() {
+        $driver = $this->getDriver();
+        switch ( $driver ):
+            case 'mysql':
+                return true;
+
+            case 'sqlite':
+                return false;
+
+            default:
+                return false;
+        endswitch;
+    }
+
+    /**
+     * I use 'working' tables for smaller tables that get flushed and refilled with new data. This insures basically
+     * zero downtime when updating the table.
+     * @param string $tableName The name of the active table.
+     * @param string $workingTableName The name of the 'working' table. The one that gets filled in the background.
+     * @throws \Exception
+     */
+    protected function makeWorkingTable($tableName, $workingTableName) {
+        // Destroy the working table if it exists. We are going to create an empty one now.
+        Schema::connection( $this->connectionName )->dropIfExists( $workingTableName );
+
+        // The syntax for copying a table is a little different depending on the database engine you are using.
+        // @TODO Perhaps change this to the isRobustDriver function with an if/else...
+        $driver = $this->getDriver();
+        switch ( $driver ):
+            case 'mysql':
+                $statement = 'CREATE TABLE ' . $workingTableName . ' LIKE ' . $tableName . ';';
+                break;
+
+            case 'sqlite':
+                $statementToBeModified = DB::connection( $this->connectionName )
+                                           ->table( 'sqlite_master' )
+                                           ->select( 'sql' )
+                                           ->where( 'type', 'table' )
+                                           ->where( 'name', $tableName )
+                                           ->first()->sql;
+                $search                = 'CREATE TABLE "' . $tableName . '"';
+                $replace               = 'CREATE TABLE "' . $workingTableName . '"';
+                $statement             = str_replace( $search, $replace, $statementToBeModified );
+                break;
+
+            default:
+                throw new \Exception( "Let the maintainer of this library know that you are using the '" . $driver . "' database driver, and that needs to be supported in the commands that create the 'working' tables." );
+
+        endswitch;
+
+        DB::connection( $this->connectionName )->statement( $statement );
     }
 
 }

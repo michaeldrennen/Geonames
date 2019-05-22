@@ -90,7 +90,7 @@ class Admin1Code extends Command {
                         '',
                         $this->connectionName );
             $this->stopTimer();
-            return FALSE;
+            return -1;
         }
 
         $remoteUrl = GeoSetting::getDownloadUrlForFile( self::REMOTE_FILE_NAME );
@@ -103,10 +103,16 @@ class Admin1Code extends Command {
             $this->error( $e->getMessage() );
             Log::error( $remoteUrl, $e->getMessage(), 'remote', $this->connectionName );
 
-            return FALSE;
+            return -2;
         }
 
-        $this->insertWithEloquent( $absoluteLocalPath );
+        try {
+            $this->insertWithEloquent( $absoluteLocalPath );
+        } catch ( Exception $exception ) {
+            $this->error( $exception->getMessage() );
+            return -3;
+        }
+
 
         $this->info( "The admin_1_codes data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
     }

@@ -15,34 +15,28 @@ class ConsoleTest extends BaseTestCase {
 
 
     /**
+     * @test
      * @group admin1
      */
-//    public function testAdmin1Code() {
-//
-//        //$repo = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
-//        //$repo->getByCompositeKey('AD',)
-//         $admin1Codes = \MichaelDrennen\Geonames\Models\Admin1Code::all();
-//         print_r( $admin1Codes );
-//
-//
-//    }
+    public function admin1Code() {
 
+        $repo = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
+        //$repo->getByCompositeKey('AD',)
+        $admin1Codes = \MichaelDrennen\Geonames\Models\Admin1Code::all();
+        echo "admin 1 codes...";
+        print_r( $admin1Codes );
 
-    /**
-     * @throws \Exception
-     */
-    public function testGetStorageDirFromDatabase() {
-
-        $dir = GeoSetting::getStorage();
-        $this->assertEquals( $dir, 'geonames' );
 
     }
 
 
-
-
-
-
+    /**
+     * @test
+     */
+    public function testGetStorageDirFromDatabase() {
+        $dir = GeoSetting::getStorage();
+        $this->assertEquals( $dir, 'geonames' );
+    }
 
 
 }
