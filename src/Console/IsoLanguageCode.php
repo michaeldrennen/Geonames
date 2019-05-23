@@ -46,6 +46,8 @@ class IsoLanguageCode extends Command {
      */
     const TABLE_WORKING = 'geonames_iso_language_codes_working';
 
+    const SUCCESS_EXIT             = 1;
+
     /**
      * Initialize constructor.
      */
@@ -92,16 +94,22 @@ class IsoLanguageCode extends Command {
         }
 
         $remotePath = self::$url . self::LANGUAGE_CODES_FILE_NAME;
-
         $absoluteLocalFilePathOfIsoLanguageCodesFile = self::downloadFile( $this, $remotePath, $this->connectionName );
 
-        if ( ! file_exists( $absoluteLocalFilePathOfIsoLanguageCodesFile ) ) {
+        if ( !file_exists( $absoluteLocalFilePathOfIsoLanguageCodesFile ) ) {
             throw new Exception( "We were unable to download the file at: " . $absoluteLocalFilePathOfIsoLanguageCodesFile );
         }
 
-        $this->insertIsoLanguageCodesWithLoadDataInfile( $absoluteLocalFilePathOfIsoLanguageCodesFile );
+        if ( $this->isRobustDriver() ):
+            $this->insertIsoLanguageCodesWithLoadDataInfile( $absoluteLocalFilePathOfIsoLanguageCodesFile );
+        else:
+            $this->insertIsoLanguageCodesWithEloquent( $absoluteLocalFilePathOfIsoLanguageCodesFile );
+        endif;
+
 
         $this->info( "iso_language_codes data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
+
+        return self::SUCCESS_EXIT;
     }
 
 
@@ -114,9 +122,7 @@ class IsoLanguageCode extends Command {
         ini_set( 'memory_limit', -1 );
         $this->line( "Inserting via LOAD DATA INFILE: " . $localFilePath );
 
-        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
-        DB::connection( $this->connectionName )
-          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        $this->makeWorkingTable( self::TABLE, self::TABLE_WORKING );
         $this->disableKeys( self::TABLE_WORKING );
 
         // This file includes a header row. That is why I skip the first line with the IGNORE 1 LINES statement.
@@ -142,5 +148,53 @@ class IsoLanguageCode extends Command {
         $this->enableKeys( self::TABLE_WORKING );
         Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
         Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
+    }
+
+    protected function insertIsoLanguageCodesWithEloquent( string $localFilePath ) {
+        ini_set( 'memory_limit', -1 );
+        $this->line( "Inserting via Eloquent: " . $localFilePath );
+
+        $this->makeWorkingTable( self::TABLE, self::TABLE_WORKING );
+        $this->disableKeys( self::TABLE_WORKING );
+
+        $rows = [];
+        $file = fopen( $localFilePath, 'r' );
+        while ( ( $line = fgetcsv( $file, 0, "\t" ) ) !== FALSE ) {
+            $modifiedLine = $this->formatLineForEloquent( $line );
+            $rows[]       = $modifiedLine;
+        }
+        fclose( $file );
+
+        array_shift( $rows ); // Remove the header row
+
+        try {
+            \MichaelDrennen\Geonames\Models\IsoLanguageCode::insert( $rows );
+        } catch ( Exception $exception ) {
+            Log::error( '',
+                        $exception->getMessage(),
+                        'database',
+                        $this->connectionName );
+            $this->error( $exception->getMessage() );
+        }
+
+
+        $this->enableKeys( self::TABLE_WORKING );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
+        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
+
+    }
+
+    /**
+     * Replaces the numerical index with the Model's field name, so that I can mass insert these.
+     * @param array $isoLanguageCodeData
+     * @return array
+     */
+    protected function formatLineForEloquent( array $isoLanguageCodeData ) {
+        return [
+            'iso_639_3'     => $isoLanguageCodeData[ 0 ],
+            'iso_639_2'     => $isoLanguageCodeData[ 1 ],
+            'iso_639_1'     => $isoLanguageCodeData[ 2 ],
+            'language_name' => $isoLanguageCodeData[ 3 ]
+        ];
     }
 }

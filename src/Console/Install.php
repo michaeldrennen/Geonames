@@ -134,7 +134,6 @@ class Install extends Command {
                 $admin1CodeResult = $this->call( 'geonames:admin-1-code',
                                                  [ '--connection' => $this->connectionName ] );
 
-                var_dump($admin1CodeResult); die('admin 1 code result');
                 if ( $admin1CodeResult < 0 ):
                     $this->error( "Check the log. There was an error running geonames:admin-1-code" );
                     return $admin1CodeResult;

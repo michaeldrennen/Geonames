@@ -207,9 +207,10 @@ class AlternateName extends Command {
 
 
     protected function initTable() {
-        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
-        DB::connection( $this->connectionName )
-          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
+        $this->makeWorkingTable(self::TABLE, self::TABLE_WORKING);
+//        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
+//        DB::connection( $this->connectionName )
+//          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . ';' );
         $this->disableKeys( self::TABLE_WORKING );
     }
 

@@ -22,9 +22,9 @@ class ConsoleTest extends BaseTestCase {
 
         $repo = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
         //$repo->getByCompositeKey('AD',)
-        $admin1Codes = \MichaelDrennen\Geonames\Models\Admin1Code::all();
+        $admin1Codes = \MichaelDrennen\Geonames\Models\Admin1Code::first();
         echo "admin 1 codes...";
-        print_r( $admin1Codes );
+        print_r( $admin1Codes ); // works I believe
 
 
     }

@@ -44,7 +44,7 @@ class FeatureCode extends Command {
     const TABLE_WORKING = 'geonames_feature_codes_working';
 
 
-    const SUCCESS                  = 1;
+    const SUCCESS_EXIT             = 1;
     const ERROR_CHECK_DATABASE     = -1;
     const ERROR_GEOSETTING_INIT    = -2;
     const ERROR_MAKE_WORKING_TABLE = -3;
@@ -143,7 +143,7 @@ class FeatureCode extends Command {
             return self::ERROR_FAILURE_TO_INSERT;
         }
         $this->stopTimer();
-        return self::SUCCESS;
+        return self::SUCCESS_EXIT;
     }
 
 

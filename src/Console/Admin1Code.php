@@ -48,6 +48,8 @@ class Admin1Code extends Command {
     const TABLE_WORKING = 'geonames_admin_1_codes_working';
 
 
+    const SUCCESS_EXIT = 1;
+
     /**
      * Initialize constructor.
      */
@@ -115,6 +117,7 @@ class Admin1Code extends Command {
 
 
         $this->info( "The admin_1_codes data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
+        return self::SUCCESS_EXIT;
     }
 
 
