@@ -6,13 +6,15 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateGeonamesAlternateNamesTable extends Migration {
 
+
+    const TABLE = 'geonames_alternate_names';
     /**
      * Run the migrations.
      *
      * @return void
      */
     public function up() {
-        Schema::create( 'geonames_alternate_names', function ( Blueprint $table ) {
+        Schema::create( self::TABLE, function ( Blueprint $table ) {
             $table->engine = 'MyISAM';
 
             /**
@@ -65,9 +67,7 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             $table->timestamps();
             $table->primary( 'alternateNameId' );
             $table->index( 'geonameid' );
-            //$table->index( 'alternate_name' );
-
-            $table->index([\Illuminate\Support\Facades\DB::raw('alternate_name(100)')]);
+            $table->index( 'alternate_name' );
         } );
     }
 
@@ -77,6 +77,6 @@ class CreateGeonamesAlternateNamesTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::dropIfExists( 'geonames_alternate_names' );
+        Schema::dropIfExists( self::TABLE );
     }
 }

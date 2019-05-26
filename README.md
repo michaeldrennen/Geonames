@@ -62,3 +62,13 @@ $schedule->command('geonames:update')->dailyAt('3:00');
 ```
 
 The update artisan command will handle the updates and deletes to the geonames table.
+
+## Gotchas
+Are you getting something like: 1071 Specified key was too long
+
+@see https://laravel-news.com/laravel-5-4-key-too-long-error
+
+Add this to your AppServiceProvider.php file:
+```php
+Schema::defaultStringLength(191);
+```
