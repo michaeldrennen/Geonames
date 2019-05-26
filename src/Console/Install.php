@@ -67,8 +67,9 @@ class Install extends Command {
             $this->info( "Confirmed database connection set up correctly." );
         } catch ( \Exception $exception ) {
             $this->error( $exception->getMessage() );
+            $this->error( $exception->getTraceAsString() );
             $this->stopTimer();
-            return FALSE;
+            throw $exception;
         }
 
         try {
@@ -76,7 +77,7 @@ class Install extends Command {
 
             if ( $this->option( 'test' ) ):
                 GeoSetting::install(
-                    [ 'BS','YU','UZ' ],
+                    [ 'BS', 'YU', 'UZ' ],
                     [ 'en' ],
                     $this->option( 'storage' ),
                     $this->connectionName
@@ -97,7 +98,7 @@ class Install extends Command {
                         'exception',
                         $this->connectionName );
             $this->stopTimer();
-            return FALSE;
+            throw $exception;
         }
 
 
@@ -159,7 +160,7 @@ class Install extends Command {
 
 
                 $alternateNameResult = $this->call( 'geonames:alternate-name',
-                                                    [ '--country'    => [ 'BS','YU','UZ' ],
+                                                    [ '--country'    => [ 'BS', 'YU', 'UZ' ],
                                                       '--connection' => $this->connectionName ] );
                 if ( $alternateNameResult < 0 ):
                     $this->error( "Check the log. There was an error running geonames:alternate-name" );
@@ -199,10 +200,7 @@ class Install extends Command {
             $this->error( $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
             GeoSetting::setStatus( GeoSetting::STATUS_ERROR, $this->connectionName );
 
-
-            var_dump($e->getMessage());
-            flush(); die('master exception');
-            return FALSE;
+            throw $e;
         }
 
         GeoSetting::setInstalledAt( $this->connectionName );
