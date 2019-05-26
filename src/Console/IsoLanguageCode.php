@@ -170,16 +170,25 @@ class IsoLanguageCode extends AbstractCommand {
 
         array_shift( $rows ); // Remove the header row
 
-        try {
-            \MichaelDrennen\Geonames\Models\IsoLanguageCodeWorking::insert( $rows );
-        } catch ( Exception $exception ) {
-            Log::error( '',
-                        $exception->getMessage(),
-                        'database',
-                        $this->connectionName );
-            $this->error( $exception->getMessage() );
-            throw $exception;
+
+        /**
+         * @see https://github.com/laravel/framework/issues/50
+         */
+        $slicer = floor(999 / sizeof($rows[0]));
+        $slices = array_chunk($rows, $slicer);
+        foreach ($slices as $slice) {
+            try {
+                \MichaelDrennen\Geonames\Models\IsoLanguageCodeWorking::insert( $slice );
+            } catch ( Exception $exception ) {
+                Log::error( '',
+                            $exception->getMessage(),
+                            'database',
+                            $this->connectionName );
+                $this->error( $exception->getMessage() );
+                throw $exception;
+            }
         }
+
 
         $this->enableKeys( self::TABLE_WORKING );
         Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
