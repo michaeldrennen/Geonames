@@ -174,17 +174,17 @@ class GeoSetting extends Model {
                                   self::DB_COLUMN_CONNECTION            => $connection,
                                 ] );
 
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             Log::error( '',
                         "Unable to create the settings record in the install() function.",
                         'local',
                         $connection );
-            throw new Exception( "Unable to create the settings record in the install() function." );
+            throw new \Exception( "Unable to create the settings record in the install() function." );
         }
 
         try {
             self::setStorage( $storageSubDir, $connection );
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             Log::error( '',
                         "Unable to create the storage sub directory in the install() function.",
                         'filesystem',
@@ -360,7 +360,7 @@ class GeoSetting extends Model {
             self::createStorageDirInFilesystem( $storageSubdir );
 
             return $storageSubdir;
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             throw $e;
         }
     }

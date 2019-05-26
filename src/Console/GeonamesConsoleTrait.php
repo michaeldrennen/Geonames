@@ -95,8 +95,8 @@ trait GeonamesConsoleTrait {
 
         try {
             DB::connection( $this->connectionName )->getPdo();
-        } catch ( Exception $exception ) {
-            throw new Exception( "checkDatabase() failed: " . $exception->getMessage() );
+        } catch ( \Exception $exception ) {
+            throw new \Exception( "checkDatabase() failed: " . $exception->getMessage() );
         }
         return TRUE;
     }
@@ -272,7 +272,7 @@ trait GeonamesConsoleTrait {
             foreach ( $absoluteFilePaths as $absoluteFilePath ) {
                 self::unzip( $absoluteFilePath, $connection );
             }
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             throw $e;
         }
     }

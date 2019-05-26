@@ -179,7 +179,7 @@ class IsoLanguageCode extends AbstractCommand {
         foreach ($slices as $slice) {
             try {
                 \MichaelDrennen\Geonames\Models\IsoLanguageCodeWorking::insert( $slice );
-            } catch ( Exception $exception ) {
+            } catch ( \Exception $exception ) {
                 Log::error( '',
                             $exception->getMessage(),
                             'database',

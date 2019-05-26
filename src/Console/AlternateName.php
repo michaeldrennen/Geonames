@@ -123,7 +123,7 @@ class AlternateName extends AbstractCommand {
                 $absoluteLocalFilePathsOfAlternateNamesZipFiles[ $countryCode ] = $this->downloadFile( $this,
                                                                                                        $urlsToAlternateNamesZipFile,
                                                                                                        $this->connectionName );
-            } catch ( Exception $e ) {
+            } catch ( \Exception $e ) {
                 $this->error( $e->getMessage() );
                 Log::error( $urlsToAlternateNamesZipFiles, $e->getMessage(), 'remote', $this->connectionName );
 
@@ -136,7 +136,7 @@ class AlternateName extends AbstractCommand {
             try {
                 $this->unzip( $absoluteLocalFilePathOfAlternateNamesZipFile, $this->connectionName );
                 $this->comment( "Unzipped " . $absoluteLocalFilePathOfAlternateNamesZipFile );
-            } catch ( Exception $e ) {
+            } catch ( \Exception $e ) {
                 $this->error( $e->getMessage() );
                 Log::error( $absoluteLocalFilePathOfAlternateNamesZipFile, $e->getMessage(), 'local',
                             $this->connectionName );
@@ -232,7 +232,7 @@ class AlternateName extends AbstractCommand {
         try {
             $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL );
             $numSplitFiles       = count( $localFileSplitPaths );
-        } catch ( Exception $exception ) {
+        } catch ( \Exception $exception ) {
             throw $exception;
         }
 
@@ -263,7 +263,7 @@ class AlternateName extends AbstractCommand {
 
             try {
                 $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
-            } catch ( Exception $exception ) {
+            } catch ( \Exception $exception ) {
                 throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
                                                                                                     ->getpdo()
                                                                                                     ->errorInfo(),
@@ -294,7 +294,7 @@ class AlternateName extends AbstractCommand {
             $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL );
             $numSplitFiles       = count( $localFileSplitPaths );
             $this->comment( "$localFilePath was split into $numSplitFiles files." );
-        } catch ( Exception $exception ) {
+        } catch ( \Exception $exception ) {
             throw $exception;
         }
 
@@ -361,7 +361,7 @@ class AlternateName extends AbstractCommand {
 
         try {
             $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
-        } catch ( Exception $exception ) {
+        } catch ( \Exception $exception ) {
             throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
                                                                                                 ->getpdo()
                                                                                                 ->errorInfo(),
@@ -401,7 +401,7 @@ class AlternateName extends AbstractCommand {
             $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL );
             $numSplitFiles       = count( $localFileSplitPaths );
             $this->comment( "I split $localFilePath into $numSplitFiles split files." );
-        } catch ( Exception $exception ) {
+        } catch ( \Exception $exception ) {
             throw $exception;
         }
 
@@ -481,7 +481,7 @@ class AlternateName extends AbstractCommand {
             $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL );
             $numSplitFiles       = count( $localFileSplitPaths );
             $this->comment( "I split $localFilePath into $numSplitFiles split files." );
-        } catch ( Exception $exception ) {
+        } catch ( \Exception $exception ) {
             throw $exception;
         }
 

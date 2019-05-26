@@ -99,7 +99,7 @@ class Admin1Code extends AbstractCommand {
 
         try {
             $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl, $this->connectionName );
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
             Log::error( $remoteUrl, $e->getMessage(), 'remote', $this->connectionName );
 
@@ -108,7 +108,7 @@ class Admin1Code extends AbstractCommand {
 
         try {
             $this->insertWithEloquent( $absoluteLocalPath );
-        } catch ( Exception $exception ) {
+        } catch ( \Exception $exception ) {
             $this->error( $exception->getMessage() );
             return -3;
         }

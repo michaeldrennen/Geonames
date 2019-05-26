@@ -67,7 +67,7 @@ class NoCountry extends AbstractCommand {
 
         try {
             $localZipFile = $this->downloadFile( $this, $downloadLink );
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
             Log::error( $downloadLink, $e->getMessage(), 'remote', $this->connectionName );
 
@@ -78,7 +78,7 @@ class NoCountry extends AbstractCommand {
         try {
             $this->line( "Unzipping " . $localZipFile );
             $this->unzip( $localZipFile, $this->connectionName );
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
             Log::error( $localZipFile, $e->getMessage(), 'local', $this->connectionName );
 

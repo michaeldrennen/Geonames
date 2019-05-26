@@ -194,7 +194,7 @@ class Install extends Command {
             endif;
 
 
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
             $this->error( $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
             GeoSetting::setStatus( GeoSetting::STATUS_ERROR, $this->connectionName );

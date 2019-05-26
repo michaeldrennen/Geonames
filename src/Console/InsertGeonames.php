@@ -102,7 +102,7 @@ class InsertGeonames extends AbstractCommand {
 
         try {
             $this->unzipFiles( $absolutePathsToZipFiles, $this->connectionName );
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             $this->error( "Unable to unzip at least one of the country zip files." );
             Log::error( '', "We were unable to unzip at least one of the country zip files.", 'local',
                         $this->connectionName );
@@ -115,7 +115,7 @@ class InsertGeonames extends AbstractCommand {
 
         try {
             $this->insert( $absolutePathToMasterTxtFile );
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
             Log::error( '', $e->getMessage(), 'database', $this->connectionName );
         }
@@ -407,7 +407,7 @@ SET created_at=NOW(),updated_at=null";
 
         try {
             \MichaelDrennen\Geonames\Models\GeonameWorking::insert( $rows );
-        } catch ( Exception $exception ) {
+        } catch ( \Exception $exception ) {
             Log::error( '',
                         $exception->getMessage(),
                         'database',

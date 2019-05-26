@@ -101,7 +101,7 @@ class Admin2Code extends AbstractCommand {
 
         try {
             $absoluteLocalPath = $this->downloadFile( $this, $remoteUrl, $this->connectionName );
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             $this->error( $e->getMessage() );
             Log::error( $remoteUrl, $e->getMessage(), 'remote', $this->connectionName );
 

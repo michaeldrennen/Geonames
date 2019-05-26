@@ -87,7 +87,7 @@ class OnlyTest extends \Orchestra\Testbench\TestCase {
 
         try {
             $repo->getByCompositeKey( 'XX', '00' ); // Does not exist.
-        } catch ( Exception $exception ) {
+        } catch ( \Exception $exception ) {
             $this->assertInstanceOf( \Illuminate\Database\Eloquent\ModelNotFoundException::class, $exception );
         }
 
@@ -103,7 +103,7 @@ class OnlyTest extends \Orchestra\Testbench\TestCase {
 
         try {
             $repo->getByCompositeKey( 'XX', '00', 000 ); // Does not exist.
-        } catch ( Exception $exception ) {
+        } catch ( \Exception $exception ) {
             $this->assertInstanceOf( \Illuminate\Database\Eloquent\ModelNotFoundException::class, $exception );
         }
     }
@@ -126,7 +126,7 @@ class OnlyTest extends \Orchestra\Testbench\TestCase {
 
         try {
             $repo->getByGeonameId( 0 ); // Does not exist.
-        } catch ( Exception $exception ) {
+        } catch ( \Exception $exception ) {
             $this->assertInstanceOf( \Illuminate\Database\Eloquent\ModelNotFoundException::class, $exception );
         }
     }
