@@ -247,14 +247,17 @@ class GeoSetting extends Model {
      */
     public static function addLanguage( string $languageCode = 'en', string $connection = NULL ): bool {
         $existingLanguages = self::getLanguages( $connection );
-        if ( array_search( $languageCode, $existingLanguages ) !== FALSE ) {
+
+        if ( FALSE !== array_search( $languageCode, $existingLanguages ) ) {
             return TRUE;
         }
 
         $existingLanguages[] = $languageCode;
-        if ( self::on( $connection )
-                 ->where( self::DB_COLUMN_ID, self::ID )
-                 ->update( [ self::DB_COLUMN_COUNTRIES => $existingLanguages ] ) ) {
+
+        $geoSetting                              = self::findOrFail( self::ID );
+        $geoSetting->{self::DB_COLUMN_LANGUAGES} = $existingLanguages;
+        $geoSetting->save();
+        if ( $geoSetting->save() ) {
             return TRUE;
         }
 
@@ -273,15 +276,20 @@ class GeoSetting extends Model {
     public static function removeLanguage( string $languageCode, string $connection = NULL ): bool {
         $existingLanguages     = self::getLanguages( $connection );
         $existingLanguageIndex = array_search( $languageCode, $existingLanguages );
-        if ( $existingLanguageIndex !== FALSE ) {
+
+        // If the language doesn't exist in the array, then our job is done.
+        if ( FALSE === $existingLanguageIndex ) {
             return TRUE;
         }
         unset( $existingLanguages[ $existingLanguageIndex ] );
-        if ( self::on( $connection )
-                 ->where( self::DB_COLUMN_ID, self::ID )
-                 ->update( [ self::DB_COLUMN_COUNTRIES => $existingLanguages ] ) ) {
+
+        $geoSetting                              = self::findOrFail( self::ID );
+        $geoSetting->{self::DB_COLUMN_LANGUAGES} = array_values($existingLanguages); // reset the indexes
+        $geoSetting->save();
+        if ( $geoSetting->save() ) {
             return TRUE;
         }
+
         throw new Exception( "Unable to remove this language to our settings " . $languageCode );
     }
 
@@ -293,7 +301,7 @@ class GeoSetting extends Model {
      */
     public static function getLanguages( string $connection = NULL ): array {
         $columnName = self::DB_COLUMN_LANGUAGES;
-        $languages  = (string)self::on( $connection )->first()->$columnName;
+        $languages  = self::on( $connection )->first()->$columnName;
 
         return $languages;
     }

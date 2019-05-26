@@ -33,6 +33,11 @@
       "MichaelDrennen\\Geonames\\": "src"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "MichaelDrennen\\Geonames\\Tests\\": "tests/"
+    }
+  },
   "minimum-stability": "stable",
   "extra": {
     "laravel": {

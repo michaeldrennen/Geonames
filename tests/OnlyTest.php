@@ -1,6 +1,7 @@
 <?php
+namespace MichaelDrennen\Geonames\Tests;
 
-class OnlyTest extends Orchestra\Testbench\TestCase {
+class OnlyTest extends \Orchestra\Testbench\TestCase {
 
     public function setUp(): void {
         parent::setUp();

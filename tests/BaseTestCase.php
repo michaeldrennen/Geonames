@@ -1,11 +1,12 @@
 <?php
+namespace MichaelDrennen\Geonames\Tests;
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 
-abstract class BaseTestCase extends Orchestra\Testbench\TestCase {
+abstract class BaseTestCase extends \Orchestra\Testbench\TestCase {
 
     //use RefreshDatabase;
 
