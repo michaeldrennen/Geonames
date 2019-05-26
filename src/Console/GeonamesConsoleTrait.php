@@ -194,7 +194,6 @@ trait GeonamesConsoleTrait {
         $curl->get( $link );
 
         if ( $curl->error ) {
-            //$command->error("\n" . $curl->error_code . ':' . $curl->error_message);
             Log::error( $link, $curl->error_message, $curl->error_code, $connectionName );
             throw new Exception( "Unable to download the file at [" . $link . "]\n" . $curl->error_message );
         }
