@@ -15,7 +15,7 @@ use MichaelDrennen\LocalFile\LocalFile;
  * Class Admin1Code
  * @package MichaelDrennen\Geonames\Console
  */
-class Admin1Code extends Command {
+class Admin1Code extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 
@@ -47,8 +47,6 @@ class Admin1Code extends Command {
      */
     const TABLE_WORKING = 'geonames_admin_1_codes_working';
 
-
-    const SUCCESS_EXIT = 1;
 
     /**
      * Initialize constructor.

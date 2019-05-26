@@ -11,7 +11,7 @@ use MichaelDrennen\Geonames\Models\Log;
 use MichaelDrennen\LocalFile\LocalFile;
 
 
-class InsertGeonames extends Command {
+class InsertGeonames extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 
@@ -92,7 +92,7 @@ class InsertGeonames extends Command {
 
         if ( $this->option( 'test' ) ):
             $this->comment( "Running in test mode. Will insert records for YU." );
-            GeoSetting::install( [ 'YU' ], [ 'en' ], GeoSetting::DEFAULT_STORAGE_SUBDIR, $this->connectionName );
+            GeoSetting::install( [ 'BS','YU','UZ' ], [ 'en' ], GeoSetting::DEFAULT_STORAGE_SUBDIR, $this->connectionName );
         endif;
 
         $zipFileNames = $this->getLocalCountryZipFileNames();
@@ -246,7 +246,7 @@ class InsertGeonames extends Command {
         // Create and/or truncate the master txt file before we start putting data in it.
         $masterResource = fopen( $absolutePathToMasterTxtFile, "w+" );
 
-        if ( ! file_exists( $absolutePathToMasterTxtFile ) ) {
+        if ( !file_exists( $absolutePathToMasterTxtFile ) ) {
             throw new Exception( "We were unable to create a master txt file to put all of our rows into." );
         }
 
@@ -277,7 +277,7 @@ class InsertGeonames extends Command {
                 $this->numLinesInMasterFile++;
                 $bar->advance( $bytesWritten );
             }
-            if ( ! feof( $inputResource ) ) {
+            if ( !feof( $inputResource ) ) {
                 throw new Exception( "Error: unexpected fgets() fail on " . $absolutePathToTextFile );
             }
             fclose( $inputResource );
@@ -296,12 +296,25 @@ class InsertGeonames extends Command {
     }
 
 
+    public function insert( $absoluteLocalFilePathOfGeonamesFile ) {
+        if ( $this->isRobustDriver() ):
+            $this->insertGeonamesWithLoadDataInfile( $absoluteLocalFilePathOfGeonamesFile );
+        else:
+            $this->insertGeonamesWithEloquent( $absoluteLocalFilePathOfGeonamesFile );
+        endif;
+
+       // $asdf = \MichaelDrennen\Geonames\Models\Geoname::all();
+        //var_dump( $asdf );
+        //var_dump( $asdf->count() );
+    }
+
+
     /**
      * @param string $localFilePath
      *
      * @throws Exception
      */
-    protected function insert( $localFilePath ) {
+    protected function insertGeonamesWithLoadDataInfile( $localFilePath ) {
         $this->line( "\nStarting to insert the records found in " . $localFilePath );
         if ( is_null( $this->numLinesInMasterFile ) ) {
             $numLines = LocalFile::lineCount( $localFilePath );
@@ -370,6 +383,75 @@ SET created_at=NOW(),updated_at=null";
     }
 
 
+    protected function insertGeonamesWithEloquent( $localFilePath ) {
+        $this->line( "\nStarting to insert the records found in " . $localFilePath );
+        if ( is_null( $this->numLinesInMasterFile ) ) {
+            $numLines = LocalFile::lineCount( $localFilePath );
+            $this->line( "We are going to try to insert " . $numLines . " geoname records from the allCountries file." );
+        } else {
+            $this->line( "We are going to try to insert " . $this->numLinesInMasterFile . " geoname records." );
+
+        }
+
+        $this->makeWorkingTable( self::TABLE, self::TABLE_WORKING );
+        $this->disableKeys( self::TABLE_WORKING );
+
+        $rows = [];
+        $file = fopen( $localFilePath, 'r' );
+
+        while ( ( $line = fgetcsv( $file, 0, "\t" ) ) !== FALSE ) {
+            $modifiedLine = $this->formatLineForEloquent( $line );
+            $rows[]       = $modifiedLine;
+        }
+        fclose( $file );
+
+        try {
+            \MichaelDrennen\Geonames\Models\GeonameWorking::insert( $rows );
+        } catch ( Exception $exception ) {
+            Log::error( '',
+                        $exception->getMessage(),
+                        'database',
+                        $this->connectionName );
+            $this->error( $exception->getMessage() );
+        }
+
+        $this->enableKeys( self::TABLE_WORKING );
+        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
+        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
+        GeoSetting::setCountriesFromCountriesToBeAdded( $this->connectionName );
+    }
+
+    /**
+     * Replaces the numerical index with the Model's field name, so that I can mass insert these.
+     * @param array $geonameData
+     * @return array
+     */
+    protected function formatLineForEloquent( array $geonameData ) {
+
+        return [
+            'geonameid'         => $geonameData[ 0 ],
+            'name'              => $geonameData[ 1 ],
+            'asciiname'         => $geonameData[ 2 ],
+            'alternatenames'    => $geonameData[ 3 ],
+            'latitude'          => $geonameData[ 4 ],
+            'longitude'         => $geonameData[ 5 ],
+            'feature_class'     => $geonameData[ 6 ],
+            'feature_code'      => $geonameData[ 7 ],
+            'country_code'      => $geonameData[ 8 ],
+            'cc2'               => $geonameData[ 9 ],
+            'admin1_code'       => $geonameData[ 10 ],
+            'admin2_code'       => $geonameData[ 11 ],
+            'admin3_code'       => $geonameData[ 12 ],
+            'admin4_code'       => $geonameData[ 13 ],
+            'population'        => $geonameData[ 14 ],
+            'elevation'         => $geonameData[ 15 ],
+            'dem'               => $geonameData[ 16 ],
+            'timezone'          => $geonameData[ 17 ],
+            'modification_date' => $geonameData[ 18 ],
+        ];
+    }
+
+
     /**
      * If the allCountries file is found in the geonames storage dir on this box, then we can just use that and
      * ignore any other text files.
@@ -385,4 +467,6 @@ SET created_at=NOW(),updated_at=null";
 
         return FALSE;
     }
+
+
 }

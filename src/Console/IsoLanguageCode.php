@@ -3,7 +3,6 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Exception;
-use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use MichaelDrennen\Geonames\Models\GeoSetting;
@@ -14,7 +13,7 @@ use MichaelDrennen\Geonames\Models\Log;
  *
  * @package MichaelDrennen\Geonames\Console
  */
-class IsoLanguageCode extends Command {
+class IsoLanguageCode extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 
@@ -46,7 +45,6 @@ class IsoLanguageCode extends Command {
      */
     const TABLE_WORKING = 'geonames_iso_language_codes_working';
 
-    const SUCCESS_EXIT             = 1;
 
     /**
      * Initialize constructor.
@@ -150,6 +148,9 @@ class IsoLanguageCode extends Command {
         Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
     }
 
+
+
+
     protected function insertIsoLanguageCodesWithEloquent( string $localFilePath ) {
         ini_set( 'memory_limit', -1 );
         $this->line( "Inserting via Eloquent: " . $localFilePath );
@@ -168,7 +169,7 @@ class IsoLanguageCode extends Command {
         array_shift( $rows ); // Remove the header row
 
         try {
-            \MichaelDrennen\Geonames\Models\IsoLanguageCode::insert( $rows );
+            \MichaelDrennen\Geonames\Models\IsoLanguageCodeWorking::insert( $rows );
         } catch ( Exception $exception ) {
             Log::error( '',
                         $exception->getMessage(),
@@ -177,11 +178,9 @@ class IsoLanguageCode extends Command {
             $this->error( $exception->getMessage() );
         }
 
-
         $this->enableKeys( self::TABLE_WORKING );
         Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
         Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
-
     }
 
     /**

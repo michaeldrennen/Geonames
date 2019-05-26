@@ -17,7 +17,7 @@ use MichaelDrennen\Geonames\Models\AlternateNamesWorking;
  *
  * @package MichaelDrennen\Geonames\Console
  */
-class AlternateName extends Command {
+class AlternateName extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 
@@ -84,7 +84,7 @@ class AlternateName extends Command {
         $this->setDatabaseConnectionName();
 
         if ( $this->option( 'test' ) ):
-            $countries = [ 'YU' ];
+            $countries = [ 'BS','YU','UZ' ];
         else:
             $countries = $this->option( 'country' );
         endif;

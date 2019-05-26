@@ -14,7 +14,7 @@ use MichaelDrennen\Geonames\Models\Log;
  *
  * @package MichaelDrennen\Geonames\Console
  */
-class FeatureCode extends Command {
+class FeatureCode extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 
@@ -44,7 +44,7 @@ class FeatureCode extends Command {
     const TABLE_WORKING = 'geonames_feature_codes_working';
 
 
-    const SUCCESS_EXIT             = 1;
+// @TODO Think about moving these to the AbstractCommand
     const ERROR_CHECK_DATABASE     = -1;
     const ERROR_GEOSETTING_INIT    = -2;
     const ERROR_MAKE_WORKING_TABLE = -3;

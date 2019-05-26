@@ -15,7 +15,7 @@ use MichaelDrennen\Geonames\Models\Log;
 use MichaelDrennen\Geonames\Models\GeoSetting;
 
 
-class UpdateGeonames extends Command {
+class UpdateGeonames extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 

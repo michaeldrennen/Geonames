@@ -10,7 +10,7 @@
          stopOnFailure="false">
     <testsuites>
         <testsuite name="Geonames Test Suite">
-            <directory suffix=".php">./tests/</directory>
+            <directory suffix="Test.php">./tests/</directory>
         </testsuite>
     </testsuites>
 
@@ -20,6 +20,15 @@
 
             <exclude>
                 <file>./src/Routes/web.php</file>
+                <file>./src/config/database.php</file>
+                <directory>./src/config</directory>
+                <directory>./src/Controller</directory>
+                <directory>./src/Events</directory>
+                <directory>./src/Listeners</directory>
+                <directory>./src/Observers</directory>
+                <directory>./src/Routes</directory>
+                <directory>./src/Seeders</directory>
+                <directory>./src/Views</directory>
             </exclude>
         </whitelist>
     </filter>

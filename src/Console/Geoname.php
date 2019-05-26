@@ -2,10 +2,7 @@
 
 namespace MichaelDrennen\Geonames\Console;
 
-use Illuminate\Console\Command;
-
-
-class Geoname extends Command {
+class Geoname extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 

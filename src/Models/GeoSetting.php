@@ -134,8 +134,8 @@ class GeoSetting extends Model {
      * Create our GeoSetting record in the database. This is where we pull all of our
      * configuration data from to process the install and later queries.
      *
-     * @param array  $countriesToBeAdded
-     * @param array  $languages
+     * @param array $countriesToBeAdded
+     * @param array $languages
      * @param string $storageSubDir
      * @param string $connection
      *
@@ -195,17 +195,16 @@ class GeoSetting extends Model {
         return TRUE;
     }
 
+
     /**
      * In a perfect world, the geonames_settings record was created when you ran the geonames:install command.
      * During development, I could not always count on the record to exist there. So I created this little
      * method to create the record if it did not exist. When users start to tinker with this library, and
      * accidentally delete the settings record (or change it's id or whatever), this will self-heal the system.
-     *
-     * @param array  $countries
-     * @param array  $languages
+     * @param array $countries
+     * @param array $languages
      * @param string $storageSubDir
-     * @param string $connection
-     *
+     * @param string|NULL $connection
      * @return bool Really only returns true. All other errors throw an Exception.
      * @throws Exception
      */
@@ -371,7 +370,7 @@ class GeoSetting extends Model {
             return $path;
         }
 
-        if ( file_exists( $path ) && ! is_writable( $path ) ) {
+        if ( file_exists( $path ) && !is_writable( $path ) ) {
             throw new Exception( "The storage path at '" . $path . "' exists but we can't write to it." );
         }
 
@@ -431,7 +430,7 @@ class GeoSetting extends Model {
 
 
     /**
-     * @param array       $fileNames
+     * @param array $fileNames
      * @param string|NULL $connection
      * @return array
      * @throws \Exception

@@ -13,7 +13,7 @@ use MichaelDrennen\Geonames\Models\Log;
  * Class NoCountry
  * @package MichaelDrennen\Geonames\Console
  */
-class NoCountry extends Command {
+class NoCountry extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 

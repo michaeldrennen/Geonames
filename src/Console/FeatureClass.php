@@ -8,7 +8,7 @@ use MichaelDrennen\Geonames\Models\GeoSetting;
 use MichaelDrennen\Geonames\Models\Log;
 
 
-class FeatureClass extends Command {
+class FeatureClass extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 

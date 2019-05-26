@@ -15,7 +15,7 @@ use MichaelDrennen\LocalFile\LocalFile;
  *
  * @package MichaelDrennen\Geonames\Console
  */
-class Admin2Code extends Command {
+class Admin2Code extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 
@@ -127,8 +127,6 @@ class Admin2Code extends Command {
     protected function insertWithEloquent( string $localFilePath ) {
         $numLines = LocalFile::lineCount( $localFilePath );
 
-
-
         $this->disableKeys( self::TABLE );
         $rows = file( $localFilePath );
 
@@ -143,15 +141,15 @@ class Admin2Code extends Command {
         $geonamesBar->setMessage( 'admin 2 codes' );
 
         foreach ( $rows as $i => $row ) {
-            $fields                = explode( "\t", $row );            // US.CO.107	Routt County	Routt County	5581553
-            $countryAndAdmin2      = $fields[ 0 ] ?? NULL;     // US.CO.107
+            $fields                = explode( "\t", $row );             // US.CO.107	Routt County	Routt County	5581553
+            $countryAndAdmin2      = $fields[ 0 ] ?? NULL;                       // US.CO.107
             $countryAndAdmin2Parts = explode( '.', $countryAndAdmin2 ); // US.CO.107
-            $countryCode           = $countryAndAdmin2Parts[ 0 ] ?? NULL;   // US
-            $admin1Code            = $countryAndAdmin2Parts[ 1 ] ?? NULL;    // CO
-            $admin2Code            = $countryAndAdmin2Parts[ 2 ] ?? NULL;    // 107
-            $name                  = $fields[ 1 ] ?? NULL;                         // Routt County
-            $asciiName             = $fields[ 2 ] ?? NULL;                    // Routt County
-            $geonameId             = $fields[ 3 ] ?? NULL;                    // 5581553
+            $countryCode           = $countryAndAdmin2Parts[ 0 ] ?? NULL;        // US
+            $admin1Code            = $countryAndAdmin2Parts[ 1 ] ?? NULL;        // CO
+            $admin2Code            = $countryAndAdmin2Parts[ 2 ] ?? NULL;        // 107
+            $name                  = $fields[ 1 ] ?? NULL;                       // Routt County
+            $asciiName             = $fields[ 2 ] ?? NULL;                       // Routt County
+            $geonameId             = $fields[ 3 ] ?? NULL;                       // 5581553
 
             Admin2CodeModel::on( $this->connectionName )->create( [ 'geonameid'    => $geonameId,
                                                                     'country_code' => $countryCode,
@@ -159,7 +157,7 @@ class Admin2Code extends Command {
                                                                     'admin2_code'  => $admin2Code,
                                                                     'name'         => $name,
                                                                     'asciiname'    => $asciiName,
-                                     ] );
+                                                                  ] );
 
             $geonamesBar->advance();
         }

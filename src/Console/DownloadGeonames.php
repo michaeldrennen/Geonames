@@ -8,7 +8,7 @@ use MichaelDrennen\Geonames\Models\GeoSetting;
 use MichaelDrennen\Geonames\Models\Log;
 
 
-class DownloadGeonames extends Command {
+class DownloadGeonames extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 
@@ -53,7 +53,7 @@ class DownloadGeonames extends Command {
         try {
             if ( $this->option( 'test' ) ):
                 $this->comment( "geonames:download-geonames running in test mode. I will only download the file for YU. It's small." );
-                $countries = [ 'YU' ];
+                $countries = [ 'BS','YU','UZ' ];
             else:
                 $countries = GeoSetting::getCountriesToBeAdded( $this->connectionName );
             endif;

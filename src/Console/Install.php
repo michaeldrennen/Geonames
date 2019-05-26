@@ -76,7 +76,7 @@ class Install extends Command {
 
             if ( $this->option( 'test' ) ):
                 GeoSetting::install(
-                    [ 'YU' ],
+                    [ 'BS','YU','UZ' ],
                     [ 'en' ],
                     $this->option( 'storage' ),
                     $this->connectionName
@@ -125,6 +125,7 @@ class Install extends Command {
 
                 $isoLanguageCodeResult = $this->call( 'geonames:iso-language-code',
                                                       [ '--connection' => $this->connectionName ] );
+
                 if ( $isoLanguageCodeResult < 0 ):
                     $this->error( "Check the log. There was an error running geonames:iso-language-code" );
                     return $isoLanguageCodeResult;
@@ -158,7 +159,7 @@ class Install extends Command {
 
 
                 $alternateNameResult = $this->call( 'geonames:alternate-name',
-                                                    [ '--country'    => [ 'YU' ],
+                                                    [ '--country'    => [ 'BS','YU','UZ' ],
                                                       '--connection' => $this->connectionName ] );
                 if ( $alternateNameResult < 0 ):
                     $this->error( "Check the log. There was an error running geonames:alternate-name" );

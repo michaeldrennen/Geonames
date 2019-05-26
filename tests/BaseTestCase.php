@@ -2,21 +2,24 @@
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 
 abstract class BaseTestCase extends Orchestra\Testbench\TestCase {
 
-    use RefreshDatabase;
+    //use RefreshDatabase;
 
-    protected $dbIsSetUp = FALSE;
+    //protected static $dbIsSetUp = FALSE;
 
     /**
      * Setup the test environment.
      */
-    public function setUp(): void {
-        parent::setUp();
+    public  function setUp(): void {
 
 
-        if ( FALSE === $this->dbIsSetUp ) {
+
+
+        //if ( FALSE === self::$dbIsSetUp ) {
 
             echo "\nAbout to run the migration...";
             Artisan::call( 'migrate', [
@@ -37,10 +40,10 @@ abstract class BaseTestCase extends Orchestra\Testbench\TestCase {
 
             echo "\nGeonames install complete!";
 
-            $this->dbIsSetUp = TRUE;
-        } else {
-            echo "\n+++++++++++++++++++++++++++++++++++++++++++++++++++DATABASE IS ALREADY SET UP\n\n";
-        }
+            self::$dbIsSetUp = TRUE;
+//        } else {
+//            echo "\n+++++++++++++++++++++++++++++++++++++++++++++++++++DATABASE IS ALREADY SET UP\n\n";
+//        }
 
     }
 
