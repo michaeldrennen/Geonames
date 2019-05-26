@@ -76,7 +76,7 @@ class IsoLanguageCode extends AbstractCommand {
         } catch ( \Exception $exception ) {
             $this->error( $exception->getMessage() );
             $this->stopTimer();
-            return FALSE;
+            throw $exception;
         }
 
         try {
@@ -88,7 +88,7 @@ class IsoLanguageCode extends AbstractCommand {
         } catch ( \Exception $exception ) {
             Log::error( NULL, "Unable to initialize the GeoSetting record.", '', $this->connectionName );
             $this->stopTimer();
-            return FALSE;
+            throw $exception;
         }
 
         $remotePath = self::$url . self::LANGUAGE_CODES_FILE_NAME;
@@ -149,8 +149,10 @@ class IsoLanguageCode extends AbstractCommand {
     }
 
 
-
-
+    /**
+     * @param string $localFilePath
+     * @throws Exception
+     */
     protected function insertIsoLanguageCodesWithEloquent( string $localFilePath ) {
         ini_set( 'memory_limit', -1 );
         $this->line( "Inserting via Eloquent: " . $localFilePath );
@@ -176,6 +178,7 @@ class IsoLanguageCode extends AbstractCommand {
                         'database',
                         $this->connectionName );
             $this->error( $exception->getMessage() );
+            throw $exception;
         }
 
         $this->enableKeys( self::TABLE_WORKING );

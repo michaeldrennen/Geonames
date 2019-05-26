@@ -232,7 +232,7 @@ class GeoSetting extends Model {
                     "Unable to create the settings record in the init() function.",
                     'local',
                     $connection );
-        throw new Exception( "Unable to create the settings record in the init() function." );
+        throw new Exception( "Unable to create the settings record in the init() function. In reality, you should never get to this Exception. A database exception would most likely be thrown further up in this function." );
     }
 
     /**
