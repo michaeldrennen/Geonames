@@ -3,15 +3,22 @@
 namespace MichaelDrennen\Geonames\Tests;
 
 
+use MichaelDrennen\Geonames\Models\Geoname;
+
 class RepositoryTest extends \Orchestra\Testbench\TestCase {
 
     public function setUp(): void {
+
+        var_dump( config( 'database' ) );
         parent::setUp();
+        var_dump( config( 'database' ) );
         $this->artisan( 'migrate', [ '--database' => 'testing', ] );
         $this->artisan( 'geonames:install', [
             '--test'       => TRUE,
             '--connection' => 'testing',
         ] );
+        var_dump( 'geonames:install complete' );
+        var_dump( Geoname::all()->count() );
     }
 
     /**
@@ -53,12 +60,12 @@ class RepositoryTest extends \Orchestra\Testbench\TestCase {
      * @test
      */
     public function theOnlyTest() {
-        $this->isoLanguageCode();
-        $this->featureClass();
-        $this->getStorageDirFromDatabase();
-        $this->admin1Code();
-        $this->admin2Code();
-        $this->alternateName();
+//        $this->isoLanguageCode();
+//        $this->featureClass();
+//        $this->getStorageDirFromDatabase();
+//        $this->admin1Code();
+//        $this->admin2Code();
+//        $this->alternateName();
         $this->geoname();
     }
 

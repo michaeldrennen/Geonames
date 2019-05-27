@@ -66,6 +66,12 @@ class GeonamesController {
         return response()->json( $rows );
     }
 
+    /**
+     * @param Request $request
+     * @param string $countryCode
+     * @param string $term
+     * @return string
+     */
     public function citiesByCountryCode( Request $request, string $countryCode = '', string $term = '' ): string {
 
         $geonames = $this->geoname->getCitiesFromCountryStartingWithTerm( $countryCode, $term );
@@ -84,7 +90,12 @@ class GeonamesController {
     }
 
 
-    public function schoolsByCountryCode( $countryCode = '', $asciinameTerm = '' ) {
+    /**
+     * @param string $countryCode
+     * @param string $asciinameTerm
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function schoolsByCountryCode( string $countryCode = '', string $asciinameTerm = '' ) {
         $results = $this->geoname->getSchoolsFromCountryStartingWithTerm( $countryCode, $asciinameTerm );
 
         return response()->json( $results );
