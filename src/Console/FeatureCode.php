@@ -3,7 +3,6 @@
 namespace MichaelDrennen\Geonames\Console;
 
 use Carbon\Carbon;
-use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use MichaelDrennen\Geonames\Models\GeoSetting;
@@ -44,12 +43,6 @@ class FeatureCode extends AbstractCommand {
     const TABLE_WORKING = 'geonames_feature_codes_working';
 
 
-// @TODO Think about moving these to the AbstractCommand
-    const ERROR_CHECK_DATABASE     = -1;
-    const ERROR_GEOSETTING_INIT    = -2;
-    const ERROR_MAKE_WORKING_TABLE = -3;
-    const ERROR_FAILURE_TO_INSERT  = -4;
-
 
     /**
      * Create a new command instance.
@@ -74,7 +67,7 @@ class FeatureCode extends AbstractCommand {
         } catch ( \Exception $exception ) {
             $this->error( $exception->getMessage() );
             $this->stopTimer();
-            return self::ERROR_CHECK_DATABASE;
+            throw $exception;
         }
 
 
@@ -92,7 +85,7 @@ class FeatureCode extends AbstractCommand {
         } catch ( \Exception $exception ) {
             Log::error( '', "Unable to initialize the GeoSetting record.", 'init', $this->connectionName );
             $this->stopTimer();
-            return self::ERROR_GEOSETTING_INIT;
+            throw $exception;
         }
 
 
@@ -112,7 +105,7 @@ class FeatureCode extends AbstractCommand {
                         $this->connectionName );
             $this->error( $exception->getMessage() );
             $this->stopTimer();
-            return self::ERROR_MAKE_WORKING_TABLE;
+            throw $exception;
         }
 
 
@@ -140,7 +133,7 @@ class FeatureCode extends AbstractCommand {
         } else {
             Log::error( '', "Failed to insert all of the " . self::TABLE . " rows.", 'database',
                         $this->connectionName );
-            return self::ERROR_FAILURE_TO_INSERT;
+            throw $exception;
         }
         $this->stopTimer();
         return self::SUCCESS_EXIT;
