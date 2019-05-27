@@ -38,6 +38,19 @@ class GeonameRepository {
      * @return Collection   An Eloquent Collection of every geoname record that starts with the characters in $term.
      */
     public function getPlacesStartingWithTerm( $term ): Collection {
+        $query = Geoname::on( env( 'DB_GEONAMES_CONNECTION' ) )
+                        ->select( $this->defaultGeonamesFields )
+                        ->where( 'asciiname', 'LIKE', $term . '%' )
+                        ->orderBy( 'country_code' )
+                        ->orderBy( 'admin1_code' )
+                        ->orderBy( 'admin2_code' );
+
+        var_dump( Geoname::all() );
+        var_dump( Geoname::all()->count() );
+        var_dump( $query->toSql() );
+        var_dump( $query->getBindings() );
+
+
         $collection = Geoname::on( env( 'DB_GEONAMES_CONNECTION' ) )
                              ->select( $this->defaultGeonamesFields )
                              ->where( 'asciiname', 'LIKE', $term . '%' )
