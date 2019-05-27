@@ -211,6 +211,13 @@ class Install extends Command {
         else:
             $this->error( "We were unable to empty the storage directory." );
         endif;
+
+        Log::insert(
+            '',
+            "Geonames has been installed. Runtime: " . $this->runTime,
+            "install",
+            $this->connectionName );
+
         $this->line( "Finished " . $this->signature );
 
         $this->call( 'geonames:status',

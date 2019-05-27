@@ -321,7 +321,6 @@ class InsertGeonames extends AbstractCommand {
             $this->line( "We are going to try to insert " . $numLines . " geoname records from the allCountries file." );
         } else {
             $this->line( "We are going to try to insert " . $this->numLinesInMasterFile . " geoname records." );
-
         }
 
         $this->line( "Dropping the temp table named " . self::TABLE_WORKING . " (if it exists)." );
@@ -331,9 +330,7 @@ class InsertGeonames extends AbstractCommand {
         DB::connection( $this->connectionName )
           ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . '; ' );
 
-
         $this->disableKeys( self::TABLE_WORKING );
-
 
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
     INTO TABLE " . self::TABLE_WORKING . "
