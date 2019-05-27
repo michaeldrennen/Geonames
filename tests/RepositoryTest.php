@@ -9,9 +9,9 @@ class RepositoryTest extends \Orchestra\Testbench\TestCase {
 
     public function setUp(): void {
 
-        var_dump( $this->app[ 'database' ] );
+        var_dump( $this->app[ 'config' ] );
         parent::setUp();
-        var_dump( $this->app[ 'database' ] );
+        var_dump( $this->app[ 'config' ] );
         $this->artisan( 'migrate', [ '--database' => 'testing', ] );
         $this->artisan( 'geonames:install', [
             '--test'       => TRUE,
