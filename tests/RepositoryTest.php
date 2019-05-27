@@ -1,4 +1,5 @@
 <?php
+
 namespace MichaelDrennen\Geonames\Tests;
 
 
@@ -27,7 +28,7 @@ class RepositoryTest extends \Orchestra\Testbench\TestCase {
             'driver'   => 'sqlite',
             'database' => ':memory:',
             'prefix'   => '',
-            'options'  => [ \PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE, ]
+            'options'  => [ \PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE, ],
         ] );
     }
 
@@ -52,12 +53,12 @@ class RepositoryTest extends \Orchestra\Testbench\TestCase {
      * @test
      */
     public function theOnlyTest() {
-       // $this->isoLanguageCode();
-        //$this->featureClass();
-        //$this->getStorageDirFromDatabase();
-        //$this->admin1Code();
-        //$this->admin2Code();
-        //$this->alternateName();
+        $this->isoLanguageCode();
+        $this->featureClass();
+        $this->getStorageDirFromDatabase();
+        $this->admin1Code();
+        $this->admin2Code();
+        $this->alternateName();
         $this->geoname();
     }
 
@@ -161,28 +162,28 @@ class RepositoryTest extends \Orchestra\Testbench\TestCase {
      *
      */
     protected function geoname() {
-        $repo     = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
+        $repo = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
 
         $geonames = $repo->getPlacesStartingWithTerm( "Gig" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
-        $this->assertNotEmpty( $geonames );
+        $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
 
 
-        $geonames = $repo->getCitiesFromCountryStartingWithTerm('BS',"na");
+        $geonames = $repo->getCitiesFromCountryStartingWithTerm( 'BS', "na" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
-        $this->assertNotEmpty( $geonames );
+        $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
 
 
-        $geonames = $repo->getCitiesNotFromCountryStartingWithTerm('US', "Na");
+        $geonames = $repo->getCitiesNotFromCountryStartingWithTerm( 'US', "Na" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
-        $this->assertNotEmpty( $geonames );
+        $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
 
-        $geonames = $repo->getSchoolsFromCountryStartingWithTerm('UZ', "Kir");
+        $geonames = $repo->getSchoolsFromCountryStartingWithTerm( 'UZ', "Kir" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
-        $this->assertNotEmpty( $geonames );
+        $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
 
     }

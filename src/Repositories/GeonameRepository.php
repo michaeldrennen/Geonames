@@ -2,9 +2,8 @@
 
 namespace MichaelDrennen\Geonames\Repositories;
 
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use MichaelDrennen\Geonames\Models\Geoname;
-use Illuminate\Support\Facades\DB;
 
 
 class GeonameRepository {
@@ -38,7 +37,7 @@ class GeonameRepository {
      * @param string $term A few characters of a location's name that would appear in the asciiname column.
      * @return Collection   An Eloquent Collection of every geoname record that starts with the characters in $term.
      */
-    public function getPlacesStartingWithTerm( $term ) {
+    public function getPlacesStartingWithTerm( $term ): Collection {
         $collection = Geoname::on( env( 'DB_GEONAMES_CONNECTION' ) )
                              ->select( $this->defaultGeonamesFields )
                              ->where( 'asciiname', 'LIKE', $term . '%' )
@@ -115,12 +114,9 @@ class GeonameRepository {
 
         if ( $this->termHasAbbreviation( $term ) ) {
             $queryStrings = [];
-
-
         } else {
             $query->where( 'asciiname', $term );
         }
-
 
         return $query;
     }
