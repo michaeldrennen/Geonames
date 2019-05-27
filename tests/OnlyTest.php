@@ -166,9 +166,6 @@ class OnlyTest extends \Orchestra\Testbench\TestCase {
      * 7500737
      */
     protected function geoname() {
-
-
-
         $repo     = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
         $geonames = $repo->getPlacesStartingWithTerm( "Fed" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );

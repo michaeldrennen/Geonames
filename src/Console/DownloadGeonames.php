@@ -92,7 +92,8 @@ class DownloadGeonames extends AbstractCommand {
 
         $files = [];
         foreach ( $countries as $country ) {
-            $files[] = self::$url . $country . '.zip';
+            // 20190527:mdd A lowercase country in this URL will give you a 404.
+            $files[] = self::$url . strtoupper($country) . '.zip';
         }
         return $files;
     }
