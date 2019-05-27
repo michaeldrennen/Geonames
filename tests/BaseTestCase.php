@@ -1,4 +1,5 @@
 <?php
+
 namespace MichaelDrennen\Geonames\Tests;
 
 use Illuminate\Support\Facades\Artisan;
@@ -8,44 +9,19 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 abstract class BaseTestCase extends \Orchestra\Testbench\TestCase {
 
-    //use RefreshDatabase;
-
-    //protected static $dbIsSetUp = FALSE;
 
     /**
      * Setup the test environment.
      */
-    public  function setUp(): void {
+    public function setUp(): void {
+        $this->artisan( 'migrate', [
+            '--database' => 'testing',
+        ] );
 
-
-
-
-        //if ( FALSE === self::$dbIsSetUp ) {
-
-            echo "\nAbout to run the migration...";
-            Artisan::call( 'migrate', [
-                '--database' => 'testing',
-            ] );
-            echo "\nMigration complete!";
-
-            echo "\nAbout to run the geonames:install...";
-            $result = Artisan::call( 'geonames:install', [
-                '--test'       => TRUE,
-                '--connection' => 'testing',
-            ] );
-
-            if($result < 0):
-                echo "Failure installing Geonames. Check the log.";
-                return;
-            endif;
-
-            echo "\nGeonames install complete!";
-
-            self::$dbIsSetUp = TRUE;
-//        } else {
-//            echo "\n+++++++++++++++++++++++++++++++++++++++++++++++++++DATABASE IS ALREADY SET UP\n\n";
-//        }
-
+        $this->artisan( 'geonames:install', [
+            '--test'       => TRUE,
+            '--connection' => 'testing',
+        ] );
     }
 
     /**
@@ -62,7 +38,7 @@ abstract class BaseTestCase extends \Orchestra\Testbench\TestCase {
             'driver'   => 'sqlite',
             'database' => ':memory:',
             'prefix'   => '',
-            'options'  => [ \PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE, ]
+            'options'  => [ \PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE, ],
         ] );
     }
 
@@ -95,9 +71,7 @@ abstract class BaseTestCase extends \Orchestra\Testbench\TestCase {
     protected
     function getPackageAliases( $app ) {
         return [
-            // 'Route' => 'Illuminate\Support\Facades\Route',
-            //'Sentry'      => 'Cartalyst\Sentry\Facades\Laravel\Sentry',
-            //'YourPackage' => 'YourProject\YourPackage\Facades\YourPackage',
+
         ];
     }
 

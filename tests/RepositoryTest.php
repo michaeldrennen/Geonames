@@ -1,22 +1,16 @@
 <?php
 namespace MichaelDrennen\Geonames\Tests;
 
-class OnlyTest extends \Orchestra\Testbench\TestCase {
+
+class RepositoryTest extends \Orchestra\Testbench\TestCase {
 
     public function setUp(): void {
         parent::setUp();
-
-        echo "\nAbout to run the migration...";
         $this->artisan( 'migrate', [ '--database' => 'testing', ] );
-        echo "\nMigration complete!";
-
-        echo "\nAbout to run the geonames:install...";
         $this->artisan( 'geonames:install', [
             '--test'       => TRUE,
             '--connection' => 'testing',
         ] );
-
-        echo "\nGeonames install complete!";
     }
 
     /**
@@ -58,12 +52,12 @@ class OnlyTest extends \Orchestra\Testbench\TestCase {
      * @test
      */
     public function theOnlyTest() {
-        $this->isoLanguageCode();
-        $this->featureClass();
-        $this->getStorageDirFromDatabase();
-        $this->admin1Code();
-        $this->admin2Code();
-        $this->alternateName();
+       // $this->isoLanguageCode();
+        //$this->featureClass();
+        //$this->getStorageDirFromDatabase();
+        //$this->admin1Code();
+        //$this->admin2Code();
+        //$this->alternateName();
         $this->geoname();
     }
 
@@ -164,10 +158,12 @@ class OnlyTest extends \Orchestra\Testbench\TestCase {
 
     /**
      * 7500737
+     *
      */
     protected function geoname() {
         $repo     = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
-        $geonames = $repo->getPlacesStartingWithTerm( "Fed" );
+
+        $geonames = $repo->getPlacesStartingWithTerm( "Gig" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertNotEmpty( $geonames );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );

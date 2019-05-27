@@ -3,22 +3,6 @@ namespace MichaelDrennen\Geonames\Tests;
 
 class InstallIsoLanguageCodeTest extends BaseInstallTestCase {
 
-//
-//    /**
-//     * @test
-//     * @group install
-//     */
-//    public function testGeoSettingInstall() {
-//        \MichaelDrennen\Geonames\Models\GeoSetting::install(
-//            [ 'BS', 'YU', 'UZ' ],
-//            [ 'en' ],
-//            'geonames',
-//            'testing'
-//        );
-//        $geoSetting = \MichaelDrennen\Geonames\Models\GeoSetting::first();
-//        $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\GeoSetting::class, $geoSetting );
-//    }
-
     /**
      * @test
      * @group install

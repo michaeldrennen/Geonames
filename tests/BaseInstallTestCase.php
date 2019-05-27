@@ -6,9 +6,7 @@ abstract class BaseInstallTestCase extends \Orchestra\Testbench\TestCase {
 
     public function setUp(): void {
         parent::setUp();
-        echo "\nAbout to run the migration...";
         $this->artisan( 'migrate', [ '--database' => 'testing', ] );
-        echo "\nMigration complete!";
     }
 
     /**
