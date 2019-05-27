@@ -115,13 +115,9 @@ class Install extends Command {
             if ( $this->option( 'test' ) ):
 
 
-                $featureCodeResult = $this->call( 'geonames:feature-code',
-                                                  [ '--language'   => [ 'en' ],
-                                                    '--connection' => $this->connectionName ] );
-                if ( $featureCodeResult < 0 ):
-                    $this->error( "Check the log. There was an error running geonames:feature-code" );
-                    return $featureCodeResult;
-                endif;
+                $this->call( 'geonames:feature-code',
+                             [ '--language'   => [ 'en' ],
+                               '--connection' => $this->connectionName ] );
 
 
                 $isoLanguageCodeResult = $this->call( 'geonames:iso-language-code',
