@@ -8,7 +8,7 @@ class InstallIsoLanguageCodeTest extends BaseInstallTestCase {
      * @group install
      */
     public function testIsoLanguageCodeCommand() {
-        $this->artisan( 'geonames:iso-language-code', [ '--connection' => 'testing' ] );
+        $this->artisan( 'geonames:iso-language-code', [ '--connection' => $this->DB_CONNECTION ] );
         $isoLanguageCodes = \MichaelDrennen\Geonames\Models\IsoLanguageCode::all();
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $isoLanguageCodes );
         $this->assertNotEmpty( $isoLanguageCodes );

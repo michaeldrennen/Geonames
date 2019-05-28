@@ -15,7 +15,7 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
             [ 'BS', 'YU', 'UZ' ],
             [ 'en' ],
             'geonames',
-            'testing'
+            $this->DB_CONNECTION
         );
     }
 
@@ -27,8 +27,19 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
             [ 'BS', 'YU', 'UZ' ],
             [ 'en' ],
             'geonames',
-            'testing'
+            $this->DB_CONNECTION
         );
+    }
+
+    /**
+     * @test
+     * @group install
+     * @group geosetting
+     */
+    public function testGeoSettingGetConnectionNameShouldReturnString() {
+        $this->geoSettingInstallForTest();
+        $connectionName = GeoSetting::getDatabaseConnectionName();
+        $this->assertEquals( $this->DB_CONNECTION, $connectionName );
     }
 
     /**
@@ -144,15 +155,5 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
         $this->assertTrue( $result );
     }
 
-    /**
-     * @test
-     * @group install
-     * @group geosetting
-     */
-    public function testGeoSettingGetConnectionNameShouldReturnString() {
-        $this->geoSettingInstallForTest();
-        $connectionName = GeoSetting::getDatabaseConnectionName();
-        $this->assertEquals( 'testing', $connectionName );
-    }
 
 }

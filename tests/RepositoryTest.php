@@ -5,54 +5,20 @@ namespace MichaelDrennen\Geonames\Tests;
 
 use MichaelDrennen\Geonames\Models\Geoname;
 
-class RepositoryTest extends \Orchestra\Testbench\TestCase {
+class RepositoryTest extends AbstractGlobalTestCase {
+
 
     public function setUp(): void {
-
         print_r( $this->app[ 'config' ] );
         parent::setUp();
         print_r( $this->app[ 'config' ] );
-        $this->artisan( 'migrate', [ '--database' => 'testing', ] );
+        $this->artisan( 'migrate', [ '--database' => $this->DB_CONNECTION, ] );
         $this->artisan( 'geonames:install', [
             '--test'       => TRUE,
-            '--connection' => 'testing',
+            '--connection' => $this->DB_CONNECTION,
         ] );
         var_dump( 'geonames:install complete' );
         var_dump( Geoname::all()->count() );
-    }
-
-    /**
-     * Define environment setup.
-     *
-     * @param  \Illuminate\Foundation\Application $app
-     *
-     * @return void
-     */
-    protected function getEnvironmentSetUp( $app ) {
-        // Setup default database to use sqlite :memory:
-        $app[ 'config' ]->set( 'database.default', 'testing' );
-        $app[ 'config' ]->set( 'database.connections.testing', [
-            'driver'   => 'sqlite',
-            'database' => ':memory:',
-            'prefix'   => '',
-            'options'  => [ \PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE, ],
-        ] );
-    }
-
-    /**
-     * Get package providers.  At a minimum this is the package being tested, but also
-     * would include packages upon which our package depends, e.g. Cartalyst/Sentry
-     * In a normal app environment these would be added to the 'providers' array in
-     * the config/app.php file.
-     *
-     * @param  \Illuminate\Foundation\Application $app
-     *
-     * @return array
-     */
-    protected function getPackageProviders( $app ) {
-        return [
-            \MichaelDrennen\Geonames\GeonamesServiceProvider::class,
-        ];
     }
 
 
