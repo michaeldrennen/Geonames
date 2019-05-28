@@ -1,6 +1,8 @@
 language: php
 php:
   - '7.3'
+services:
+  - mysql
 install: composer install
 after_success:
   # or enable logging
