@@ -310,6 +310,16 @@ class UpdateGeonames extends AbstractCommand {
 
         // Save it locally
         $localFilePath = GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . $this->modificationsTxtFileName;
+
+        // Determine if the local storage path exists and is writable.
+        if ( FALSE === file_exists( $localFilePath ) ):
+            throw new \Exception( "You need to create a directory at: " . $localFilePath );
+        endif;
+
+        if ( FALSE === is_writable( $localFilePath ) ):
+            throw new \Exception( "This directory needs to be writable: " . $localFilePath );
+        endif;
+
         $bytesWritten  = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === FALSE ) {
             Log::error( $absoluteUrlToModificationsFile,
