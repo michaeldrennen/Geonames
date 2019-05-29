@@ -139,7 +139,7 @@ class UpdateGeonames extends AbstractCommand {
 
         //
         $modificationRows = $this->prepareRowsForUpdate( $localFilePath );
-
+        $this->comment( "\nProcessing the rows to be modified..." );
         $bar = $this->output->createProgressBar( count( $modificationRows ) );
 
         foreach ( $modificationRows as $i => $obj ):
@@ -207,6 +207,7 @@ class UpdateGeonames extends AbstractCommand {
             }
         endforeach;
         $bar->finish();
+        $this->info( "\nDone updating rows!\n" );
 
 
         /**
@@ -320,7 +321,7 @@ class UpdateGeonames extends AbstractCommand {
             throw new \Exception( "This directory needs to be writable: " . $localFilePath );
         endif;
 
-        $bytesWritten  = file_put_contents( $localFilePath, $data );
+        $bytesWritten = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === FALSE ) {
             Log::error( $absoluteUrlToModificationsFile,
                         "Unable to create the local file at '" . $localFilePath . "', file_put_contents() returned false. Disk full? Permission problem?",
@@ -370,12 +371,12 @@ class UpdateGeonames extends AbstractCommand {
 
     protected function processDeletedRows() {
 
-        $this->comment( "\nProcessing deleted rows." );
+        $this->comment( "\n  Processing deleted rows." );
         // Download the file from geonames.org and save it on local storage.
         $localFilePath    = $this->saveRemoteDeletesFile();
         $dateFromFileName = $this->getDateFromDeletesFileName( $localFilePath );
         $deletionRows     = $this->prepareRowsToRecordDeletes( $localFilePath, $dateFromFileName );
-        $this->comment( "There were " . count( $deletionRows ) . " that need to be deleted." );
+        $this->comment( "  There were " . count( $deletionRows ) . " that need to be deleted." );
 
         $bar = $this->output->createProgressBar( count( $deletionRows ) );
 
@@ -443,10 +444,6 @@ class UpdateGeonames extends AbstractCommand {
                 $bar->advance();
             }
         endforeach;
-
-
-        //$this->comment( "Done processing deleted rows." );
-
     }
 
     /**
