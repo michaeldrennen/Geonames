@@ -2,28 +2,28 @@
 
 namespace MichaelDrennen\Geonames\Tests;
 
-abstract class AbstractGlobalTestCase extends \Orchestra\Testbench\TestCase {
+use Illuminate\Foundation\Application;
+use PDO;
+use Orchestra\Testbench\TestCase;
+use MichaelDrennen\Geonames\GeonamesServiceProvider;
+
+abstract class AbstractGlobalTestCase extends TestCase {
 
     protected $DB_CONNECTION = NULL;
 
     /**
-     * Define environment setup.
-     *
-     * @param  \Illuminate\Foundation\Application $app
-     *
-     * @return void
+     * @param Application $app
      */
     protected function getEnvironmentSetUp( $app ) {
         $this->DB_CONNECTION = $_ENV[ 'DB_CONNECTION' ];
 
-        var_dump( $this->DB_CONNECTION );
         // Setup default database to use sqlite :memory:
         $app[ 'config' ]->set( 'database.default', $this->DB_CONNECTION );
         $app[ 'config' ]->set( 'database.connections.testing', [
             'driver'   => 'sqlite',
             'database' => ':memory:',
             'prefix'   => '',
-            'options'  => [ \PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE, ],
+            'options'  => [ PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE, ],
         ] );
     }
 
@@ -33,13 +33,13 @@ abstract class AbstractGlobalTestCase extends \Orchestra\Testbench\TestCase {
      * In a normal app environment these would be added to the 'providers' array in
      * the config/app.php file.
      *
-     * @param  \Illuminate\Foundation\Application $app
+     * @param Application $app
      *
      * @return array
      */
-    protected function getPackageProviders( $app ) {
+    protected function getPackageProviders( Application $app ) {
         return [
-            \MichaelDrennen\Geonames\GeonamesServiceProvider::class,
+            GeonamesServiceProvider::class,
         ];
     }
 
@@ -49,12 +49,12 @@ abstract class AbstractGlobalTestCase extends \Orchestra\Testbench\TestCase {
      * aliased facade, you should add the alias here, along with aliases for
      * facades upon which your package depends, e.g. Cartalyst/Sentry.
      *
-     * @param  \Illuminate\Foundation\Application $app
+     * @param Application $app
      *
      * @return array
      */
     protected
-    function getPackageAliases( $app ) {
+    function getPackageAliases( Application $app ) {
         return [
 
         ];
