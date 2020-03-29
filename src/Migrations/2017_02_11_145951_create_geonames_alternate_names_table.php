@@ -67,7 +67,11 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             $table->timestamps();
             $table->primary( 'alternateNameId' );
             $table->index( 'geonameid' );
-            $table->index( 'alternate_name' );
+            //$table->index( 'alternate_name' );
+
+            Schema::table( 'geonames_alternate_names', function ( $table ) {
+                $table->index( [ \Illuminate\Support\Facades\DB::raw( 'alternate_name(250)' ) ] );
+            } );
         } );
     }
 
@@ -77,6 +81,7 @@ class CreateGeonamesAlternateNamesTable extends Migration {
      * @return void
      */
     public function down() {
+
         Schema::dropIfExists( self::TABLE );
     }
 }
