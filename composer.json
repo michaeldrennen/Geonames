@@ -13,7 +13,7 @@
     "php": "^7.3",
     "ext-intl": "*",
     "ext-pdo": "*",
-    "laravel/framework": "^6.0|^7.3",
+    "laravel/framework": "^6.0||^7.3",
     "michaeldrennen/remote-file": "^2.0",
     "michaeldrennen/local-file": "^2.0",
     "curl/curl": "^2.2",
