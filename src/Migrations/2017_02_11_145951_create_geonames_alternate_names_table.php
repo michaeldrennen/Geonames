@@ -8,6 +8,7 @@ class CreateGeonamesAlternateNamesTable extends Migration {
 
 
     const TABLE = 'geonames_alternate_names';
+
     /**
      * Run the migrations.
      *
@@ -20,8 +21,8 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             /**
              * alternateNameId   : the id of this alternate name, int
              */
-            $table->integer( 'alternateNameId', false, true );
-            $table->integer( 'geonameid', false, true );
+            $table->integer( 'alternateNameId', FALSE, TRUE );
+            $table->integer( 'geonameid', FALSE, TRUE );
 
             /**
              * isolanguage: iso 639 language code 2- or 3-characters; 4-characters 'post' for postal codes and
@@ -40,25 +41,25 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             /**
              * isPreferredName: '1', if this alternate name is an official/preferred name
              */
-            $table->tinyInteger( 'isPreferredName', false, true )
+            $table->tinyInteger( 'isPreferredName', FALSE, TRUE )
                   ->nullable();
 
             /**
              * isShortName: '1', if this is a short name like 'California' for 'State of California'
              */
-            $table->tinyInteger( 'isShortName', false, true )
+            $table->tinyInteger( 'isShortName', FALSE, TRUE )
                   ->nullable();
 
             /**
              * isColloquial: '1', if this alternate name is a colloquial or slang term
              */
-            $table->tinyInteger( 'isColloquial', false, true )
+            $table->tinyInteger( 'isColloquial', FALSE, TRUE )
                   ->nullable();
 
             /**
              * isHistoric: '1', if this alternate name is historic and was used in the past
              */
-            $table->tinyInteger( 'isHistoric', false, true )
+            $table->tinyInteger( 'isHistoric', FALSE, TRUE )
                   ->nullable();
 
             /**
@@ -69,9 +70,11 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             $table->index( 'geonameid' );
             //$table->index( 'alternate_name' );
 
-            Schema::table( 'geonames_alternate_names', function ( $table ) {
-                $table->index( [ \Illuminate\Support\Facades\DB::raw( 'alternate_name(100)' ) ] );
-            } );
+
+            \Illuminate\Support\Facades\DB::connection( 'geonames' )
+                                          ->statement( 'CREATE INDEX alt_name_part ON ' . self::TABLE . ' (alternate_name(250));' );
+
+
         } );
     }
 
