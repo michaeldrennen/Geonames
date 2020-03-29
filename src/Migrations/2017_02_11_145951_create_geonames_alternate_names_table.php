@@ -70,7 +70,7 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             //$table->index( 'alternate_name' );
 
             Schema::table( 'geonames_alternate_names', function ( $table ) {
-                $table->index( [ \Illuminate\Support\Facades\DB::raw( 'alternate_name(250)' ) ] );
+                $table->index( [ \Illuminate\Support\Facades\DB::raw( 'alternate_name(100)' ) ] );
             } );
         } );
     }
