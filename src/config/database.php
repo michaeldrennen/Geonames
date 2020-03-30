@@ -2,6 +2,8 @@
 
 return [
 
+    'running_in_continuous_integration' => env( 'RUNNING_IN_CI', FALSE ),
+
     /*
     |--------------------------------------------------------------------------
     | Default Database Connection Name

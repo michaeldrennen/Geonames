@@ -30,7 +30,11 @@ class CreateGeonamesAdmin1CodesTable extends Migration {
             $table->index( 'country_code' );
             $table->index( 'admin1_code' );
 
-            $table->index( [ \Illuminate\Support\Facades\DB::raw( "asciiname" ) ] );
+
+            // TRAVIS-CI.ORG has an issue with this syntax.
+            if ( FALSE == config( 'database.running_in_continuous_integration' ) ):
+                $table->index( [ \Illuminate\Support\Facades\DB::raw( "asciiname(250)" ) ] );
+            endif;
         } );
 
         /**
