@@ -1,7 +1,7 @@
 # geonames v2.x
 
 
-[![Latest Stable Version](https://poser.pugx.org/michaeldrennen/geonames/version)](https://packagist.org/packages/michaeldrennen/geonames)  [![Total Downloads](https://poser.pugx.org/michaeldrennen/geonames/downloads)](https://packagist.org/packages/michaeldrennen/geonames)  [![License](https://poser.pugx.org/michaeldrennen/geonames/license)](https://packagist.org/packages/michaeldrennen/geonames)
+[![Latest Stable Version](https://poser.pugx.org/michaeldrennen/geonames/version)](https://packagist.org/packages/michaeldrennen/geonames)  [![Total Downloads](https://poser.pugx.org/michaeldrennen/geonames/downloads)](https://packagist.org/packages/michaeldrennen/geonames)  [![License](https://poser.pugx.org/michaeldrennen/geonames/license)](https://packagist.org/packages/michaeldrennen/geonames) [![GitHub issues](https://img.shields.io/github/issues/michaeldrennen/Geonames)](https://github.com/michaeldrennen/Geonames/issues) [![GitHub forks](https://img.shields.io/github/forks/michaeldrennen/Geonames)](https://github.com/michaeldrennen/Geonames/network) [![GitHub stars](https://img.shields.io/github/stars/michaeldrennen/Geonames)](https://github.com/michaeldrennen/Geonames/stargazers) ![Travis (.org)](https://img.shields.io/travis/michaeldrennen/Geonames)  
 
 A Laravel (php) package to interface with the geo-location services at geonames.org.
 
