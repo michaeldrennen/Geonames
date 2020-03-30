@@ -83,7 +83,9 @@ class CreateGeonamesAlternateNamesTable extends Migration {
          * bytes (SQL: alter table `geonames_alternate_names` add index
          * `geonames_alternate_names_alternate_name_index`(`alternate_name`))
          */
-        \Illuminate\Support\Facades\DB::statement( 'CREATE INDEX alt_name_part ON ' . self::TABLE . ' (alternate_name(250));' );
+
+
+        \Illuminate\Support\Facades\DB::statement( 'CREATE INDEX alt_name_part ON ' . self::TABLE . ' (`alternate_name`(250));' );
     }
 
     /**
