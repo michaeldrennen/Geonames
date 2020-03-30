@@ -42,7 +42,7 @@ class CreateGeonamesAdmin1CodesTable extends Migration {
          * bytes (SQL: alter table `geonames_alternate_names` add index
          * `geonames_alternate_names_alternate_name_index`(`alternate_name`))
          */
-        \Illuminate\Support\Facades\DB::statement( 'CREATE INDEX asciiname_part ON ' . self::TABLE . ' asciiname(250);' );
+        \Illuminate\Support\Facades\DB::statement( 'CREATE INDEX asciiname_part ON ' . self::TABLE . '(asciiname(250));' );
     }
 
     /**
