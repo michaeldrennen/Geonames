@@ -72,3 +72,11 @@ Add this to your AppServiceProvider.php file:
 ```php
 Schema::defaultStringLength(191);
 ```
+
+###A quick word on indexes
+
+This library contains a bunch of migrations that contain a bunch of indexes. Now not everyone will need all of the indexes.
+
+So when you install this library, run the migrations and delete the indexes that you don't need.
+
+Also, Laravel doesn't let you specify a key length for indexes on varchar columns. There are two indexes suffering from this limit. Instead of creating indexes on those columns the "Laravel way", I send a raw/manual query to create the indexes with the proper lengths.
