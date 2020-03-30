@@ -30,7 +30,7 @@ class CreateGeonamesAdmin1CodesTable extends Migration {
             $table->index( 'country_code' );
             $table->index( 'admin1_code' );
 
-            $table->index( [ \Illuminate\Support\Facades\DB::raw( 'asciiname(250)' ) ] );
+            $table->index( [ \Illuminate\Support\Facades\DB::raw( "asciiname" ) ] );
         } );
 
         /**
