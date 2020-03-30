@@ -48,13 +48,10 @@ abstract class AbstractGlobalTestCase extends TestCase {
      * the 'aliases' array in the config/app.php file.  If your package exposes an
      * aliased facade, you should add the alias here, along with aliases for
      * facades upon which your package depends, e.g. Cartalyst/Sentry.
-     *
      * @param Application $app
-     *
      * @return array
      */
-    protected
-    function getPackageAliases( Application $app ) {
+    protected function getPackageAliases( $app ) {
         return [
 
         ];
