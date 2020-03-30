@@ -33,11 +33,9 @@ abstract class AbstractGlobalTestCase extends TestCase {
      * In a normal app environment these would be added to the 'providers' array in
      * the config/app.php file.
      *
-     * @param Application $app
-     *
      * @return array
      */
-    protected function getPackageProviders( Application $app ) {
+    protected function getPackageProviders( $app ) {
         return [
             GeonamesServiceProvider::class,
         ];
