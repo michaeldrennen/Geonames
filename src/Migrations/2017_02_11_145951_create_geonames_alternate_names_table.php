@@ -68,8 +68,12 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             $table->primary( 'alternateNameId' );
             $table->index( 'geonameid' );
 
+
             // TRAVIS-CI.ORG has an issue with this syntax.
-            if ( FALSE == config( 'database.running_in_continuous_integration' ) ):
+            if ( 'true' == config( 'database.running_in_continuous_integration' ) ):
+                echo "\n\nYOU ARE RUNNING THIS TEST IN CI. Index on alternate_name(250) will not be created.\n\n";
+                flush();
+            else:
                 $table->index( [ \Illuminate\Support\Facades\DB::raw( "alternate_name(250)" ) ] );
             endif;
 
