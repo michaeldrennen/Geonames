@@ -8,7 +8,6 @@ class CreateGeonamesAlternateNamesTable extends Migration {
 
 
     const TABLE = 'geonames_alternate_names';
-
     /**
      * Run the migrations.
      *
@@ -68,14 +67,23 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             $table->timestamps();
             $table->primary( 'alternateNameId' );
             $table->index( 'geonameid' );
-            //$table->index( 'alternate_name' );
-
-
-            \Illuminate\Support\Facades\DB::connection( 'geonames' )
-                                          ->statement( 'CREATE INDEX alt_name_part ON ' . self::TABLE . ' (alternate_name(250));' );
 
 
         } );
+
+
+        /**
+         * I have to use the following code in place of the "Laravel way"...
+         * $table->index( 'alternate_name' );
+         * There is a problem with MySQL unable to create indexes over a certain length.
+         * @see https://github.com/michaeldrennen/Geonames/issues/30
+         * This was similar to the error that I was getting:
+         * Illuminate\Database\QueryException  : SQLSTATE[42000]: Syntax error or
+         * access violation: 1071 Specified key was too long; max key length is 1000
+         * bytes (SQL: alter table `geonames_alternate_names` add index
+         * `geonames_alternate_names_alternate_name_index`(`alternate_name`))
+         */
+        \Illuminate\Support\Facades\DB::statement( 'CREATE INDEX alt_name_part ON ' . self::TABLE . ' (alternate_name(250));' );
     }
 
     /**
@@ -84,7 +92,6 @@ class CreateGeonamesAlternateNamesTable extends Migration {
      * @return void
      */
     public function down() {
-
         Schema::dropIfExists( self::TABLE );
     }
 }

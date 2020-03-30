@@ -29,8 +29,20 @@ class CreateGeonamesAdmin1CodesTable extends Migration {
 
             $table->index( 'country_code' );
             $table->index( 'admin1_code' );
-            $table->index( 'asciiname' );
         } );
+
+        /**
+         * I have to use the following code in place of the "Laravel way"...
+         * $table->index( 'asciiname' );
+         * There is a problem with MySQL unable to create indexes over a certain length.
+         * @see https://github.com/michaeldrennen/Geonames/issues/30
+         * This was similar to the error that I was getting:
+         * Illuminate\Database\QueryException  : SQLSTATE[42000]: Syntax error or
+         * access violation: 1071 Specified key was too long; max key length is 1000
+         * bytes (SQL: alter table `geonames_alternate_names` add index
+         * `geonames_alternate_names_alternate_name_index`(`alternate_name`))
+         */
+        \Illuminate\Support\Facades\DB::statement( 'CREATE INDEX asciiname_part ON ' . self::TABLE . ' (asciiname(250));' );
     }
 
     /**
