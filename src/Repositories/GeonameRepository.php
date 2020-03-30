@@ -45,10 +45,10 @@ class GeonameRepository {
                         ->orderBy( 'admin1_code' )
                         ->orderBy( 'admin2_code' );
 
-        var_dump( Geoname::all() );
-        var_dump( Geoname::all()->count() );
-        var_dump( $query->toSql() );
-        var_dump( $query->getBindings() );
+//        var_dump( Geoname::all() );
+//        var_dump( Geoname::all()->count() );
+//        var_dump( $query->toSql() );
+//        var_dump( $query->getBindings() );
 
 
         $collection = Geoname::on( env( 'DB_GEONAMES_CONNECTION' ) )

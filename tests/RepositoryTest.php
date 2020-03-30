@@ -9,16 +9,16 @@ class RepositoryTest extends AbstractGlobalTestCase {
 
 
     public function setUp(): void {
-        print_r( $this->app[ 'config' ] );
+//        print_r( $this->app[ 'config' ] );
         parent::setUp();
-        print_r( $this->app[ 'config' ] );
+//        print_r( $this->app[ 'config' ] );
         $this->artisan( 'migrate', [ '--database' => $this->DB_CONNECTION, ] );
         $this->artisan( 'geonames:install', [
             '--test'       => TRUE,
             '--connection' => $this->DB_CONNECTION,
         ] );
-        var_dump( 'geonames:install complete' );
-        var_dump( Geoname::all()->count() );
+//        var_dump( 'geonames:install complete' );
+//        var_dump( Geoname::all()->count() );
     }
 
 
