@@ -68,7 +68,7 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             $table->primary( 'alternateNameId' );
             $table->index( 'geonameid' );
 
-            $table->index( [ \Illuminate\Support\Facades\DB::raw( "alternate_name(250)" ) ] );
+            $table->index( [ \Illuminate\Support\Facades\DB::raw( "`alternate_name`(250)" ) ] );
         } );
 
 
