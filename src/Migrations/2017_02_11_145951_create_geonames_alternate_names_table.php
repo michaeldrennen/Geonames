@@ -70,7 +70,7 @@ class CreateGeonamesAlternateNamesTable extends Migration {
 
 
             // TRAVIS-CI.ORG has an issue with this syntax.
-            if ( 'true' == config( 'database.running_in_continuous_integration' ) ):
+            if ( config( 'database.running_in_continuous_integration' ) ):
                 echo "\n\nYOU ARE RUNNING THIS TEST IN CI. Index on alternate_name(250) will not be created.\n\n";
                 flush();
             else:
