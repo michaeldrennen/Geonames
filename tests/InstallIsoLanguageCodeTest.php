@@ -1,4 +1,5 @@
 <?php
+
 namespace MichaelDrennen\Geonames\Tests;
 
 class InstallIsoLanguageCodeTest extends BaseInstallTestCase {
@@ -25,13 +26,5 @@ class InstallIsoLanguageCodeTest extends BaseInstallTestCase {
         $this->artisan( 'geonames:iso-language-code', [ '--connection' => 'i-dont-exist' ] );
     }
 
-    /**
-     * @test
-     * @group install
-     */
-    public function testIsoLanguageCodeCommandFailureWithNoConnectionName() {
-        $this->expectException( \Exception::class );
-        $this->artisan( 'geonames:iso-language-code' );
-    }
 
 }

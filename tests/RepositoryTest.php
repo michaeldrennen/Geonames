@@ -24,6 +24,7 @@ class RepositoryTest extends AbstractGlobalTestCase {
 
     /**
      * @test
+     * @group only
      */
     public function theOnlyTest() {
 //        $this->isoLanguageCode();
@@ -136,6 +137,11 @@ class RepositoryTest extends AbstractGlobalTestCase {
      */
     protected function geoname() {
         $repo = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
+
+        $geonames = Geoname::all();
+        print_r( $geonames );
+        flush();
+        die();
 
         $geonames = $repo->getPlacesStartingWithTerm( "Gig" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
