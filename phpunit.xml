@@ -43,5 +43,6 @@
 
     <php>
         <env name="DB_CONNECTION" value="testing"/>
+        <env name="RUNNING_IN_CI" value="true"/>
     </php>
 </phpunit>

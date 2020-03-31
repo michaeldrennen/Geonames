@@ -25,6 +25,7 @@ abstract class AbstractGlobalTestCase extends TestCase {
             'prefix'   => '',
             'options'  => [ PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE, ],
         ] );
+        $app[ 'config' ]->set( 'debug.running_in_continuous_integration', $_ENV[ 'RUNNING_IN_CI' ] );
     }
 
     /**

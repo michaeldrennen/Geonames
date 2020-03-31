@@ -31,6 +31,16 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
         );
     }
 
+
+    /**
+     * @test
+     * @group debug
+     */
+    public function testEnvironmentShouldBeCI() {
+        $runningInCI = $_ENV[ 'RUNNING_IN_CI' ];
+        $this->assertEquals( '1', $runningInCI );
+    }
+
     /**
      * @test
      * @group install

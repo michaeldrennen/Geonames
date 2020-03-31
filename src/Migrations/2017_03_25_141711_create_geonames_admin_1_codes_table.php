@@ -31,27 +31,33 @@ class CreateGeonamesAdmin1CodesTable extends Migration {
             $table->index( 'admin1_code' );
 
 
-            // TRAVIS-CI.ORG has an issue with this syntax.
-            if ( config( 'database.running_in_continuous_integration' ) ):
-                echo "\n\nYOU ARE RUNNING THIS TEST IN CI. Index on asciiname(250) will not be created.\n\n";
+            /**
+             * I have to use the following code in to create an index for MySQL databases.
+             * $table->index( 'asciiname' );
+             * There is a problem with MySQL unable to create indexes over a certain length.
+             * @see https://github.com/michaeldrennen/Geonames/issues/30
+             * This was similar to the error that I was getting:
+             * Illuminate\Database\QueryException  : SQLSTATE[42000]: Syntax error or
+             * access violation: 1071 Specified key was too long; max key length is 1000
+             * bytes (SQL: alter table `geonames_alternate_names` add index
+             * `geonames_alternate_names_alternate_name_index`(`alternate_name`))
+             */
+            $connection = config( 'database.default' );
+            $driver     = config( "database.connections.{$connection}.driver" );
+
+            if ( config( 'debug.running_in_continuous_integration' ) ):
+                echo "\nYOU ARE RUNNING THIS TEST IN CI. Index on asciiname(250) will not be created on the admin_1_codes table.\n";
                 flush();
-            else:
+            elseif ( 'mysql' == $driver ):
+                echo "\nYou are running the mysql database driver, so I will create an index on asciiname(250) on the admin_1_codes\n";
+                flush();
                 $table->index( [ \Illuminate\Support\Facades\DB::raw( "asciiname(250)" ) ] );
+            else:
+                echo "\n\nYou are not running the MySQL database driver, so you may want to manually create an index on asciiname(250) in the admin_1_codes table.\n\n";
+                flush();
             endif;
         } );
 
-        /**
-         * I have to use the following code in place of the "Laravel way"...
-         * $table->index( 'asciiname' );
-         * There is a problem with MySQL unable to create indexes over a certain length.
-         * @see https://github.com/michaeldrennen/Geonames/issues/30
-         * This was similar to the error that I was getting:
-         * Illuminate\Database\QueryException  : SQLSTATE[42000]: Syntax error or
-         * access violation: 1071 Specified key was too long; max key length is 1000
-         * bytes (SQL: alter table `geonames_alternate_names` add index
-         * `geonames_alternate_names_alternate_name_index`(`alternate_name`))
-         */
-        //\Illuminate\Support\Facades\DB::statement( 'CREATE INDEX asciiname_part ON ' . self::TABLE . '(asciiname(250));' );
     }
 
     /**
