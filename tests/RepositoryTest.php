@@ -9,16 +9,12 @@ class RepositoryTest extends AbstractGlobalTestCase {
 
 
     public function setUp(): void {
-//        print_r( $this->app[ 'config' ] );
         parent::setUp();
-//        print_r( $this->app[ 'config' ] );
         $this->artisan( 'migrate', [ '--database' => $this->DB_CONNECTION, ] );
         $this->artisan( 'geonames:install', [
             '--test'       => TRUE,
             '--connection' => $this->DB_CONNECTION,
         ] );
-//        var_dump( 'geonames:install complete' );
-//        var_dump( Geoname::all()->count() );
     }
 
 
@@ -138,12 +134,11 @@ class RepositoryTest extends AbstractGlobalTestCase {
     protected function geoname() {
         $repo = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
 
-        $geonames = Geoname::all();
+        //$geonames = $repo->getPlacesStartingWithTerm( "Gig" );
+        $geonames = $repo->getPlacesStartingWithTerm( "Gry" );
         print_r( $geonames );
         flush();
-        die();
-
-        $geonames = $repo->getPlacesStartingWithTerm( "Gig" );
+        die( 'poop' );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
