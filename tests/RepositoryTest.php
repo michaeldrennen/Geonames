@@ -136,9 +136,7 @@ class RepositoryTest extends AbstractGlobalTestCase {
 
         //$geonames = $repo->getPlacesStartingWithTerm( "Gig" );
         $geonames = $repo->getPlacesStartingWithTerm( "Gry" );
-        print_r( $geonames );
-        flush();
-        die( 'poop' );
+
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
