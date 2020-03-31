@@ -196,7 +196,7 @@ class IsoLanguageCode extends AbstractCommand {
         endif;
 
         foreach ( $finalRows as $row ):
-            fputcsv( $handle, $row );
+            fputcsv( $handle, $row, "\t" );
         endforeach;
 
         fclose( $handle );
