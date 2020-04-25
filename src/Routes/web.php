@@ -18,6 +18,10 @@ Route::get( '/geonames/{countryCode}/cities/{asciiNameTerm}', '\MichaelDrennen\G
 
 Route::get( '/geonames/{countryCode}/schools/{asciiNameTerm}', '\MichaelDrennen\Geonames\Controllers\GeonamesController@schoolsByCountryCode' );
 
+/**
+ * 
+ * Frontend routes examples :
+ * 
 Route::get( '/geonames/examples/vue/element/autocomplete', function () {
     return view( 'geonames::vue-element-example' );
 } );
@@ -25,3 +29,5 @@ Route::get( '/geonames/examples/vue/element/autocomplete', function () {
 Route::get( '/geonames/examples/jquery/autocomplete', function () {
     return view( 'geonames::jquery-example' );
 } );
+
+*/
