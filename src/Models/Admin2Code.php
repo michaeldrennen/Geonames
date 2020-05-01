@@ -6,22 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Admin2Code extends Model {
 
-    protected $table = 'geonames_admin_2_codes';
-
-
-    /**
-     * @var array
-     */
-    protected $guarded = [];
+    protected $primaryKey = 'geonameid';
+    protected $table      = 'geonames_admin_2_codes';
+    protected $guarded    = [];
 
     /**
      * The attributes that should be casted to native types.
      *
      * @var array
      */
-    protected $casts = ['geonameid' => 'integer'];
+    protected $casts = [ 'geonameid' => 'integer' ];
 
-    public function geoname () {
+    public function geoname() {
         return $this->hasOne( Geoname::class, 'geonameid', 'geonameid' );
     }
 
