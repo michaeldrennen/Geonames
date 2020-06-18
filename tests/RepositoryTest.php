@@ -23,12 +23,12 @@ class RepositoryTest extends AbstractGlobalTestCase {
      * @group only
      */
     public function theOnlyTest() {
-//        $this->isoLanguageCode();
-//        $this->featureClass();
-//        $this->getStorageDirFromDatabase();
-//        $this->admin1Code();
-//        $this->admin2Code();
-//        $this->alternateName();
+        $this->isoLanguageCode();
+        $this->featureClass();
+        $this->getStorageDirFromDatabase();
+        $this->admin1Code();
+        $this->admin2Code();
+        $this->alternateName();
         $this->geoname();
     }
 
