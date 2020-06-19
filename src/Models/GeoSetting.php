@@ -142,7 +142,10 @@ class GeoSetting extends Model {
      * @return bool
      * @throws Exception
      */
-    public static function install( array $countriesToBeAdded = self::DEFAULT_COUNTRIES_TO_BE_ADDED, array $languages = self::DEFAULT_LANGUAGES, string $storageSubDir = self::DEFAULT_STORAGE_SUBDIR, string $connection = NULL ): bool {
+    public static function install( array $countriesToBeAdded = self::DEFAULT_COUNTRIES_TO_BE_ADDED,
+                                    array $languages = self::DEFAULT_LANGUAGES,
+                                    string $storageSubDir = self::DEFAULT_STORAGE_SUBDIR,
+                                    string $connection = NULL ): bool {
 
         // Establish defaults. If the user of the Install script did not call any options when running the script, these
         // parameters (above) will come in as empty arrays. Hence the default values up there won't get called.
@@ -284,7 +287,7 @@ class GeoSetting extends Model {
         unset( $existingLanguages[ $existingLanguageIndex ] );
 
         $geoSetting                              = self::findOrFail( self::ID );
-        $geoSetting->{self::DB_COLUMN_LANGUAGES} = array_values($existingLanguages); // reset the indexes
+        $geoSetting->{self::DB_COLUMN_LANGUAGES} = array_values( $existingLanguages ); // reset the indexes
         $geoSetting->save();
         if ( $geoSetting->save() ) {
             return TRUE;

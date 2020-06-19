@@ -72,7 +72,7 @@ class RepositoryTest extends AbstractGlobalTestCase {
      */
     protected function admin2Code() {
         $repo       = new \MichaelDrennen\Geonames\Repositories\Admin2CodeRepository();
-        $admin2Code = $repo->getByCompositeKey( 'AF', '08', 619 );
+        $admin2Code = $repo->getByCompositeKey( 'AF', '08', 609 );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Admin2Code::class, $admin2Code );
 
         try {
