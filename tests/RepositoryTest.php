@@ -150,6 +150,11 @@ class RepositoryTest extends AbstractGlobalTestCase {
 
 
         $geonames = $repo->getCitiesFromCountryStartingWithTerm( 'BS', "na" );
+
+        $geonames = Geoname::limit( 100 )->get();
+        dump( $geonames );
+
+
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
