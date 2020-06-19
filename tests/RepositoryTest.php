@@ -9,6 +9,9 @@ class RepositoryTest extends AbstractGlobalTestCase {
 
 
     public function setUp(): void {
+
+        echo "\nRunning setUp() in RepositoryTest...\n";
+        flush();
         parent::setUp();
         $this->artisan( 'migrate', [ '--database' => $this->DB_CONNECTION, ] );
         $this->artisan( 'geonames:install', [
@@ -20,16 +23,16 @@ class RepositoryTest extends AbstractGlobalTestCase {
 
     /**
      * @test
-     * @group only
+     * @group repo
      */
     public function theOnlyTest() {
-        //$this->isoLanguageCode();
-        //$this->featureClass();
-        //$this->getStorageDirFromDatabase();
+        $this->isoLanguageCode();
+        $this->featureClass();
+        $this->getStorageDirFromDatabase();
         $this->admin1Code();
-        //$this->admin2Code();
-        //$this->alternateName();
-        //$this->geoname();
+        $this->admin2Code();
+        $this->alternateName();
+        $this->geoname();
     }
 
 
@@ -46,10 +49,12 @@ class RepositoryTest extends AbstractGlobalTestCase {
      *
      */
     protected function admin1Code() {
+
+
         $repo = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
 
-        $admin1Codes = $repo->all( 10 );
-        dump( $admin1Codes );
+//        $admin1Codes = $repo->all( 10 );
+//        dump( $admin1Codes );
 
         $admin1Code = $repo->getByCompositeKey( 'AD', '06' );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Admin1Code::class, $admin1Code );
@@ -120,9 +125,6 @@ class RepositoryTest extends AbstractGlobalTestCase {
     }
 
 
-    /**
-     *
-     */
     protected function isoLanguageCode() {
         $repo             = new \MichaelDrennen\Geonames\Repositories\IsoLanguageCodeRepository();
         $isoLanguageCodes = $repo->all();

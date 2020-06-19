@@ -7,6 +7,7 @@ class InstallIsoLanguageCodeTest extends BaseInstallTestCase {
     /**
      * @test
      * @group install
+     * @group iso
      */
     public function testIsoLanguageCodeCommand() {
         $this->artisan( 'geonames:iso-language-code', [ '--connection' => $this->DB_CONNECTION ] );
@@ -20,6 +21,7 @@ class InstallIsoLanguageCodeTest extends BaseInstallTestCase {
     /**
      * @test
      * @group install
+     * @group iso
      */
     public function testIsoLanguageCodeCommandFailureWithNonExistentConnection() {
         $this->expectException( \Exception::class );

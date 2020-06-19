@@ -2,7 +2,6 @@
 
 namespace MichaelDrennen\Geonames\Tests;
 
-
 use MichaelDrennen\Geonames\Models\GeoSetting;
 
 class InstallGeoSettingTest extends BaseInstallTestCase {
@@ -13,7 +12,7 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
     protected function geoSettingInstallForTest() {
         echo "\nCalling GeoSetting::install()...";
         GeoSetting::install(
-            [ 'AF', 'AD', 'BS', 'YU', 'UZ' ],
+            [ 'BS', 'YU', 'UZ' ],
             [ 'en' ],
             'geonames',
             $this->DB_CONNECTION
@@ -27,7 +26,7 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
     protected function geoSettingInitForTest() {
         echo "\nCalling GeoSetting::init()...\n";
         GeoSetting::init(
-            [ 'AF', 'AD', 'BS', 'YU', 'UZ' ],
+            [ 'BS', 'YU', 'UZ' ],
             [ 'en' ],
             'geonames',
             $this->DB_CONNECTION

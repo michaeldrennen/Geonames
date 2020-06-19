@@ -126,6 +126,8 @@ class Install extends Command {
                 if ( $isoLanguageCodeResult < 0 ):
                     $this->error( "Check the log. There was an error running geonames:iso-language-code" );
                     return $isoLanguageCodeResult;
+                else:
+                    $this->info( "geonames:iso-language-code COMPLETE" );
                 endif;
 
 
@@ -135,6 +137,8 @@ class Install extends Command {
                 if ( $admin1CodeResult < 0 ):
                     $this->error( "Check the log. There was an error running geonames:admin-1-code" );
                     return $admin1CodeResult;
+                else:
+                    $this->info( "geonames:admin-1-code COMPLETE" );
                 endif;
 
 
@@ -144,6 +148,8 @@ class Install extends Command {
                 if ( $admin2CodeResult < 0 ):
                     $this->error( "Check the log. There was an error running geonames:admin-2-code" );
                     return $admin2CodeResult;
+                else:
+                    $this->info( "geonames:admin-2-code COMPLETE" );
                 endif;
 
 
@@ -152,6 +158,8 @@ class Install extends Command {
                 if ( $featureClassResult < 0 ):
                     $this->error( "Check the log. There was an error running geonames:feature-class" );
                     return $featureClassResult;
+                else:
+                    $this->info( "geonames:feature-class COMPLETE" );
                 endif;
 
 
@@ -161,6 +169,8 @@ class Install extends Command {
                 if ( $alternateNameResult < 0 ):
                     $this->error( "Check the log. There was an error running geonames:alternate-name" );
                     return $alternateNameResult;
+                else:
+                    $this->info( "geonames:alternate-name COMPLETE" );
                 endif;
 
 
@@ -170,6 +180,8 @@ class Install extends Command {
                 if ( $geonameResult < 0 ):
                     $this->error( "Check the log. There was an error running geonames:geoname" );
                     return $geonameResult;
+                else:
+                    $this->info( "geonames:geoname COMPLETE" );
                 endif;
             else:
                 $this->call( 'geonames:feature-code',
