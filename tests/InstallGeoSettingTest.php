@@ -13,7 +13,7 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
     protected function geoSettingInstallForTest() {
         echo "\nCalling GeoSetting::install()...";
         GeoSetting::install(
-            [ 'AF', 'BS', 'YU', 'UZ' ],
+            [ 'AF', 'AD', 'BS', 'YU', 'UZ' ],
             [ 'en' ],
             'geonames',
             $this->DB_CONNECTION
@@ -27,7 +27,7 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
     protected function geoSettingInitForTest() {
         echo "\nCalling GeoSetting::init()...\n";
         GeoSetting::init(
-            [ 'AF', 'BS', 'YU', 'UZ' ],
+            [ 'AF', 'AD', 'BS', 'YU', 'UZ' ],
             [ 'en' ],
             'geonames',
             $this->DB_CONNECTION

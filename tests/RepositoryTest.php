@@ -23,13 +23,13 @@ class RepositoryTest extends AbstractGlobalTestCase {
      * @group only
      */
     public function theOnlyTest() {
-        $this->isoLanguageCode();
-        $this->featureClass();
-        $this->getStorageDirFromDatabase();
+        //$this->isoLanguageCode();
+        //$this->featureClass();
+        //$this->getStorageDirFromDatabase();
         $this->admin1Code();
-        $this->admin2Code();
-        $this->alternateName();
-        $this->geoname();
+        //$this->admin2Code();
+        //$this->alternateName();
+        //$this->geoname();
     }
 
 
@@ -46,7 +46,11 @@ class RepositoryTest extends AbstractGlobalTestCase {
      *
      */
     protected function admin1Code() {
-        $repo       = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
+        $repo = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
+
+        $admin1Codes = $repo->all( 10 );
+        dump( $admin1Codes );
+
         $admin1Code = $repo->getByCompositeKey( 'AD', '06' );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Admin1Code::class, $admin1Code );
 

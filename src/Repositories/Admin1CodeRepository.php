@@ -1,7 +1,9 @@
 <?php
+
 namespace MichaelDrennen\Geonames\Repositories;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Collection;
 use MichaelDrennen\Geonames\Models\Admin1Code;
 
 
@@ -13,7 +15,10 @@ class Admin1CodeRepository {
      * @param string $admin1Code
      * @return Admin1Code
      */
-    public function getByCompositeKey ( string $countryCode, string $admin1Code ): Admin1Code {
+    public function getByCompositeKey( string $countryCode, string $admin1Code ): Admin1Code {
+        /**
+         * @var Admin1Code $admin1CodeModel
+         */
         $admin1CodeModel = Admin1Code::on( env( 'DB_GEONAMES_CONNECTION' ) )
                                      ->where( 'country_code', $countryCode )
                                      ->where( 'admin1_code', $admin1Code )
@@ -24,6 +29,14 @@ class Admin1CodeRepository {
         }
 
         return $admin1CodeModel;
+    }
+
+    public function all( int $limit = NULL ): Collection {
+        $query = Admin1Code::on( env( 'DB_GEONAMES_CONNECTION' ) );
+        if ( $limit ):
+            $query->limit( $limit );
+        endif;
+        return $query->get();
     }
 
 

@@ -14,21 +14,20 @@
     "ext-intl": "*",
     "ext-pdo": "*",
     "ext-curl": "*",
-    "laravel/framework": "^6.0",
+    "laravel/framework": "^7.0",
     "michaeldrennen/remote-file": "^2.0",
     "michaeldrennen/local-file": "^2.0",
     "curl/curl": "^2.2",
     "fabpot/goutte": "^4.0",
     "nesbot/carbon": "^2.28",
-    "illuminate/routing": "^6.8",
-    "illuminate/support": "^6.8",
-    "illuminate/database": "^6.8"
-
+    "illuminate/support": "^7.16",
+    "illuminate/routing": "^7.16",
+    "illuminate/database": "^7.16"
   },
   "require-dev": {
-    "orchestra/testbench": "^3.8",
-    "php-coveralls/php-coveralls": "^2.1",
-    "phpunit/phpunit": "^8.1"
+    "phpunit/phpunit": "^9.2",
+    "orchestra/testbench": "^5.3",
+    "php-coveralls/php-coveralls": "^2.2"
   },
   "autoload": {
     "psr-4": {
