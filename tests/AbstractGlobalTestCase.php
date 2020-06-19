@@ -15,6 +15,9 @@ abstract class AbstractGlobalTestCase extends TestCase {
      * @param Application $app
      */
     protected function getEnvironmentSetUp( $app ) {
+        echo "\nSetting up the environment.";
+        echo "\nThe database will use sqlite, a memory-only database.";
+
         $this->DB_CONNECTION = $_ENV[ 'DB_CONNECTION' ];
 
         // Setup default database to use sqlite :memory:
@@ -26,6 +29,7 @@ abstract class AbstractGlobalTestCase extends TestCase {
             'options'  => [ PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE, ],
         ] );
         $app[ 'config' ]->set( 'debug.running_in_continuous_integration', $_ENV[ 'RUNNING_IN_CI' ] );
+        echo "\nEnvironment set up complete.\n";
     }
 
     /**

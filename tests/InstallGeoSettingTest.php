@@ -11,20 +11,23 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
      * This same code was being called repeatedly through these tests.
      */
     protected function geoSettingInstallForTest() {
+        echo "\nCalling GeoSetting::install()...";
         GeoSetting::install(
-            [ 'BS', 'YU', 'UZ' ],
+            [ 'AF', 'BS', 'YU', 'UZ' ],
             [ 'en' ],
             'geonames',
             $this->DB_CONNECTION
         );
+        echo "\nComplete.\n";
     }
 
     /**
      * This same code was being called repeatedly through these tests.
      */
     protected function geoSettingInitForTest() {
+        echo "\nCalling GeoSetting::init()...\n";
         GeoSetting::init(
-            [ 'BS', 'YU', 'UZ' ],
+            [ 'AF', 'BS', 'YU', 'UZ' ],
             [ 'en' ],
             'geonames',
             $this->DB_CONNECTION
