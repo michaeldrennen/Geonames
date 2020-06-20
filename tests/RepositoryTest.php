@@ -149,17 +149,14 @@ class RepositoryTest extends AbstractGlobalTestCase {
         //$this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
 
 
-        $geonames = $repo->getCitiesFromCountryStartingWithTerm( 'AF', "sh" );
+        $geonames = $repo->getCitiesFromCountryStartingWithTerm( 'UZ', 'ja' );
 
 //        $geonames = Geoname::limit( 100 )->get()->first();
 //        dump( $geonames );
-
-        /**
-         * @var Geoname $geoname
-         */
-        foreach ( $geonames as $geoname ):
-            echo "\n" . $geoname->feature_class . " " . $geoname->feature_code . " " . $geoname->country_code . " " . $geoname->asciiname . "\n";
-        endforeach;
+//        foreach ( $geonames as $geoname ):
+//            echo "\n" . $geoname->feature_class . " " . $geoname->feature_code . " " . $geoname->country_code . " " . $geoname->asciiname . "\n";
+//            flush();
+//        endforeach;
 
 
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
@@ -167,12 +164,12 @@ class RepositoryTest extends AbstractGlobalTestCase {
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
 
 
-        $geonames = $repo->getCitiesNotFromCountryStartingWithTerm( 'UZ', "Ka" );
+        $geonames = $repo->getCitiesNotFromCountryStartingWithTerm( 'US', "ka" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
 
-        $geonames = $repo->getSchoolsFromCountryStartingWithTerm( 'UZ', "Kir" );
+        $geonames = $repo->getSchoolsFromCountryStartingWithTerm( 'UZ', "uc" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
