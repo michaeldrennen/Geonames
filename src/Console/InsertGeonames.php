@@ -92,7 +92,7 @@ class InsertGeonames extends AbstractCommand {
 
         if ( $this->option( 'test' ) ):
             $this->comment( "Running in test mode. Will insert records for YU." );
-            GeoSetting::install( [ 'BS','YU','UZ' ], [ 'en' ], GeoSetting::DEFAULT_STORAGE_SUBDIR, $this->connectionName );
+            GeoSetting::install( [ 'BS', 'YU', 'UZ' ], [ 'en' ], GeoSetting::DEFAULT_STORAGE_SUBDIR, $this->connectionName );
         endif;
 
         $zipFileNames = $this->getLocalCountryZipFileNames();
@@ -303,7 +303,7 @@ class InsertGeonames extends AbstractCommand {
             $this->insertGeonamesWithEloquent( $absoluteLocalFilePathOfGeonamesFile );
         endif;
 
-       // $asdf = \MichaelDrennen\Geonames\Models\Geoname::all();
+        // $asdf = \MichaelDrennen\Geonames\Models\Geoname::all();
         //var_dump( $asdf );
         //var_dump( $asdf->count() );
     }
@@ -402,11 +402,15 @@ SET created_at=NOW(),updated_at=null";
         }
         fclose( $file );
 
-        dump( "row couuuunt" );
-        dd( count( $rows ) );
-
         try {
-            \MichaelDrennen\Geonames\Models\GeonameWorking::insert( $rows );
+            if ( $this->isRobustDriver() ):
+                \MichaelDrennen\Geonames\Models\GeonameWorking::insert( $rows );
+            else:
+                $chunkedRows = array_chunk( $rows, 750 );
+                foreach ( $chunkedRows as $rowsToInsert ):
+                    \MichaelDrennen\Geonames\Models\GeonameWorking::insert( $rowsToInsert );
+                endforeach;
+            endif;
         } catch ( \Exception $exception ) {
             Log::error( '',
                         $exception->getMessage(),
