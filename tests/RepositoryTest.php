@@ -133,12 +133,6 @@ class RepositoryTest extends AbstractGlobalTestCase {
     protected function geoname() {
         $repo = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
 
-        $geonames = $repo->getPlacesStartingWithTerm( 'gig' );
-        $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
-        $this->assertGreaterThan( 0, $geonames->count() );
-        $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
-
-
         $geonames = $repo->getCitiesNotFromCountryStartingWithTerm( 'US', "ka" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
@@ -152,6 +146,11 @@ class RepositoryTest extends AbstractGlobalTestCase {
 
 
         $geonames = $repo->getCitiesFromCountryStartingWithTerm( 'UZ', 'ja' );
+        $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
+        $this->assertGreaterThan( 0, $geonames->count() );
+        $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
+
+        $geonames = $repo->getPlacesStartingWithTerm( 'Ur' );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
