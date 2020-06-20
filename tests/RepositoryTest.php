@@ -26,12 +26,12 @@ class RepositoryTest extends AbstractGlobalTestCase {
      * @group repo
      */
     public function theOnlyTest() {
-//        $this->isoLanguageCode();
-//        $this->featureClass();
-//        $this->getStorageDirFromDatabase();
-//        $this->admin1Code();
-//        $this->admin2Code();
-//        $this->alternateName();
+        $this->isoLanguageCode();
+        $this->featureClass();
+        $this->getStorageDirFromDatabase();
+        $this->admin1Code();
+        $this->admin2Code();
+        $this->alternateName();
         $this->geoname();
     }
 
@@ -49,13 +49,7 @@ class RepositoryTest extends AbstractGlobalTestCase {
      *
      */
     protected function admin1Code() {
-
-
         $repo = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
-
-//        $admin1Codes = $repo->all( 10 );
-//        dump( $admin1Codes );
-
         $admin1Code = $repo->getByCompositeKey( 'AD', '06' );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Admin1Code::class, $admin1Code );
 
@@ -64,7 +58,6 @@ class RepositoryTest extends AbstractGlobalTestCase {
         } catch ( \Exception $exception ) {
             $this->assertInstanceOf( \Illuminate\Database\Eloquent\ModelNotFoundException::class, $exception );
         }
-
     }
 
     /**
@@ -140,13 +133,7 @@ class RepositoryTest extends AbstractGlobalTestCase {
     protected function geoname() {
         $repo = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
 
-        $geonames = $repo->getPlacesStartingWithTerm( "Gig" );
-        $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
-        $this->assertGreaterThan( 0, $geonames->count() );
-        $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
-
-
-        $geonames = $repo->getCitiesFromCountryStartingWithTerm( 'UZ', 'ja' );
+        $geonames = $repo->getPlacesStartingWithTerm( 'gig' );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
@@ -163,9 +150,13 @@ class RepositoryTest extends AbstractGlobalTestCase {
         $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
 
+
+        $geonames = $repo->getCitiesFromCountryStartingWithTerm( 'UZ', 'ja' );
+        $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
+        $this->assertGreaterThan( 0, $geonames->count() );
+        $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
+
     }
-
-
 
 
 
