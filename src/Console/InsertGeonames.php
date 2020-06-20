@@ -15,6 +15,7 @@ class InsertGeonames extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 
+
     /**
      * The name and signature of the console command.
      *
@@ -24,12 +25,14 @@ class InsertGeonames extends AbstractCommand {
         {--connection= : If you want to specify the name of the database connection you want used.}
         {--test : If you want to test the command on a small countries data set.}';
 
+
     /**
      * The console command description.
      *
      * @var string
      */
     protected $description = 'Insert fresh data from geonames.org';
+
 
     /**
      * @var string The name of the txt file that contains data from all of the countries.
@@ -41,25 +44,38 @@ class InsertGeonames extends AbstractCommand {
      */
     protected $allCountriesTxtFileName = 'allCountries.txt';
 
+
     /**
      * @var string This command makes this file. It contains all the records that get inserted into the database.
      */
     protected $masterTxtFileName = 'master.txt';
+
 
     /**
      * @var int A counter that tracks the number of lines written to the master txt file.
      */
     protected $numLinesInMasterFile;
 
+
     /**
      *
      */
     const TABLE = 'geonames';
 
+
     /**
      *
      */
     const TABLE_WORKING = 'geonames_working';
+
+
+    /**
+     * There are limitations on different database engines as to how many
+     * rows they can insert at once. We're going to be inserting a lot, so
+     * I chunk the inserts by the size defined in this constant.
+     */
+    const ROWS_TO_INSERT_AT_ONCE = 500;
+
 
     /**
      * Initialize constructor.
@@ -67,6 +83,7 @@ class InsertGeonames extends AbstractCommand {
     public function __construct() {
         parent::__construct();
     }
+
 
     /**
      * Execute the console command.
@@ -121,7 +138,7 @@ class InsertGeonames extends AbstractCommand {
         }
 
         $this->stopTimer();
-        $this->line( "Finished " . $this->signature );
+        $this->line( "\nFinished " . $this->signature );
     }
 
 
@@ -138,6 +155,7 @@ class InsertGeonames extends AbstractCommand {
         array_shift( $fileNames ); // Remove ..
         return $fileNames;
     }
+
 
     /**
      * Every country has a zip file with all of their current geonames records. Also, there is
@@ -158,6 +176,7 @@ class InsertGeonames extends AbstractCommand {
 
         return $zipFileNames;
     }
+
 
     /**
      * After all of the country zip files have been downloaded and unzipped, we need to
@@ -199,6 +218,7 @@ class InsertGeonames extends AbstractCommand {
         }
         return FALSE;
     }
+
 
     /**
      * Given a file name, returns true if it represents an unzipped text file with a country's geonames records.
@@ -296,16 +316,16 @@ class InsertGeonames extends AbstractCommand {
     }
 
 
+    /**
+     * @param $absoluteLocalFilePathOfGeonamesFile
+     * @throws Exception
+     */
     public function insert( $absoluteLocalFilePathOfGeonamesFile ) {
         if ( $this->isRobustDriver() ):
             $this->insertGeonamesWithLoadDataInfile( $absoluteLocalFilePathOfGeonamesFile );
         else:
             $this->insertGeonamesWithEloquent( $absoluteLocalFilePathOfGeonamesFile );
         endif;
-
-        // $asdf = \MichaelDrennen\Geonames\Models\Geoname::all();
-        //var_dump( $asdf );
-        //var_dump( $asdf->count() );
     }
 
 
@@ -334,26 +354,26 @@ class InsertGeonames extends AbstractCommand {
 
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
     INTO TABLE " . self::TABLE_WORKING . "
-        (geonameid, 
-             name, 
-             asciiname, 
-             alternatenames, 
-             latitude, 
-             longitude, 
-             feature_class, 
-             feature_code, 
-             country_code, 
-             cc2, 
-             admin1_code, 
-             admin2_code, 
-             admin3_code, 
-             admin4_code, 
-             population, 
-             elevation, 
-             dem, 
-             timezone, 
-             modification_date, 
-             @created_at, 
+        (geonameid,
+             name,
+             asciiname,
+             alternatenames,
+             latitude,
+             longitude,
+             feature_class,
+             feature_code,
+             country_code,
+             cc2,
+             admin1_code,
+             admin2_code,
+             admin3_code,
+             admin4_code,
+             population,
+             elevation,
+             dem,
+             timezone,
+             modification_date,
+             @created_at,
              @updated_at)
 SET created_at=NOW(),updated_at=null";
 
@@ -380,6 +400,10 @@ SET created_at=NOW(),updated_at=null";
     }
 
 
+    /**
+     * @param $localFilePath
+     * @throws \MichaelDrennen\LocalFile\Exceptions\UnableToOpenFile
+     */
     protected function insertGeonamesWithEloquent( $localFilePath ) {
         $this->line( "\nStarting to insert the records found in " . $localFilePath );
         if ( is_null( $this->numLinesInMasterFile ) ) {
@@ -402,15 +426,17 @@ SET created_at=NOW(),updated_at=null";
         }
         fclose( $file );
 
+
         try {
-            if ( $this->isRobustDriver() ):
-                \MichaelDrennen\Geonames\Models\GeonameWorking::insert( $rows );
-            else:
-                $chunkedRows = array_chunk( $rows, 750 );
-                foreach ( $chunkedRows as $rowsToInsert ):
-                    \MichaelDrennen\Geonames\Models\GeonameWorking::insert( $rowsToInsert );
-                endforeach;
-            endif;
+            $chunkedRows = array_chunk( $rows, self::ROWS_TO_INSERT_AT_ONCE );
+            $numChunks   = count( $chunkedRows );
+            $this->comment( "Split the insert file into " . $numChunks . " chuncks of " . self::ROWS_TO_INSERT_AT_ONCE . " rows per chunk." );
+            $bar = $this->output->createProgressBar( $numChunks );
+            foreach ( $chunkedRows as $rowsToInsert ):
+                \MichaelDrennen\Geonames\Models\GeonameWorking::insert( $rowsToInsert );
+                $bar->advance();
+            endforeach;
+            $bar->finish();
         } catch ( \Exception $exception ) {
             Log::error( '',
                         $exception->getMessage(),
@@ -424,6 +450,7 @@ SET created_at=NOW(),updated_at=null";
         Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
         GeoSetting::setCountriesFromCountriesToBeAdded( $this->connectionName );
     }
+
 
     /**
      * Replaces the numerical index with the Model's field name, so that I can mass insert these.
@@ -471,6 +498,4 @@ SET created_at=NOW(),updated_at=null";
 
         return FALSE;
     }
-
-
 }
