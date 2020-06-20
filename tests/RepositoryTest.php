@@ -156,7 +156,7 @@ class RepositoryTest extends AbstractGlobalTestCase {
 
 
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
-        $this->assertGreaterThan( 0, $geonames->count() );
+        //$this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
 
 
