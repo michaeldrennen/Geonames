@@ -138,6 +138,9 @@ class RepositoryTest extends AbstractGlobalTestCase {
         dump( $query->getBindings() );
         dump( $query->get() );
 
+        dump( Geoname::all()->count() );
+        dump( "above is the total number of geoname records." );
+
         $geonames = $repo->getCitiesNotFromCountryStartingWithTerm( 'US', "ka" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
