@@ -141,24 +141,12 @@ class RepositoryTest extends AbstractGlobalTestCase {
         $repo = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
 
         $geonames = $repo->getPlacesStartingWithTerm( "Gig" );
-
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
-
-        // TODO Check the test install records to make sure I can get one with the above string.
-        //$this->assertGreaterThan( 0, $geonames->count() );
-        //$this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
+        $this->assertGreaterThan( 0, $geonames->count() );
+        $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
 
 
         $geonames = $repo->getCitiesFromCountryStartingWithTerm( 'UZ', 'ja' );
-
-//        $geonames = Geoname::limit( 100 )->get()->first();
-//        dump( $geonames );
-//        foreach ( $geonames as $geoname ):
-//            echo "\n" . $geoname->feature_class . " " . $geoname->feature_code . " " . $geoname->country_code . " " . $geoname->asciiname . "\n";
-//            flush();
-//        endforeach;
-
-
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
@@ -168,6 +156,7 @@ class RepositoryTest extends AbstractGlobalTestCase {
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
         $this->assertGreaterThan( 0, $geonames->count() );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Geoname::class, $geonames->first() );
+
 
         $geonames = $repo->getSchoolsFromCountryStartingWithTerm( 'UZ', "uc" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
