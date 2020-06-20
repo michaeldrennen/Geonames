@@ -402,6 +402,9 @@ SET created_at=NOW(),updated_at=null";
         }
         fclose( $file );
 
+        dump( "row couuuunt" );
+        dd( count( $rows ) );
+
         try {
             \MichaelDrennen\Geonames\Models\GeonameWorking::insert( $rows );
         } catch ( \Exception $exception ) {
