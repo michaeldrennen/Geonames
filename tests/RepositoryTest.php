@@ -49,7 +49,7 @@ class RepositoryTest extends AbstractGlobalTestCase {
      *
      */
     protected function admin1Code() {
-        $repo = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
+        $repo       = new \MichaelDrennen\Geonames\Repositories\Admin1CodeRepository();
         $admin1Code = $repo->getByCompositeKey( 'AD', '06' );
         $this->assertInstanceOf( \MichaelDrennen\Geonames\Models\Admin1Code::class, $admin1Code );
 
@@ -132,6 +132,11 @@ class RepositoryTest extends AbstractGlobalTestCase {
      */
     protected function geoname() {
         $repo = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
+
+        $query = Geoname::where( 'country_code', '<>', 'US' )->where( 'asciiname', 'la' );
+        dump( $query->toSql() );
+        dump( $query->getBindings() );
+        dump( $query->get() );
 
         $geonames = $repo->getCitiesNotFromCountryStartingWithTerm( 'US', "ka" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );
