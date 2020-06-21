@@ -9,14 +9,25 @@ class RepositoryTest extends AbstractGlobalTestCase {
 
 
     public function setUp(): void {
+        parent::setUp();
 
         echo "\nRunning setUp() in RepositoryTest...\n";
-        flush();
-        parent::setUp();
-        $this->artisan( 'migrate', [ '--database' => $this->DB_CONNECTION, ] );
-        $this->artisan( 'geonames:install', [
-            '--test'       => TRUE,
-            '--connection' => $this->DB_CONNECTION,
+
+//        $this->artisan( 'migrate', [ '--database' => $this->DB_CONNECTION, ] );
+//        $this->artisan( 'geonames:install', [
+//            '--test'       => TRUE,
+//            '--connection' => $this->DB_CONNECTION,
+//        ] );
+        echo "\nDone running setUp() in RepositoryTest.\n";
+    }
+
+    protected function getEnvironmentSetUp( $app ) {
+        // Setup default database to use sqlite :memory:
+        $app[ 'config' ]->set( 'database.default', 'testbench' );
+        $app[ 'config' ]->set( 'database.connections.testbench', [
+            'driver'   => 'sqlite',
+            'database' => './tests/files/database.sqlite',
+            'prefix'   => '',
         ] );
     }
 
@@ -132,14 +143,6 @@ class RepositoryTest extends AbstractGlobalTestCase {
      */
     protected function geoname() {
         $repo = new \MichaelDrennen\Geonames\Repositories\GeonameRepository();
-
-        $query = Geoname::where( 'country_code', '<>', 'US' )->where( 'asciiname', 'la' );
-        dump( $query->toSql() );
-        dump( $query->getBindings() );
-        dump( $query->get() );
-
-        dump( Geoname::all()->count() );
-        dump( "above is the total number of geoname records." );
 
         $geonames = $repo->getCitiesNotFromCountryStartingWithTerm( 'US', "ka" );
         $this->assertInstanceOf( \Illuminate\Support\Collection::class, $geonames );

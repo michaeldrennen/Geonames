@@ -84,10 +84,10 @@ class CreateGeonamesAlternateNamesTable extends Migration {
             $driver     = config( "database.connections.{$connection}.driver" );
 
             if ( config( 'debug.running_in_continuous_integration' ) ):
-                echo "\nRUNNING TEST IN CI. Index on alternate_name(250) won't be created for the alternate_names table.\n";
+                echo "\nRUNNING TEST IN CI. Index on alternate_name(250) won't be created for the alternate_names table.";
                 flush();
             elseif ( 'mysql' == $driver ):
-                echo "\nRunning the mysql database driver. I will create an index on alternate_name(250) for the alternate_names table.\n";
+                echo "\nRunning the mysql database driver. I will create an index on alternate_name(250) for the alternate_names table.";
                 flush();
                 $table->index( [ \Illuminate\Support\Facades\DB::raw( "alternate_name(250)" ) ] );
             else:
