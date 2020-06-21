@@ -73,7 +73,7 @@ Add this to your AppServiceProvider.php file:
 Schema::defaultStringLength(191);
 ```
 
-###A quick word on indexes
+### A quick word on indexes
 
 This library contains a bunch of migrations that contain a bunch of indexes. Now not everyone will need all of the indexes.
 
