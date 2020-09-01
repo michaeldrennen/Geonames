@@ -376,7 +376,7 @@ class GeoSetting extends Model {
      */
     public
     static function createStorageDirInFilesystem( string $storageSubdir ): string {
-        $path = storage_path() . DIRECTORY_SEPARATOR . $storageSubdir;
+        $path = storage_path() . env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) . $storageSubdir;
         if ( file_exists( $path ) && is_writable( $path ) ) {
             return $path;
         }
@@ -424,7 +424,7 @@ class GeoSetting extends Model {
      */
     public
     static function getAbsoluteLocalStoragePath( string $connection = NULL ): string {
-        return storage_path() . DIRECTORY_SEPARATOR . self::getStorage( $connection );
+        return storage_path() . env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) . self::getStorage( $connection );
     }
 
 
@@ -436,7 +436,7 @@ class GeoSetting extends Model {
      * @throws \Exception
      */
     public static function getAbsoluteLocalStoragePathToFile( string $fileName, string $connection = NULL ): string {
-        return self::getAbsoluteLocalStoragePath( $connection ) . DIRECTORY_SEPARATOR . $fileName;
+        return self::getAbsoluteLocalStoragePath( $connection ) . env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) . $fileName;
     }
 
 

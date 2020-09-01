@@ -189,7 +189,7 @@ class AlternateName extends AbstractCommand {
      * @throws \Exception
      */
     protected function getLocalAbsolutePathToAlternateNamesZipFile(): string {
-        return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . self::REMOTE_FILE_NAME_FOR_ALL;
+        return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) . self::REMOTE_FILE_NAME_FOR_ALL;
     }
 
     /**
@@ -200,9 +200,9 @@ class AlternateName extends AbstractCommand {
      */
     protected function getLocalAbsolutePathToAlternateNamesTextFile( string $countryCode = NULL ): string {
         if ( '*' == $countryCode || is_null( $countryCode ) ):
-            return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL;
+            return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) . self::LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL;
         endif;
-        return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . strtoupper( $countryCode ) . '.txt';
+        return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) . strtoupper( $countryCode ) . '.txt';
     }
 
 
@@ -230,7 +230,7 @@ class AlternateName extends AbstractCommand {
         $totalRowsInserted = 0;
 
         try {
-            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL );
+            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL, env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) );
             $numSplitFiles       = count( $localFileSplitPaths );
         } catch ( \Exception $exception ) {
             throw $exception;
@@ -291,7 +291,7 @@ class AlternateName extends AbstractCommand {
             $this->comment( "Inserting alternate names using insertAlternateNamesWithLoadDataInfileFromRecreatedFile()" );
             $totalLinesInOriginalFile = LocalFile::lineCount( $localFilePath );
             $this->comment( "Splitting " . $localFilePath );
-            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL );
+            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL, env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) );
             $numSplitFiles       = count( $localFileSplitPaths );
             $this->comment( "$localFilePath was split into $numSplitFiles files." );
         } catch ( \Exception $exception ) {
@@ -398,7 +398,7 @@ class AlternateName extends AbstractCommand {
 
         try {
             $this->comment( "Splitting " . $localFilePath );
-            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL );
+            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL, env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) );
             $numSplitFiles       = count( $localFileSplitPaths );
             $this->comment( "I split $localFilePath into $numSplitFiles split files." );
         } catch ( \Exception $exception ) {
@@ -478,7 +478,7 @@ class AlternateName extends AbstractCommand {
 
         try {
             $this->comment( "Splitting " . $localFilePath );
-            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL );
+            $localFileSplitPaths = LocalFile::split( $localFilePath, self::LINES_PER_SPLIT_FILE, 'split_', NULL, env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) );
             $numSplitFiles       = count( $localFileSplitPaths );
             $this->comment( "I split $localFilePath into $numSplitFiles split files." );
         } catch ( \Exception $exception ) {

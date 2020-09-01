@@ -311,7 +311,7 @@ class UpdateGeonames extends AbstractCommand {
 
         // Save it locally
         $localDirectoryPath = GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName );
-        $localFilePath      = $localDirectoryPath . DIRECTORY_SEPARATOR . $this->modificationsTxtFileName;
+        $localFilePath      = $localDirectoryPath . env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) . $this->modificationsTxtFileName;
 
         // Determine if the local storage path exists and is writable.
         if ( FALSE === file_exists( $localDirectoryPath ) ):
@@ -487,7 +487,7 @@ class UpdateGeonames extends AbstractCommand {
 
 
         // Save it locally
-        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . $this->deletesTxtFileName;
+        $localFilePath = GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . env('DIRECTORY_SEPARATOR', DIRECTORY_SEPARATOR) . $this->deletesTxtFileName;
         $bytesWritten  = file_put_contents( $localFilePath, $data );
         if ( $bytesWritten === FALSE ) {
             Log::error( $absoluteUrlToDeletesFile,
