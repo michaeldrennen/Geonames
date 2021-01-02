@@ -14,35 +14,35 @@ use MichaelDrennen\Geonames\Models\Log;
  * Class NoCountry
  * @package MichaelDrennen\Geonames\Console
  */
-class PostCode extends AbstractCommand {
+class PostalCode extends AbstractCommand {
 
     use GeonamesConsoleTrait;
 
     /**
      * @var string The name and signature of the console command.
      */
-    protected $signature = 'geonames:post-code
+    protected $signature = 'geonames:postal-code
         {--connection= : If you want to specify the name of the database connection you want used.}';
 
     /**
      * @var string The console command description.
      */
-    protected $description = "Download and insert the post code files from geonames.";
+    protected $description = "Download and insert the postal code files from geonames.";
 
     /**
      * @var string  The base download URL for the geonames.org site (this differs from other downloads).
      */
-    protected static $postCodeUrl = 'http://download.geonames.org/export/zip/';
+    protected static $postalCodeUrl = 'http://download.geonames.org/export/zip/';
 
     /**
      *
      */
-    const TABLE = 'geonames_post_codes';
+    const TABLE = 'geonames_postal_codes';
 
     /**
      * The name of our temporary/working table in our database.
      */
-    const TABLE_WORKING = 'geonames_post_codes_working';
+    const TABLE_WORKING = 'geonames_postal_codes_working';
 
     /**
      *
@@ -130,7 +130,7 @@ class PostCode extends AbstractCommand {
      * @return string   The absolute path to the remote alternate names zip file.
      */
     protected function getDownloadLink(): string {
-        return self::$postCodeUrl . self::REMOTE_FILE_NAME;
+        return self::$postalCodeUrl . self::REMOTE_FILE_NAME;
     }
 
     /**

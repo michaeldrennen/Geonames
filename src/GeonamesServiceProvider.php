@@ -37,7 +37,7 @@ class GeonamesServiceProvider extends \Illuminate\Support\ServiceProvider {
                                Console\Admin1Code::class,
                                Console\Admin2Code::class,
 
-                               Console\PostCode::class,
+                               Console\PostalCode::class,
 
                                Console\UpdateGeonames::class,
                                Console\Status::class,

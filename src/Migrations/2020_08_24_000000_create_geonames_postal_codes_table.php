@@ -4,9 +4,9 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateGeonamesPostCodesTable extends Migration {
+class CreateGeonamesPostalCodesTable extends Migration {
 
-    const TABLE = 'geonames_post_codes';
+    const TABLE = 'geonames_postal_codes';
 
     /**
      * Run the migrations.

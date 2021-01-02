@@ -4,9 +4,9 @@ namespace MichaelDrennen\Geonames\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PostCode extends Model {
+class PostalCode extends Model {
 
-    protected $table      = 'geonames_post_codes';
+    protected $table      = 'geonames_postal_codes';
 
     /**
      * The attributes that should be casted to native types.
