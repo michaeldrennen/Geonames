@@ -52,7 +52,7 @@ class Geoname extends AbstractCommand {
                            '--connection' => $this->connectionName ] );
         else:
             $this->comment( "Running the geonames:geoname artisan command in live mode." );
-            $this->call( 'geonames:download-geonames', [] );
+            $this->call( 'geonames:download-geonames', [ '--connection' => $this->connectionName ] );
             $this->call( 'geonames:insert-geonames', [ '--connection' => $this->connectionName ] );
         endif;
 
