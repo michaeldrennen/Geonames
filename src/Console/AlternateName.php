@@ -237,6 +237,10 @@ class AlternateName extends AbstractCommand {
         }
 
         foreach ( $localFileSplitPaths as $i => $localFileSplitPath ):
+
+            // Windows patch
+            $localFileSplitPath = $this->fixDirectorySeparatorForWindows( $localFileSplitPath );
+
             $query = "LOAD DATA LOCAL INFILE '" . $localFileSplitPath . "'
             
                         INTO TABLE " . self::TABLE_WORKING . "
@@ -265,8 +269,8 @@ class AlternateName extends AbstractCommand {
                 $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
             } catch ( \Exception $exception ) {
                 throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
-                                                                                                    ->getpdo()
-                                                                                                    ->errorInfo(),
+                                                                                                      ->getpdo()
+                                                                                                      ->errorInfo(),
                                                                                                   TRUE ) . " QUERY: " . $query );
             }
 
@@ -274,8 +278,8 @@ class AlternateName extends AbstractCommand {
             if ( FALSE === $rowsInserted ) {
                 Log::error( '', "Unable to load data infile for alternate names.", 'database', $this->connectionName );
                 throw new \Exception( "Unable to execute the load data infile query. " . print_r( DB::connection( $this->connectionName )
-                                                                                                    ->getpdo()
-                                                                                                    ->errorInfo(),
+                                                                                                      ->getpdo()
+                                                                                                      ->errorInfo(),
                                                                                                   TRUE ) );
             }
             $this->info( "Inserted file " . ( $i + 1 ) . " of " . $numSplitFiles );
@@ -334,6 +338,9 @@ class AlternateName extends AbstractCommand {
         $geonamesBar->finish();
 
         $this->comment( "Running LOAD DATA INFILE." );
+
+        // Windows patch
+        $pathToRecreatedFile = $this->fixDirectorySeparatorForWindows( $pathToRecreatedFile );
 
         $query = "LOAD DATA LOCAL INFILE '" . $pathToRecreatedFile . "'
             

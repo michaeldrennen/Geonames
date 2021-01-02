@@ -352,6 +352,9 @@ class InsertGeonames extends AbstractCommand {
 
         $this->disableKeys( self::TABLE_WORKING );
 
+        // Windows patch
+        $localFilePath = $this->fixDirectorySeparatorForWindows( $localFilePath );
+
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
     INTO TABLE " . self::TABLE_WORKING . "
         (geonameid,

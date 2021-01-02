@@ -89,6 +89,8 @@ class Test extends Command {
             $this->line( "LOAD DATA LOCAL INFILE: " . $fileName );
             $filePath = $directory . '/' . $fileName;
 
+            // Windows patch
+            $filePath = $this->fixDirectorySeparatorForWindows( $filePath );
 
             $query = "LOAD DATA LOCAL INFILE '" . $filePath . "'
     INTO TABLE " . self::TABLE_WORKING . "

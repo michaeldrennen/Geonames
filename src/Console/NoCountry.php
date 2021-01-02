@@ -123,6 +123,8 @@ class NoCountry extends AbstractCommand {
 
         $this->line( "\nAttempting Load Data Infile on " . $localFilePath );
 
+        // Windows patch
+        $localFilePath = $this->fixDirectorySeparatorForWindows( $localFilePath );
 
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
     INTO TABLE " . InsertGeonames::TABLE . "

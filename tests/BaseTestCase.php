@@ -14,6 +14,7 @@ abstract class BaseTestCase extends AbstractGlobalTestCase {
      * Setup the test environment.
      */
     public function setUp(): void {
+
         $this->artisan( 'migrate', [
             '--database' => $this->DB_CONNECTION,
         ] );
