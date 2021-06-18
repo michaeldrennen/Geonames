@@ -9,13 +9,19 @@
       "email": "michaeldrennen74@gmail.com"
     }
   ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/myckhel/RemoteFile.git"
+    }
+  ],
   "require": {
-    "php": "^7.2.5",
+    "php": "^7.2.5|^8",
     "ext-intl": "*",
     "ext-pdo": "*",
     "ext-curl": "*",
     "laravel/framework": "^7.0 || ^8.0",
-    "michaeldrennen/remote-file": "^2.0",
+    "michaeldrennen/remote-file": "dev-php-v8",
     "michaeldrennen/local-file": "^2.0",
     "curl/curl": "^2.2",
     "fabpot/goutte": "^4.0",
