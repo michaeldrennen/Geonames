@@ -236,6 +236,8 @@ class AlternateName extends AbstractCommand {
             throw $exception;
         }
 
+        $charset = config( "database.connections.{$this->connectionName}.charset", 'utf8mb4' );
+
         foreach ( $localFileSplitPaths as $i => $localFileSplitPath ):
 
             // Windows patch
@@ -243,7 +245,7 @@ class AlternateName extends AbstractCommand {
 
             $query = "LOAD DATA LOCAL INFILE '" . $localFileSplitPath . "'
             
-                        INTO TABLE " . self::TABLE_WORKING . "
+                        INTO TABLE " . self::TABLE_WORKING . " CHARACTER SET '{$charset}'
                             (   alternateNameId, 
                                 geonameid,
                                 isolanguage, 
@@ -342,9 +344,11 @@ class AlternateName extends AbstractCommand {
         // Windows patch
         $pathToRecreatedFile = $this->fixDirectorySeparatorForWindows( $pathToRecreatedFile );
 
+        $charset = config( "database.connections.{$this->connectionName}.charset", 'utf8mb4' );
+
         $query = "LOAD DATA LOCAL INFILE '" . $pathToRecreatedFile . "'
             
-                        INTO TABLE " . self::TABLE_WORKING . "
+                        INTO TABLE " . self::TABLE_WORKING . " CHARACTER SET '{$charset}'
                             (   alternateNameId, 
                                 geonameid,
                                 isolanguage, 
