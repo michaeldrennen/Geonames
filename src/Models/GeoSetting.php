@@ -497,7 +497,7 @@ class GeoSetting extends Model {
         }
 
         $settingRecord->{self::DB_COLUMN_COUNTRIES}             = $settingRecord->{self::DB_COLUMN_COUNTRIES_TO_BE_ADDED};
-        $settingRecord->{self::DB_COLUMN_COUNTRIES_TO_BE_ADDED} = '';
+        $settingRecord->{self::DB_COLUMN_COUNTRIES_TO_BE_ADDED} = [];
 
 
         return $settingRecord->save();
