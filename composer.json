@@ -10,19 +10,19 @@
     }
   ],
   "require": {
-    "php": "^7.0|^8.0",
+    "php": "^7.0 || ^8.0 || ^8.1",
     "ext-intl": "*",
     "ext-pdo": "*",
     "ext-curl": "*",
-    "laravel/framework": "^7.0 || ^8.0",
+    "laravel/framework": "^7.0 || ^8.0 || ^9.0",
     "michaeldrennen/remote-file": "^2.0",
     "michaeldrennen/local-file": "^2.0",
     "curl/curl": "^2.2",
     "fabpot/goutte": "^4.0",
     "nesbot/carbon": "^2.28",
-    "illuminate/support": "^6.0 || ^7.16 || ^8.0",
-    "illuminate/routing": "^6.0 || ^7.16 || ^8.0",
-    "illuminate/database": "^6.0 || ^7.16 || ^8.0"
+    "illuminate/support": "^6.0 || ^7.16 || ^8.0 || ^9.0",
+    "illuminate/routing": "^6.0 || ^7.16 || ^8.0 || ^9.0",
+    "illuminate/database": "^6.0 || ^7.16 || ^8.0 || ^9.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.2",
