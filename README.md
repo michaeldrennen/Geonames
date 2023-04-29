@@ -66,6 +66,8 @@ $schedule->command('geonames:update')->dailyAt('3:00');
 
 The update artisan command will handle the updates and deletes to the geonames table.
 
+By default, `GeonamesServiceProvider` will run it for you daily at `config('geonames.update_daily_at')`. 
+
 ## Gotchas
 Are you getting something like: 1071 Specified key was too long
 

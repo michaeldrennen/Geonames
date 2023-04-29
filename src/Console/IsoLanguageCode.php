@@ -130,8 +130,10 @@ class IsoLanguageCode extends AbstractCommand {
         // Windows patch
         $localFilePath = $this->fixDirectorySeparatorForWindows( $localFilePath );
 
+        $charset = config( "database.connections.{$this->connectionName}.charset", 'utf8mb4' );
+
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
-    INTO TABLE " . self::TABLE_WORKING . " IGNORE 1 LINES
+    INTO TABLE " . self::TABLE_WORKING . " CHARACTER SET '{$charset}' IGNORE 1 LINES
         (   iso_639_3, 
             iso_639_2,
             iso_639_1, 

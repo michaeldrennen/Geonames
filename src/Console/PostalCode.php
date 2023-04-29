@@ -154,8 +154,10 @@ class PostalCode extends AbstractCommand {
 
         $this->line( "\nAttempting Load Data Infile on " . $localFilePath );
 
+        $charset = config( "database.connections.{$this->connectionName}.charset", 'utf8mb4' );
+
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
-    INTO TABLE " . self::TABLE_WORKING . "
+    INTO TABLE " . self::TABLE_WORKING . " CHARACTER SET '{$charset}'
         (country_code,
              postal_code,
              place_name,
