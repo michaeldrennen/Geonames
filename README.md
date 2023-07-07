@@ -27,6 +27,12 @@ After that, Run migrate command:
 php artisan migrate
 ```
 
+To publish package files, run:
+
+```
+php artisan vendor:publish --provider="MichaelDrennen\Geonames\GeonamesServiceProvider"
+```
+
 Want to install all of the geonames records for the US, Canada, and Mexico as well as pull in the feature codes 
 definitions file in English? 
 ```php
@@ -66,7 +72,7 @@ $schedule->command('geonames:update')->dailyAt('3:00');
 
 The update artisan command will handle the updates and deletes to the geonames table.
 
-By default, `GeonamesServiceProvider` will run it for you daily at `config('geonames.update_daily_at')`. 
+By default, `GeonamesServiceProvider` will run it for you daily at `config('geonames.update_daily_at')`. You can change it in your `.env` file using `GEONAMES_UPDATE_DAILY_AT` key or in `config/geonames.php` file (if you have published it).
 
 ## Gotchas
 Are you getting something like: 1071 Specified key was too long
