@@ -37,7 +37,7 @@ php artisan vendor:publish --provider="MichaelDrennen\Geonames\GeonamesServicePr
 ```
 
 Want to install all of the geonames records for the US, Canada, and Mexico as well as pull in the feature codes 
-definitions file in English? 
+definitions file in English?
 ```php
 php artisan geonames:install --country=US --country=CA --country=MX --language=en
 ```
@@ -47,6 +47,15 @@ Want to just install everything in the geonames database?
 php artisan geonames:install
 ```
 
+**To download `cities1000.zip` along with all country data:**
+```bash
+php artisan geonames:install --country="*" --country="cities1000.zip"
+```
+
+**To download only `cities1000.zip`:**
+```bash
+php artisan geonames:install --country="cities1000.zip"
+```
 ## Adding Countries Incrementally
 
 If you have already installed a set of countries (e.g., US and CA) and wish to add more countries (e.g., BR) without reinstalling the entire dataset, you can use the `geonames:add` command:
