@@ -85,16 +85,19 @@ class DownloadGeonames extends AbstractCommand {
      * @return array
      */
     protected function getRemoteFilePathsToDownloadForGeonamesTable( array $countries ): array {
-        // If the config setting for countries has the wildcard symbol "*", then the user wants data for all countries.
-        if ( array_search( "*", $countries ) !== FALSE ) {
-            return [ self::$url . 'allCountries.zip' ];
-        }
-
         $files = [];
-        foreach ( $countries as $country ) {
-            // 20190527:mdd A lowercase country in this URL will give you a 404.
-            $files[] = self::$url . strtoupper($country) . '.zip';
+        foreach ( $countries as $countryOrFile ) {
+            // If the config setting for countries has the wildcard symbol "*", then the user wants data for all countries.
+            if ( $countryOrFile === "*" ) {
+                $files[] = self::$url . 'allCountries.zip';
+            } elseif ( $countryOrFile === 'cities1000.zip' ) {
+                $files[] = self::$url . 'cities1000.zip';
+            } else {
+                // 20190527:mdd A lowercase country in this URL will give you a 404.
+                $files[] = self::$url . strtoupper( $countryOrFile ) . '.zip';
+            }
         }
-        return $files;
+        // Remove duplicates in case the user specified '*' and 'allCountries.zip' or duplicate country codes.
+        return array_unique( $files );
     }
 }

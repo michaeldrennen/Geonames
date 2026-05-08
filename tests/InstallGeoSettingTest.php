@@ -148,5 +148,39 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
         $this->assertTrue( $result );
     }
 
+    /**
+     * Test that the geonames:install command correctly processes the --country=cities1000.zip option.
+     */
+    #[Group('install')]
+    #[Group('geosetting')]
+    #[Test]
+    public function testInstallWithCities1000ZipOption() {
+        // Clear existing settings to ensure a clean test
+        $this->artisan('geonames:install', ['--connection' => $this->DB_CONNECTION])->run();
+        $initialSetting = GeoSetting::on($this->DB_CONNECTION)->first();
+        if ($initialSetting) {
+            $initialSetting->delete(); // Ensure a clean slate for the test
+        }
+        
+        // Run the install command with the specific option
+        $this->artisan('geonames:install', [
+            '--country' => ['cities1000.zip'],
+            '--connection' => $this->DB_CONNECTION
+        ])->run();
+
+        // Retrieve the GeoSetting record after installation
+        $geoSetting = GeoSetting::on($this->DB_CONNECTION)->first();
+
+        // Assert that the GeoSetting record was created
+        $this->assertInstanceOf(GeoSetting::class, $geoSetting, 'GeoSetting record should be created after installation.');
+
+        // Assert that 'cities1000.zip' is present in the countries_to_be_added field
+        $this->assertContains('cities1000.zip', $geoSetting->{GeoSetting::DB_COLUMN_COUNTRIES_TO_BE_ADDED}, "The 'cities1000.zip' should be in countries_to_be_added.");
+        
+        // Note: This test currently only verifies that the setting is updated.
+        // A more thorough test would involve checking the actual downloaded files,
+        // but that would require mocking file downloads or setting up a test environment
+        // with actual geonames files, which is beyond the scope of this current modification.
+    }
 
 }
