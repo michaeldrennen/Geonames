@@ -105,13 +105,29 @@ The update artisan command will handle the updates and deletes to the geonames t
 
 By default, `GeonamesServiceProvider` will run it for you daily at `config('geonames.update_daily_at')`. You can change it in your `.env` file using `GEONAMES_UPDATE_DAILY_AT` key or in `config/geonames.php` file (if you have published it).
 
-## Postal Codes
+## Country Info Table
 
-To download and populate the postal codes table (which must be run *after* the main `geonames:install` command), you can run:
+This package now includes functionality to download and import detailed country information from geonames.org's `countryInfo.txt` file. This data is stored in the `countryinfo` table.
 
-```
-php artisan geonames:postal-code
-```
+To install this data, you can either:
+
+1.  **Run it as part of the main installation:** The `geonames:install` command now automatically includes the country info data.
+    ```bash
+    php artisan geonames:install
+    ```
+    or with specific options:
+    ```bash
+    php artisan geonames:install --country=US --language=en
+    ```
+
+2.  **Run the command directly:** If you need to install only the country information or re-import it, you can use the dedicated command:
+    ```bash
+    php artisan geonames:countryinfo
+    ```
+    If you need to overwrite existing country info data, use the `--force` option:
+    ```bash
+    php artisan geonames:countryinfo --force
+    ```
 
 ## Gotchas
 Are you getting something like: 1071 Specified key was too long

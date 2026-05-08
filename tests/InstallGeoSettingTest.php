@@ -2,6 +2,8 @@
 
 namespace MichaelDrennen\Geonames\Tests;
 
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 use MichaelDrennen\Geonames\Models\GeoSetting;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\Group;
@@ -181,6 +183,39 @@ class InstallGeoSettingTest extends BaseInstallTestCase {
         // A more thorough test would involve checking the actual downloaded files,
         // but that would require mocking file downloads or setting up a test environment
         // with actual geonames files, which is beyond the scope of this current modification.
+    }
+
+    /**
+     * Test that the geonames:countryinfo command downloads and imports data correctly.
+     */
+    #[Group('install')]
+    #[Group('geosetting')]
+    #[Test]
+    public function testCountryInfoCommand()
+    {
+        // Ensure the countryinfo table does not exist or is clean before the test
+        Schema::connection($this->DB_CONNECTION)->dropIfExists('countryinfo');
+        $this->assertFalse(Schema::connection($this->DB_CONNECTION)->hasTable('countryinfo'));
+
+        // Execute the geonames:countryinfo command
+        $this->artisan('geonames:countryinfo', [
+            '--connection' => $this->DB_CONNECTION,
+            '--force' => true, // Use --force to ensure it runs even if table somehow exists, and to clear data if it does
+        ])->run();
+
+        // Assert that the countryinfo table was created
+        $this->assertTrue(Schema::connection($this->DB_CONNECTION)->hasTable('countryinfo'), "The 'countryinfo' table should have been created.");
+
+        // Assert that data was inserted into the table
+        $countryCount = DB::connection($this->DB_CONNECTION)->table('countryinfo')->count();
+        $this->assertGreaterThan(0, $countryCount, "The 'countryinfo' table should contain at least one record after import.");
+
+        // Assert data for a specific country (e.g., Andorra 'AD')
+        $andorra = DB::connection($this->DB_CONNECTION)->table('countryinfo')->where('iso', 'AD')->first();
+        $this->assertNotNull($andorra, "Should find record for Andorra (AD).");
+        $this->assertEquals('Andorra', $andorra->country, "Country name for AD should be Andorra.");
+        $this->assertEquals('3041565', $andorra->geonameid, "Geoname ID for AD should be 3041565.");
+        $this->assertEquals('EU', $andorra->continent, "Continent for AD should be EU.");
     }
 
 }

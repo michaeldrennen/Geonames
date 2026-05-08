@@ -176,6 +176,18 @@ class Install extends Command {
                 } else {
                     $this->info( "geonames:geoname COMPLETE" );
                 }
+
+                // Add call for countryinfo
+                $countryInfoResult = $this->call( 'geonames:countryinfo',
+                                                  [ '--test'       => TRUE, // Pass test flag if applicable, though countryinfo command might handle it internally. Assuming it can use test mode.
+                                                    '--connection' => $this->connectionName ] );
+                if ( $countryInfoResult < 0 ) {
+                    $this->error( "Check the log. There was an error running geonames:countryinfo" );
+                    return $countryInfoResult;
+                } else {
+                    $this->info( "geonames:countryinfo COMPLETE" );
+                }
+
             } else {
                 $this->call( 'geonames:feature-code',
                              [ '--language'   => $this->option( 'language' ),
@@ -193,6 +205,16 @@ class Install extends Command {
                                '--connection' => $this->connectionName ] );
                 $this->call( 'geonames:geoname',
                              [ '--connection' => $this->connectionName ] );
+
+                // Add call for countryinfo
+                $countryInfoResult = $this->call( 'geonames:countryinfo',
+                                                  [ '--connection' => $this->connectionName ] );
+                if ( $countryInfoResult < 0 ) {
+                    $this->error( "Check the log. There was an error running geonames:countryinfo" );
+                    return $countryInfoResult;
+                } else {
+                    $this->info( "geonames:countryinfo COMPLETE" );
+                }
             }
 
 
