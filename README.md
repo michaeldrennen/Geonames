@@ -1,4 +1,4 @@
-# geonames v7.x
+# geonames v13.x
 
 
 [![Latest Stable Version](https://poser.pugx.org/michaeldrennen/geonames/version)](https://packagist.org/packages/michaeldrennen/geonames)  [![Total Downloads](https://poser.pugx.org/michaeldrennen/geonames/downloads)](https://packagist.org/packages/michaeldrennen/geonames)  [![License](https://poser.pugx.org/michaeldrennen/geonames/license)](https://packagist.org/packages/michaeldrennen/geonames) [![GitHub issues](https://img.shields.io/github/issues/michaeldrennen/Geonames)](https://github.com/michaeldrennen/Geonames/issues) [![GitHub forks](https://img.shields.io/github/forks/michaeldrennen/Geonames)](https://github.com/michaeldrennen/Geonames/network) [![GitHub stars](https://img.shields.io/github/stars/michaeldrennen/Geonames)](https://github.com/michaeldrennen/Geonames/stargazers) ![Travis (.org)](https://img.shields.io/travis/michaeldrennen/Geonames)  
@@ -15,7 +15,10 @@ There is still a lot that needs to be done to make this package "complete". I've
 ```
 composer require michaeldrennen/geonames
 ```
-And then add `geonames` provider to `providers` array in `app.php` config file:
+
+Since Laravel 5.5, the package will automatically register itself via package discovery. 
+
+If you're using an older version or have discovery disabled, add the `geonames` provider to the `providers` array in your `config/app.php` config file:
 
 ```php
 MichaelDrennen\Geonames\GeonamesServiceProvider::class,
@@ -73,6 +76,14 @@ $schedule->command('geonames:update')->dailyAt('3:00');
 The update artisan command will handle the updates and deletes to the geonames table.
 
 By default, `GeonamesServiceProvider` will run it for you daily at `config('geonames.update_daily_at')`. You can change it in your `.env` file using `GEONAMES_UPDATE_DAILY_AT` key or in `config/geonames.php` file (if you have published it).
+
+## Postal Codes
+
+To download and populate the postal codes table (which must be run *after* the main `geonames:install` command), you can run:
+
+```
+php artisan geonames:postal-code
+```
 
 ## Gotchas
 Are you getting something like: 1071 Specified key was too long
