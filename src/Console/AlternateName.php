@@ -29,7 +29,8 @@ class AlternateName extends AbstractCommand {
     protected $signature = 'geonames:alternate-name 
         {--connection= : If you want to specify the name of the database connection you want used.}
         {--test : If you want to test the command on a small countries data set.}
-        {--country=* : Add the 2 character code for each country. Add additional countries with additional "--country=" options on the command line.}    ';
+        {--country=* : Add the 2 character code for each country. Add additional countries with additional "--country=" options on the command line.}
+        {--append : Do not drop the geonames_alternate_names table. Just append the new records.}';
 
     /**
      * @var string The console command description.
@@ -113,7 +114,11 @@ class AlternateName extends AbstractCommand {
             return FALSE;
         }
 
-        $this->initTable();
+        if ( ! $this->option( 'append' ) ) {
+            $this->initTable();
+        }
+
+        $targetTable = $this->option( 'append' ) ? self::TABLE : self::TABLE_WORKING;
 
 
         $urlsToAlternateNamesZipFiles                   = $this->getAlternateNameDownloadLinks( $countries );
@@ -150,13 +155,15 @@ class AlternateName extends AbstractCommand {
                 throw new Exception( "The unzipped file could not be found. We were looking for: " . $absoluteLocalFilePathOfAlternateNamesFile );
             }
 
-            //$this->insertAlternateNamesWithLoadDataInfile( $absoluteLocalFilePathOfAlternateNamesFile );
-            $this->insertAlternateNamesWithEloquent( $absoluteLocalFilePathOfAlternateNamesFile );
-            //$this->insertAlternateNamesWithEloquentMassInsert( $absoluteLocalFilePathOfAlternateNamesFile );
-            //$this->insertAlternateNamesWithLoadDataInfileFromRecreatedFile( $absoluteLocalFilePathOfAlternateNamesFile );
+            //$this->insertAlternateNamesWithLoadDataInfile( $absoluteLocalFilePathOfAlternateNamesFile, $targetTable );
+            $this->insertAlternateNamesWithEloquent( $absoluteLocalFilePathOfAlternateNamesFile, $targetTable );
+            //$this->insertAlternateNamesWithEloquentMassInsert( $absoluteLocalFilePathOfAlternateNamesFile, $targetTable );
+            //$this->insertAlternateNamesWithLoadDataInfileFromRecreatedFile( $absoluteLocalFilePathOfAlternateNamesFile, $targetTable );
         }
 
-        $this->finalizeTable();
+        if ( ! $this->option( 'append' ) ) {
+            $this->finalizeTable();
+        }
 
         $this->info( "alternate_names data was downloaded and inserted in " . $this->getRunTime() . " seconds." );
     }
@@ -222,11 +229,12 @@ class AlternateName extends AbstractCommand {
 
     /**
      * @param $localFilePath
+     * @param string $targetTable
      *
      * @returns int The total number of rows inserted.
      * @throws \Exception
      */
-    protected function insertAlternateNamesWithLoadDataInfile( $localFilePath ): int {
+    protected function insertAlternateNamesWithLoadDataInfile( $localFilePath, $targetTable ): int {
         $totalRowsInserted = 0;
 
         try {
@@ -243,9 +251,11 @@ class AlternateName extends AbstractCommand {
             // Windows patch
             $localFileSplitPath = $this->fixDirectorySeparatorForWindows( $localFileSplitPath );
 
+            $ignore = $this->option( 'append' ) ? 'IGNORE' : '';
+
             $query = "LOAD DATA LOCAL INFILE '" . $localFileSplitPath . "'
             
-                        INTO TABLE " . self::TABLE_WORKING . " CHARACTER SET '{$charset}'
+                        " . $ignore . " INTO TABLE " . $targetTable . " CHARACTER SET '{$charset}'
                             (   alternateNameId, 
                                 geonameid,
                                 isolanguage, 
@@ -292,7 +302,7 @@ class AlternateName extends AbstractCommand {
     }
 
 
-    protected function insertAlternateNamesWithLoadDataInfileFromRecreatedFile( $localFilePath ): int {
+    protected function insertAlternateNamesWithLoadDataInfileFromRecreatedFile( $localFilePath, $targetTable ): int {
         try {
             $this->comment( "Inserting alternate names using insertAlternateNamesWithLoadDataInfileFromRecreatedFile()" );
             $totalLinesInOriginalFile = LocalFile::lineCount( $localFilePath );
@@ -346,9 +356,11 @@ class AlternateName extends AbstractCommand {
 
         $charset = config( "database.connections.{$this->connectionName}.charset", 'utf8mb4' );
 
+        $ignore = $this->option( 'append' ) ? 'IGNORE' : '';
+
         $query = "LOAD DATA LOCAL INFILE '" . $pathToRecreatedFile . "'
             
-                        INTO TABLE " . self::TABLE_WORKING . " CHARACTER SET '{$charset}'
+                        " . $ignore . " INTO TABLE " . $targetTable . " CHARACTER SET '{$charset}'
                             (   alternateNameId, 
                                 geonameid,
                                 isolanguage, 
@@ -397,15 +409,16 @@ class AlternateName extends AbstractCommand {
      * I have been getting a UTF-8 error when
      *
      * @param $localFilePath
+     * @param string $targetTable
      *
      * @return int
      * @throws \Exception
      */
-    protected function insertAlternateNamesWithEloquent( $localFilePath ): int {
+    protected function insertAlternateNamesWithEloquent( $localFilePath, $targetTable ): int {
         //DB::enableQueryLog();
         $numLines = LocalFile::lineCount( $localFilePath );
 
-        $this->disableKeys( self::TABLE );
+        $this->disableKeys( $targetTable );
 
         try {
             $this->comment( "Splitting " . $localFilePath );
@@ -448,19 +461,35 @@ class AlternateName extends AbstractCommand {
                 $isColloquial    = empty( $fields[ 6 ] ) ? FALSE : $fields[ 6 ];
                 $isHistoric      = empty( $fields[ 7 ] ) ? FALSE : $fields[ 7 ];
 
-                $alternateName = \MichaelDrennen\Geonames\Models\AlternateNamesWorking::on( $this->connectionName )
-                                                                                      ->firstOrCreate(
-                    [ 'alternateNameId' => $alternateNameId ],
-                    [
-                        'geonameid'       => $geonameid,
-                        'isolanguage'     => $isolanguage,
-                        'alternate_name'  => $alternate_name,
-                        'isPreferredName' => $isPreferredName,
-                        'isShortName'     => $isShortName,
-                        'isColloquial'    => $isColloquial,
-                        'isHistoric'      => $isHistoric,
-                    ]
-                );
+                if ( $this->option( 'append' ) ) {
+                    $alternateName = \MichaelDrennen\Geonames\Models\AlternateName::on( $this->connectionName )
+                                                                                  ->firstOrCreate(
+                        [ 'alternateNameId' => $alternateNameId ],
+                        [
+                            'geonameid'       => $geonameid,
+                            'isolanguage'     => $isolanguage,
+                            'alternate_name'  => $alternate_name,
+                            'isPreferredName' => $isPreferredName,
+                            'isShortName'     => $isShortName,
+                            'isColloquial'    => $isColloquial,
+                            'isHistoric'      => $isHistoric,
+                        ]
+                    );
+                } else {
+                    $alternateName = \MichaelDrennen\Geonames\Models\AlternateNamesWorking::on( $this->connectionName )
+                                                                                          ->firstOrCreate(
+                        [ 'alternateNameId' => $alternateNameId ],
+                        [
+                            'geonameid'       => $geonameid,
+                            'isolanguage'     => $isolanguage,
+                            'alternate_name'  => $alternate_name,
+                            'isPreferredName' => $isPreferredName,
+                            'isShortName'     => $isShortName,
+                            'isColloquial'    => $isColloquial,
+                            'isHistoric'      => $isHistoric,
+                        ]
+                    );
+                }
 
                 $geonamesBar->advance();
                 $totalRowsInserted++;
@@ -468,7 +497,7 @@ class AlternateName extends AbstractCommand {
             $geonamesBar->finish();
         endforeach;
 
-        $this->enableKeys( self::TABLE );
+        $this->enableKeys( $targetTable );
 
         return $totalRowsInserted;
     }
@@ -478,14 +507,15 @@ class AlternateName extends AbstractCommand {
      * I have been getting a UTF-8 error when
      *
      * @param $localFilePath
+     * @param string $targetTable
      *
      * @return int
      * @throws \Exception
      */
-    protected function insertAlternateNamesWithEloquentMassInsert( $localFilePath ): int {
+    protected function insertAlternateNamesWithEloquentMassInsert( $localFilePath, $targetTable ): int {
         $numLines = LocalFile::lineCount( $localFilePath );
 
-        $this->disableKeys( self::TABLE );
+        $this->disableKeys( $targetTable );
 
         try {
             $this->comment( "Splitting " . $localFilePath );
@@ -545,7 +575,11 @@ class AlternateName extends AbstractCommand {
                 $totalRowsInserted++;
             }
             $this->comment( "Inserting $numRowsInSplitFile rows from split file..." );
-            AlternateNamesWorking::on( $this->connectionName )->insert( $splitRowsToInsert );
+            if ( $this->option( 'append' ) ) {
+                \MichaelDrennen\Geonames\Models\AlternateName::on( $this->connectionName )->insertOrIgnore( $splitRowsToInsert );
+            } else {
+                AlternateNamesWorking::on( $this->connectionName )->insert( $splitRowsToInsert );
+            }
 
             $geonamesBar->finish();
         endforeach;

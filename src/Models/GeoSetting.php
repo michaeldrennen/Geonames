@@ -297,6 +297,38 @@ class GeoSetting extends Model {
     }
 
     /**
+     * @param array $countries An array of 2 character country codes.
+     * @param string $connection
+     * @return bool
+     * @throws Exception
+     */
+    public static function addCountries( array $countries, string $connection = NULL ): bool {
+        $existingCountries = self::getCountries( $connection );
+        $newCountries      = array_unique( array_merge( $existingCountries, $countries ) );
+
+        $geoSetting                                   = self::on( $connection )->findOrFail( self::ID );
+        $geoSetting->{self::DB_COLUMN_COUNTRIES}             = $newCountries;
+        $geoSetting->{self::DB_COLUMN_COUNTRIES_TO_BE_ADDED} = $countries;
+        return $geoSetting->save();
+    }
+
+    /**
+     * Returns an array of the 2 character country codes stored in the settings.
+     * @param string $connection
+     * @return array
+     */
+    public static function getCountries( string $connection = NULL ): array {
+        $columnName = self::DB_COLUMN_COUNTRIES;
+        $countries  = self::on( $connection )->first()->$columnName;
+        if ( empty( $countries ) ) {
+            return [];
+        }
+
+        return $countries;
+    }
+
+
+    /**
      * Returns an array of the language codes stored in the settings.
      * @param string $connection
      *

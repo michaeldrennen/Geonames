@@ -47,6 +47,25 @@ Want to just install everything in the geonames database?
 php artisan geonames:install
 ```
 
+## Adding Countries Incrementally
+
+If you have already installed a set of countries (e.g., US and CA) and wish to add more countries (e.g., BR) without reinstalling the entire dataset, you can use the `geonames:add` command:
+
+```bash
+php artisan geonames:add --country=BR
+```
+
+This command will:
+- Download only the necessary data files for the specified new countries.
+- Append new geonames records and alternate names to your existing tables.
+- Update your `GeoSetting` to reflect the newly added countries.
+- Reload smaller, non-country-specific tables like `admin-1-code`, `admin-2-code`, `feature-code`, and `feature-class` to ensure consistency.
+
+You can specify multiple countries:
+```bash
+php artisan geonames:add --country=BR --country=AR
+```
+
 ## Maintenance
 Now that you have the geonames database up and running on your system, you need to keep it up-to-date.
 

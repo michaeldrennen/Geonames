@@ -24,6 +24,7 @@ class GeonamesServiceProvider extends \Illuminate\Support\ServiceProvider {
         // Let's register our commands. These are needed to keep our geonames data up-to-date.
         if ( $this->app->runningInConsole() ) {
             $this->commands( [ Console\Install::class,
+                               Console\Add::class,
                                Console\Geoname::class,
                                Console\DownloadGeonames::class,
                                Console\InsertGeonames::class,

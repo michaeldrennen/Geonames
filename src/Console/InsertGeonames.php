@@ -23,7 +23,8 @@ class InsertGeonames extends AbstractCommand {
      */
     protected $signature = 'geonames:insert-geonames
         {--connection= : If you want to specify the name of the database connection you want used.}
-        {--test : If you want to test the command on a small countries data set.}';
+        {--test : If you want to test the command on a small countries data set.}
+        {--append : Do not drop the geonames table. Just append the new records.}';
 
 
     /**
@@ -38,6 +39,7 @@ class InsertGeonames extends AbstractCommand {
      * @var string The name of the txt file that contains data from all of the countries.
      */
     protected $allCountriesZipFileName = 'allCountries.zip';
+
 
     /**
      * @var string The name of the txt file that contains data from all of the countries.
@@ -343,22 +345,28 @@ class InsertGeonames extends AbstractCommand {
             $this->line( "We are going to try to insert " . $this->numLinesInMasterFile . " geoname records." );
         }
 
-        $this->line( "Dropping the temp table named " . self::TABLE_WORKING . " (if it exists)." );
-        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
+        $targetTable = self::TABLE;
+        if ( ! $this->option( 'append' ) ) {
+            $targetTable = self::TABLE_WORKING;
+            $this->line( "Dropping the temp table named " . self::TABLE_WORKING . " (if it exists)." );
+            Schema::connection( $this->connectionName )->dropIfExists( self::TABLE_WORKING );
 
-        $this->line( "Creating the temp table named " . self::TABLE_WORKING );
-        DB::connection( $this->connectionName )
-          ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . '; ' );
+            $this->line( "Creating the temp table named " . self::TABLE_WORKING );
+            DB::connection( $this->connectionName )
+              ->statement( 'CREATE TABLE ' . self::TABLE_WORKING . ' LIKE ' . self::TABLE . '; ' );
+        }
 
-        $this->disableKeys( self::TABLE_WORKING );
+        $this->disableKeys( $targetTable );
 
         // Windows patch
         $localFilePath = $this->fixDirectorySeparatorForWindows( $localFilePath );
 
         $charset = config( "database.connections.{$this->connectionName}.charset", 'utf8mb4' );
 
+        $ignore = $this->option( 'append' ) ? 'IGNORE' : '';
+
         $query = "LOAD DATA LOCAL INFILE '" . $localFilePath . "'
-    INTO TABLE " . self::TABLE_WORKING . " CHARACTER SET '{$charset}'
+        " . $ignore . " INTO TABLE " . $targetTable . " CHARACTER SET '{$charset}'
         (geonameid,
              name,
              asciiname,
@@ -380,8 +388,7 @@ class InsertGeonames extends AbstractCommand {
              modification_date,
              @created_at,
              @updated_at)
-SET created_at=NOW(),updated_at=null";
-
+        SET created_at=NOW(),updated_at=null";
         $this->line( "Running the LOAD DATA INFILE query..." );
 
         $rowsInserted = DB::connection( $this->connectionName )->getpdo()->exec( $query );
@@ -391,16 +398,18 @@ SET created_at=NOW(),updated_at=null";
                                                                                                ->errorInfo(), TRUE ) );
         }
 
-        $this->enableKeys( self::TABLE_WORKING );
+        $this->enableKeys( $targetTable );
 
-        $this->info( "Inserted text file into " . self::TABLE_WORKING );
+        if ( ! $this->option( 'append' ) ) {
+            $this->info( "Inserted text file into " . self::TABLE_WORKING );
 
-        $this->line( "Dropping the active " . self::TABLE . " table." );
-        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
+            $this->line( "Dropping the active " . self::TABLE . " table." );
+            Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
 
+            Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
+            $this->info( "Renamed " . self::TABLE_WORKING . " to " . self::TABLE );
+        }
 
-        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
-        $this->info( "Renamed " . self::TABLE_WORKING . " to " . self::TABLE );
         GeoSetting::setCountriesFromCountriesToBeAdded( $this->connectionName );
     }
 
@@ -419,8 +428,12 @@ SET created_at=NOW(),updated_at=null";
 
         }
 
-        $this->makeWorkingTable( self::TABLE, self::TABLE_WORKING );
-        $this->disableKeys( self::TABLE_WORKING );
+        $targetTable = self::TABLE;
+        if ( ! $this->option( 'append' ) ) {
+            $targetTable = self::TABLE_WORKING;
+            $this->makeWorkingTable( self::TABLE, self::TABLE_WORKING );
+        }
+        $this->disableKeys( $targetTable );
 
         $rows = [];
         $file = fopen( $localFilePath, 'r' );
@@ -438,7 +451,11 @@ SET created_at=NOW(),updated_at=null";
             $this->comment( "Split the insert file into " . $numChunks . " chuncks of " . self::ROWS_TO_INSERT_AT_ONCE . " rows per chunk." );
             $bar = $this->output->createProgressBar( $numChunks );
             foreach ( $chunkedRows as $rowsToInsert ):
-                \MichaelDrennen\Geonames\Models\GeonameWorking::insert( $rowsToInsert );
+                if ( $this->option( 'append' ) ) {
+                    \MichaelDrennen\Geonames\Models\Geoname::on( $this->connectionName )->insertOrIgnore( $rowsToInsert );
+                } else {
+                    \MichaelDrennen\Geonames\Models\GeonameWorking::on( $this->connectionName )->insert( $rowsToInsert );
+                }
                 $bar->advance();
             endforeach;
             $bar->finish();
@@ -450,9 +467,11 @@ SET created_at=NOW(),updated_at=null";
             $this->error( $exception->getMessage() );
         }
 
-        $this->enableKeys( self::TABLE_WORKING );
-        Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
-        Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
+        $this->enableKeys( $targetTable );
+        if ( ! $this->option( 'append' ) ) {
+            Schema::connection( $this->connectionName )->dropIfExists( self::TABLE );
+            Schema::connection( $this->connectionName )->rename( self::TABLE_WORKING, self::TABLE );
+        }
         GeoSetting::setCountriesFromCountriesToBeAdded( $this->connectionName );
     }
 
