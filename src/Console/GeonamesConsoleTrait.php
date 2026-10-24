@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use MichaelDrennen\Geonames\Models\GeoSetting;
 use MichaelDrennen\Geonames\Models\Log;
-use MichaelDrennen\RemoteFile\RemoteFile;
 use Symfony\Component\DomCrawler\Crawler;
 use ZipArchive;
 
@@ -175,7 +174,7 @@ trait GeonamesConsoleTrait {
         $localFilePath = GeoSetting::getAbsoluteLocalStoragePath( $connectionName ) . DIRECTORY_SEPARATOR . $basename;
 
         // Display a progress bar if we can get the remote file size.
-        $fileSize = RemoteFile::getFileSize( $link );
+        $fileSize = self::getRemoteFileSize( $link );
         if ( $fileSize > 0 ) {
             $geonamesBar = $command->output->createProgressBar( $fileSize );
 
@@ -211,6 +210,30 @@ trait GeonamesConsoleTrait {
         }
 
         return $localFilePath;
+    }
+
+    protected static function getRemoteFileSize( string $link ): int {
+        $curl = curl_init( $link );
+        if ( false === $curl ) {
+            return 0;
+        }
+
+        curl_setopt_array( $curl, [
+            CURLOPT_NOBODY         => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+        ] );
+
+        curl_exec( $curl );
+        $responseCode = (int)curl_getinfo( $curl, CURLINFO_RESPONSE_CODE );
+        $fileSize = (int)curl_getinfo( $curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T );
+        curl_close( $curl );
+
+        if ( 200 !== $responseCode && ( $responseCode <= 300 || $responseCode > 308 ) ) {
+            return 0;
+        }
+
+        return $fileSize > 0 ? $fileSize : 0;
     }
 
     /**
