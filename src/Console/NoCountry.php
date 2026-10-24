@@ -110,7 +110,7 @@ class NoCountry extends AbstractCommand {
      * @return string The absolute local path to the unzipped text file.
      * @throws \Exception
      */
-    protected function getLocalTextFilePath( string $connection = NULL ): string {
+    protected function getLocalTextFilePath( ?string $connection = NULL ): string {
         return GeoSetting::getAbsoluteLocalStoragePath( $connection ) . DIRECTORY_SEPARATOR . self::LOCAL_TXT_FILE_NAME;
     }
 
