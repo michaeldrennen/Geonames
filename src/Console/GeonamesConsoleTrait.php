@@ -150,7 +150,7 @@ trait GeonamesConsoleTrait {
      * @return array
      * @throws \Exception
      */
-    public static function downloadFiles( Command $command, array $downloadLinks, string $connectionName = NULL ): array {
+    public static function downloadFiles( Command $command, array $downloadLinks, ?string $connectionName = NULL ): array {
         $localFilePaths = [];
         foreach ( $downloadLinks as $link ) {
             $localFilePaths[] = self::downloadFile( $command, $link, $connectionName );
@@ -167,7 +167,7 @@ trait GeonamesConsoleTrait {
      * @return string           The absolute local path to the file we just downloaded.
      * @throws Exception
      */
-    public static function downloadFile( Command $command, string $link, string $connectionName = NULL ): string {
+    public static function downloadFile( Command $command, string $link, ?string $connectionName = NULL ): string {
         $curl = new Curl();
 
         $basename      = basename( $link );
@@ -263,7 +263,7 @@ trait GeonamesConsoleTrait {
      * @param string   $connection
      * @throws  Exception
      */
-    public static function unzip( $localFilePath, string $connection = NULL ) {
+    public static function unzip( $localFilePath, ?string $connection = NULL ) {
         $storage       = GeoSetting::getAbsoluteLocalStoragePath( $connection );
         $zip           = new ZipArchive;
         $zipOpenResult = $zip->open( $localFilePath );
@@ -292,7 +292,7 @@ trait GeonamesConsoleTrait {
      *
      * @throws Exception
      */
-    public static function unzipFiles( array $absoluteFilePaths, string $connection = NULL ) {
+    public static function unzipFiles( array $absoluteFilePaths, ?string $connection = NULL ) {
         try {
             foreach ( $absoluteFilePaths as $absoluteFilePath ) {
                 self::unzip( $absoluteFilePath, $connection );

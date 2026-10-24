@@ -205,7 +205,7 @@ class AlternateName extends AbstractCommand {
      * @return string
      * @throws \Exception
      */
-    protected function getLocalAbsolutePathToAlternateNamesTextFile( string $countryCode = NULL ): string {
+    protected function getLocalAbsolutePathToAlternateNamesTextFile( ?string $countryCode = NULL ): string {
         if ( '*' == $countryCode || is_null( $countryCode ) ):
             return GeoSetting::getAbsoluteLocalStoragePath( $this->connectionName ) . DIRECTORY_SEPARATOR . self::LOCAL_ALTERNATE_NAMES_FILE_NAME_FOR_ALL;
         endif;
